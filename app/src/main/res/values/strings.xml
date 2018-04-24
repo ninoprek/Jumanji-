@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Jumanji</string>
+    <string name="profile">profile</string>
+    <string name="community">community</string>
+    <string name="map">map</string>
+    <string name="trash_location_reported">number of location reported</string>
+    <string name="trash_location_cleared">number of location cleared</string>
 </resources>
