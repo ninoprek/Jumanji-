@@ -4,7 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import com.squareup.picasso.Picasso
-
+import kotlinx.android.synthetic.main.activity_profile.*
 
 
 class ProfileActivity : AppCompatActivity() {
@@ -26,7 +26,6 @@ class ProfileActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         uri = data?.data
-        Picasso.get().load(uri).into(imageView)
 
     }
 
