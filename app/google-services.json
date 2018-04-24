@@ -15,6 +15,30 @@
       },
       "oauth_client": [
         {
+          "client_id": "103680044083-9d24bp0uhcd6kbc2cj7e642hl7rpi1kh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "jumanji.sda.com.jumanji",
+            "certificate_hash": "e6d90d09420fa36c4bb816ce894ffdfde5c3fba5"
+          }
+        },
+        {
+          "client_id": "103680044083-slio9vapm8batj7hgcck77o9i1rlb0jv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "jumanji.sda.com.jumanji",
+            "certificate_hash": "4683d0f2bf9d002f6a19e170a3be404ea72e54a5"
+          }
+        },
+        {
+          "client_id": "103680044083-a18kkuf3r09qsodi9snihj037u2jkq9d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "jumanji.sda.com.jumanji",
+            "certificate_hash": "f534a729f7cdf32c284afb8e479e89f0900dac24"
+          }
+        },
+        {
           "client_id": "103680044083-pvgcak54ofhnnurs0j0m35lmfnfkvd6k.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

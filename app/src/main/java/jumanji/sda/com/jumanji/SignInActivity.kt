@@ -5,15 +5,15 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 
-class MainActivity : AppCompatActivity() {
+class SignInActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_sign_in)
     }
 
-    fun login(view: View){
-        val signInIntent = Intent(this, SignInActivity::class.java )
-        startActivity(signInIntent)
+    fun createProfile(view: View){
+        val profileIntent = Intent(this, ProfileActivity::class.java)
+        startActivity(profileIntent)
     }
 }
