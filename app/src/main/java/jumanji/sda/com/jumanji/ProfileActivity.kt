@@ -5,9 +5,7 @@ import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 
-/**
- * Created by tmp-sda-1194 on 2018-04-24.
- */
+
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -34,3 +32,4 @@ class ProfileActivity : AppCompatActivity() {
 
 
 }
+
