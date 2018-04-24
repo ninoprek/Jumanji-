@@ -1,7 +1,9 @@
 package jumanji.sda.com.jumanji
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,5 +14,10 @@ class MainActivity : AppCompatActivity() {
         /*val testUserProfile: UserProfile = UserProfile("Jumanji", "jumanji@emai.com", "www.picture.com")
         val userProfileRepository: UserProfileRepository = UserProfileRepository()
         userProfileRepository.storeToDatabase(testUserProfile)*/
+    }
+
+    fun login(view: View){
+        val signInIntent = Intent(this, SignInActivity::class.java )
+        startActivity(signInIntent)
     }
 }

@@ -15,14 +15,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "103680044083-3o42g4ieefkha2j9k95orkn5hhgnk9aq.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "jumanji.sda.com.jumanji",
-            "certificate_hash": "15e609fc5b32635f9f87a97cb6d0c555cc767a0f"
-          }
-        },
-        {
+
           "client_id": "103680044083-9d24bp0uhcd6kbc2cj7e642hl7rpi1kh.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
