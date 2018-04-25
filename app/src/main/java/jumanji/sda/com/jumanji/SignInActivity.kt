@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import jumanji.sda.com.jumanji.R.id.createProfileButton
+import jumanji.sda.com.jumanji.R.id.signInButton
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 class SignInActivity : AppCompatActivity() {

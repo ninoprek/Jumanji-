@@ -6,13 +6,13 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
-<<<<<<< HEAD
+
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import jumanji.sda.com.jumanji.R.id.tabs
-=======
->>>>>>> 6a5be986b44e5eeca3a7c9a3d7dc3cf1bbb8e210
+import jumanji.sda.com.jumanji.R.id.*
+
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity() {
