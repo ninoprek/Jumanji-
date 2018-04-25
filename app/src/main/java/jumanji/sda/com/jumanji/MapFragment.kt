@@ -43,7 +43,7 @@ class MapFragment : Fragment() {
             map = it
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
-            val currentLocation: LatLng? = LatLng(59.3498065, 18.0684759) // To get from GPS for current user location
+            val currentLocation: LatLng? = null // To get from GPS for current user location
             if (currentLocation != null) {
                 val currentPositionMarker = MarkerOptions()
                 currentPositionMarker.title("You are here!")
