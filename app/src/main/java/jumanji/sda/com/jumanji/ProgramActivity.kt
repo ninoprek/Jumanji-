@@ -34,15 +34,10 @@ class ProgramActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-<<<<<<< HEAD
 
-           //     1 -> CommunityFragment()
-           //     2 -> ProfileFragment()
-
-=======
 //                1 -> CommunityFragment()
 //                2 -> ProfileFragment()
->>>>>>> b3a885df724b1f9609d376655498fbfb0be5bf93
+
                 else -> MapFragment()
             }
         }

@@ -29,7 +29,7 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity android:name=".SignInActivity" />
-        <activity android:name=".ProfileActivity"></activity>
+        <activity android:name=".CreateProfileActivity"></activity>
 
     </application>
 

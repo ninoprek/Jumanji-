@@ -1,14 +1,30 @@
 package jumanji.sda.com.jumanji
 
-<<<<<<< HEAD
+/*
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.support.v4.content.ContextCompat.startActivity
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.view.View
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
+
+*/
+
 
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
-=======
+
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
@@ -25,9 +41,9 @@ import java.io.File
 import jumanji.sda.com.jumanji.R.id.imageView
 import android.provider.MediaStore
 import android.graphics.Bitmap
+import android.support.v4.content.ContextCompat.startActivity
 import java.io.IOException
 
->>>>>>> b3a885df724b1f9609d376655498fbfb0be5bf93
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,14 +63,13 @@ class MainActivity : AppCompatActivity() {
         /*val testUserProfile: UserProfile = UserProfile("Jumanji", "jumanji@emai.com", "www.picture.com")
         val userProfileRepository: UserProfileRepository = UserProfileRepository()
         userProfileRepository.storeToDatabase(testUserProfile)*/
-<<<<<<< HEAD
 
         startButton.setOnClickListener({
             val signInIntent = Intent(this, SignInActivity::class.java )
             startActivity(signInIntent)})
     }
 }
-=======
+
 /*
         val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("photo")
 
@@ -72,17 +87,17 @@ class MainActivity : AppCompatActivity() {
                     Log.d("ERROR", "Unable to upload")
                 })
 
-*/
+
 
     }
-
+*/
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
                 && data != null && data.data != null) {
 
-            val uri:Uri = data.data
+            val uri: Uri = data.data
             val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference()
             val filepath:StorageReference = mStorageRef.child("Images").child(uri.lastPathSegment)
 
@@ -107,4 +122,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
->>>>>>> b3a885df724b1f9609d376655498fbfb0be5bf93
