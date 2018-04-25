@@ -4,7 +4,6 @@ package jumanji.sda.com.jumanji
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -18,7 +17,9 @@ class MainActivity : AppCompatActivity() {
         userProfileRepository.storeToDatabase(testUserProfile)*/
 
         startButton.setOnClickListener({
-            val signInIntent = Intent(this, SignInActivity::class.java )
-            startActivity(signInIntent)})
+            val signInIntent = Intent(this, SignInActivity::class.java)
+            startActivity(signInIntent)
+        })
     }
 }
+
