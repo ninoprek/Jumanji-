@@ -3,17 +3,30 @@ package jumanji.sda.com.jumanji
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
+import android.support.v7.app.AlertDialog
+import kotlinx.android.synthetic.main.activity_sign_in.*
 
 class SignInActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
-    }
 
-    fun createProfile(view: View){
-        val profileIntent = Intent(this, ProfileActivity::class.java)
-        startActivity(profileIntent)
+        signInButton.setOnClickListener({
+            val dialog = AlertDialog.Builder(this)
+            dialog.setMessage("signing in...")
+                    .show()
+        })
+
+        googleSignInButton.setOnClickListener({
+            val dialog = AlertDialog.Builder(this)
+            dialog.setMessage("signing in with Google...")
+                    .show()
+        })
+
+        createProfileButton.setOnClickListener({
+            val createProfileIntent = Intent(this, ProfileActivity::class.java )
+            startActivity(createProfileIntent)
+        })
     }
 }
