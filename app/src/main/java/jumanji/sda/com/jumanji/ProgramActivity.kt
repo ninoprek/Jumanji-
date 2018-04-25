@@ -38,16 +38,4 @@ class ProgramActivity : AppCompatActivity() {
 
         override fun getCount(): Int = NO_OF_TABS
     }
-
-    class CommunityFragment : Fragment() {
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-            return inflater.inflate(R.layout.fragment_community, container, false)
-        }
-    }
-
-    class ProfileFragment : Fragment() {
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-            return inflater.inflate(R.layout.fragment_profile, container, false)
-        }
-    }
 }
