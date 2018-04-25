@@ -12,6 +12,7 @@ class SignInActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
+
         createProfileButton.setOnClickListener {
             val createProfileIntent = Intent(this, ProfileActivity::class.java )
             startActivity(createProfileIntent)

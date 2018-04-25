@@ -6,9 +6,15 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import com.squareup.picasso.Picasso
+import jumanji.sda.com.jumanji.R.id.profilePhoto
 import kotlinx.android.synthetic.main.activity_profile.*
 
 class ProfileActivity : AppCompatActivity() {
+
+    val repository = UserProfileRepository()
+    var userName = ""
+    var email = ""
+    var uriString = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,22 +26,24 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         saveButton.setOnClickListener({
-            val userName = userNameField.text
-            val email = emailField.text
-            val password = passwordField.text
+            userName = userNameField.text.toString()
+            email = emailField.text.toString()
 
-            val dialog = AlertDialog.Builder(this)
-            dialog.setMessage("saving").show()
-        })
+            val profile = UserProfile(userName, email, uriString)
+            repository.storeToDatabase(profile)
+
+            val intent = Intent(this, ProgramActivity::class.java )
+            startActivity(intent)})
 
         cancelButton.setOnClickListener({
-
-        })
+            val intent = Intent(this, ProgramActivity::class.java )
+            startActivity(intent)})
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         val uri = data?.data
         Picasso.get().load(uri).into(profilePhoto)
+        uriString = uri.toString()
     }
 }
