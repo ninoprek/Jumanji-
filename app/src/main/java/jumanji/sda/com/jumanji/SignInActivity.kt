@@ -34,7 +34,7 @@ class SignInActivity : AppCompatActivity() {
         val   client = GoogleSignIn.getClient(this, options)
 
 
-        signInButton.setOnClickListener {
+        signInGoogleButton.setOnClickListener {
             val signIn = client.silentSignIn()
             if (signIn.isSuccessful) {
                 getInfo(signIn)
