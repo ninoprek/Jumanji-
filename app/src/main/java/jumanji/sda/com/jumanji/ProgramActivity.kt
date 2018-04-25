@@ -7,12 +7,6 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
 
-
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import jumanji.sda.com.jumanji.R.id.*
-
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity() {

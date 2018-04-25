@@ -1,31 +1,7 @@
 package jumanji.sda.com.jumanji
 
-/*
-import android.content.Intent
-import android.net.Uri
-import android.os.Bundle
-import android.support.v4.content.ContextCompat.startActivity
-import android.support.v7.app.AppCompatActivity
-import android.util.Log
-import android.view.View
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
-
-*/
-
-
-import android.content.Intent
-import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 
-import android.app.Activity
-import android.app.Activity.RESULT_OK
-import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -38,12 +14,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import java.io.File
-import jumanji.sda.com.jumanji.R.id.imageView
-import android.provider.MediaStore
-import android.graphics.Bitmap
-import android.support.v4.content.ContextCompat.startActivity
-import java.io.IOException
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,18 +29,16 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST)
 
 
-
         /*val testUserProfile: UserProfile = UserProfile("Jumanji", "jumanji@emai.com", "www.picture.com")
         val userProfileRepository: UserProfileRepository = UserProfileRepository()
         userProfileRepository.storeToDatabase(testUserProfile)*/
 
         startButton.setOnClickListener({
-            val signInIntent = Intent(this, SignInActivity::class.java )
-            startActivity(signInIntent)})
-    }
-}
+            val signInIntent = Intent(this, SignInActivity::class.java)
+            startActivity(signInIntent)
+        })
 
-/*
+
         val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("photo")
 
         val file = Uri.fromFile(File("file:///Users/tmp-sda-1164/Downloads/jumanji.jpg"))
@@ -86,11 +54,8 @@ class MainActivity : AppCompatActivity() {
                     // ...
                     Log.d("ERROR", "Unable to upload")
                 })
-
-
-
     }
-*/
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -99,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
             val uri: Uri = data.data
             val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference()
-            val filepath:StorageReference = mStorageRef.child("Images").child(uri.lastPathSegment)
+            val filepath: StorageReference = mStorageRef.child("Images").child(uri.lastPathSegment)
 
             filepath.putFile(uri)
                     .addOnSuccessListener(OnSuccessListener<UploadTask.TaskSnapshot> { taskSnapshot ->
@@ -111,14 +76,12 @@ class MainActivity : AppCompatActivity() {
                         // ...
                         Log.d("ERROR", "Unable to upload")
                     })
-
         }
     }
 
-
-    fun login(view: View){
-        val signInIntent = Intent(this, SignInActivity::class.java )
+    fun login(view: View) {
+        val signInIntent = Intent(this, SignInActivity::class.java)
         startActivity(signInIntent)
     }
-
 }
+
