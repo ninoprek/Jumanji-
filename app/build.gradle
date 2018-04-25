@@ -27,8 +27,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.2.40'
-    testOptions {
-        unitTests.returnDefaultValues = true
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.google.firebase:firebase-auth:15.0.0'
@@ -43,5 +41,5 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:1.1.1"
 }
 
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'kotlin-android-extensions'
+    apply plugin: 'com.google.gms.google-services'
+    apply plugin: 'kotlin-android-extensions'
