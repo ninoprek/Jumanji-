@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import jumanji.sda.com.jumanji.R.id.tabs
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity() {
@@ -30,8 +31,8 @@ class ProgramActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-                1 -> CommunityFragment()
-                2 -> ProfileFragment()
+               /* 1 -> CommunityFragment()
+                2 -> ProfileFragment()*/
                 else -> MapFragment()
             }
         }
