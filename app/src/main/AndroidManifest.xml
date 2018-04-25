@@ -20,6 +20,9 @@
         <activity android:name=".ProgramActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <activity android:name=".SignInActivity" />
+        <activity android:name=".ProfileActivity"></activity>
+
     </application>
 
 </manifest>
