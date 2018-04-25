@@ -1,34 +1,41 @@
 package jumanji.sda.com.jumanji
 
 import android.content.Intent
-import android.net.Uri
+
+import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 
-
 class ProfileActivity : AppCompatActivity() {
 
-    val userName = ""
-    val email = ""
-    var uri: Uri? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_profile)
 
+        profilePhoto.setOnClickListener {
+            val intentPickImage = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(intentPickImage, 0)
+        }
 
-//      imageView.setOnClickListener({
-//      })
+        saveButton.setOnClickListener({
+            val userName = userNameField.text
+            val email = emailField.text
+            val password = passwordField.text
 
-    private val intentPickImage = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            val dialog = AlertDialog.Builder(this)
+            dialog.setMessage("saving").show()
+        })
 
-    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
-        super.startActivityForResult(intentPickImage, 0)
+        cancelButton.setOnClickListener({
+
+        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        uri = data?.data
-
+        val uri = data?.data
+        Picasso.get().load(uri).into(profilePhoto)
     }
-
-
 }
-
