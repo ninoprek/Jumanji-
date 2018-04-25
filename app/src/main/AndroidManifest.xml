@@ -19,7 +19,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyD3kZJWsZo3c7ORjvg2uPiCGmMPV0etQRI" />
+            android:value="@string/google_map_API_debug" />
 
         <activity android:name=".ProgramActivity"
             android:theme="@style/AppTheme.NoActionBar">
