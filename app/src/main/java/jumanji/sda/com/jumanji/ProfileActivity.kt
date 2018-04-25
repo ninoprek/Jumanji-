@@ -36,5 +36,6 @@ class ProfileActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         val uri = data?.data
         Picasso.get().load(uri).into(profilePhoto)
+
     }
 }

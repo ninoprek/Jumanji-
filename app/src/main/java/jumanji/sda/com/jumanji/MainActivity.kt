@@ -11,6 +11,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        /*val testUserProfile: UserProfile = UserProfile("Jumanji", "jumanji@emai.com", "www.picture.com")
+        val userProfileRepository: UserProfileRepository = UserProfileRepository()
+        userProfileRepository.storeToDatabase(testUserProfile)*/
+
         startButton.setOnClickListener({
             val signInIntent = Intent(this, SignInActivity::class.java )
             startActivity(signInIntent)})
