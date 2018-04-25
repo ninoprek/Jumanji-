@@ -13,8 +13,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        startButton.setOnClickListener {login(it)}
-
         /*val testUserProfile: UserProfile = UserProfile("Jumanji", "jumanji@emai.com", "www.picture.com")
         val userProfileRepository: UserProfileRepository = UserProfileRepository()
         userProfileRepository.storeToDatabase(testUserProfile)*/

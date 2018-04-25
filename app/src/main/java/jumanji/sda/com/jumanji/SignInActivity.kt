@@ -12,7 +12,10 @@ class SignInActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
-        profileSignUpButton.setOnClickListener { this.createProfile(it) }
+        createProfileButton.setOnClickListener {
+            val createProfileIntent = Intent(this, ProfileActivity::class.java )
+            startActivity(createProfileIntent)
+        }
       
         signInButton.setOnClickListener({
             val dialog = AlertDialog.Builder(this)
@@ -24,11 +27,6 @@ class SignInActivity : AppCompatActivity() {
             val dialog = AlertDialog.Builder(this)
             dialog.setMessage("signing in with Google...")
                     .show()
-        })
-
-        createProfileButton.setOnClickListener({
-            val createProfileIntent = Intent(this, ProfileActivity::class.java )
-            startActivity(createProfileIntent)
         })
     }
 }
