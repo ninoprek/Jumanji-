@@ -13,8 +13,6 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
 
-
-
     }
 
 
