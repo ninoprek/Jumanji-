@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
 
         startButton.setOnClickListener({
             val signInIntent = Intent(this, SignInActivity::class.java )
-            startActivity(signInIntent)})
+            startActivity(signInIntent)
+        this.finish()})
     }
 }

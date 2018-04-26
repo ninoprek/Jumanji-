@@ -8,22 +8,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 
 class TrashLocationViewModel(application: Application) : AndroidViewModel(application) {
-    val trashLocationsCache: LiveData<List<LatLng>> = MutableLiveData() //TODO: get from databse.name : LiveData
+    val trashLocationsCache: LiveData<List<LatLng>> = MutableLiveData() //TODO: receive location data from database
 
-    fun queryTrashLocations1() {
-        //TODO: to call method in database
+    init {
         trashLocationsCache as MutableLiveData
-        trashLocationsCache.postValue(listOf(LatLng(59.3463219, 18.0735219),
+        trashLocationsCache.postValue(listOf(LatLng(59.3563219, 18.0935219),
+                LatLng(59.3463219, 18.0735219),
                 LatLng(59.3563219, 18.0835219),
                 LatLng(59.3663219, 18.0935219),
-                LatLng(59.3763219, 18.0635219)
-        ))
-    }
-
-    fun queryTrashLocations2() {
-        //TODO: to call method in database
-        trashLocationsCache as MutableLiveData
-        trashLocationsCache.postValue(listOf(
+                LatLng(59.3763219, 18.0635219),
                 LatLng(59.3863219, 18.0535219),
                 LatLng(59.3863219, 18.0435219),
                 LatLng(59.3363219, 18.0335219),
@@ -31,23 +24,9 @@ class TrashLocationViewModel(application: Application) : AndroidViewModel(applic
                 LatLng(59.3163219, 18.0135219)))
     }
 
-    fun getTrashLocationsInView(latLngBounds: LatLngBounds) : LiveData<List<LatLng>> {
-        val trashLocationsInView: LiveData<List<LatLng>> = MutableLiveData()
-        trashLocationsInView as MutableLiveData
-        trashLocationsInView.postValue(
-                trashLocationsCache.value?.filter {
-                    latLngBounds.contains(it)
-                })
-        return trashLocationsInView
+    fun loadTrashLocations(latLngBounds: LatLngBounds) {
+        //TODO: call method in repository to update trashLocationsCache
+        //trashLocationsCache = repository.loadTrashLocations
     }
 
-    fun getTrashLocationsOutOfView(latLngBounds: LatLngBounds) : LiveData<List<LatLng>> {
-        val trashLocationsOutOfView: LiveData<List<LatLng>> = MutableLiveData()
-        trashLocationsOutOfView as MutableLiveData
-        trashLocationsOutOfView.postValue(
-                trashLocationsCache.value?.filter {
-                    !latLngBounds.contains(it)
-                })
-        return trashLocationsOutOfView
-    }
 }

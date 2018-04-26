@@ -15,6 +15,7 @@ class SignInActivity : AppCompatActivity() {
         createProfileButton.setOnClickListener {
             val createProfileIntent = Intent(this, CreateProfileActivity::class.java )
             startActivity(createProfileIntent)
+            this.finish()
         }
       
         signInButton.setOnClickListener({

@@ -35,7 +35,8 @@ class CreateProfileActivity : AppCompatActivity() {
 
         cancelButton.setOnClickListener({
             val intent = Intent(this, ProgramActivity::class.java )
-            startActivity(intent)})
+            startActivity(intent)
+        this.finish()})
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -29,26 +29,25 @@ class MapFragment : Fragment() {
 
     private lateinit var map: GoogleMap
     private lateinit var mapCameraManager: MapCameraManager
+    private lateinit var latLongBoundsForQuery: LatLngBounds
+    private val factorToExpandLatLngBoundsForQuery = 0.8
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    private
-    lateinit var latLongBoundsForQuery: LatLngBounds
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
-        val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
+        val trashLocationViewModel = ViewModelProviders.of(activity!!)[TrashLocationViewModel::class.java]
         mapCameraManager = MapCameraManager()
         val cameraPosition = mapCameraManager.getCameraState()
         mapView.getMapAsync {
             map = it
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
-            val currentLocation: LatLng? = LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble()) // To get from GPS for current user location
+            val currentLocation: LatLng? = LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble()) // TODO: To get from GPS for current user location
             if (currentLocation != null) {
                 val currentPositionMarker = MarkerOptions()
                 currentPositionMarker.title("You are here!")
@@ -61,27 +60,26 @@ class MapFragment : Fragment() {
 
             var markersInView: List<Marker>? = null
             map.setOnCameraIdleListener {
-                //TODO: query data from server
-
                 val latLngBoundsOfCurrentView = map.projection.visibleRegion.latLngBounds
-                latLongBoundsForQuery = latLngBoundsOfCurrentView
-                trashLocationViewModel.trashLocationsCache.observe(this, Observer { cacheLatLng ->
-                    cacheLatLng?.let {
-                        markersInView?.filter { !(latLongBoundsForQuery.contains(it.position)) }
-                                ?.forEach { it.remove() }
+                if (!this::latLongBoundsForQuery.isInitialized) {
+                    latLongBoundsForQuery = getLatLngBoundsForQuery(latLngBoundsOfCurrentView)
+                    trashLocationViewModel.loadTrashLocations(getLatLngBoundsForQuery(latLongBoundsForQuery))
+                }
+
+                trashLocationViewModel.trashLocationsCache.observe(this, Observer { trashLocationsCache ->
+                    trashLocationsCache?.let {
+                        Log.d("TAG", "total pins: ${it.size}")
+                        var number = 0 //TODO for testing only
+                        markersInView?.filterNot { latLngBoundsOfCurrentView.contains(it.position) }
+                                ?.forEach { it.remove()
+                                number += 1 }
+                        Log.d("TAG", "total pins remove: $number")
                         markersInView = it.filter { latLngBoundsOfCurrentView.contains(it) }
                                 .map { map.addMarker(MarkerOptions().position(it)) }
+                        Log.d("TAG", "total pins on map: ${markersInView?.size}")
                     }
                 })
             }
-        }
-
-        oneButton.setOnClickListener {
-            trashLocationViewModel.queryTrashLocations1()
-        }
-
-        twoButton.setOnClickListener {
-            trashLocationViewModel.queryTrashLocations2()
         }
     }
 
@@ -96,6 +94,15 @@ class MapFragment : Fragment() {
             mapCameraManager.saveMapCameraState()
         }
         mapView.onPause()
+    }
+
+    private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds) : LatLngBounds {
+        val boundsForQuery = latLngBounds.including(LatLng(
+                latLngBounds.southwest.latitude - factorToExpandLatLngBoundsForQuery,
+                latLngBounds.southwest.longitude - factorToExpandLatLngBoundsForQuery))
+        return boundsForQuery.including(LatLng(
+                boundsForQuery.northeast.latitude + factorToExpandLatLngBoundsForQuery,
+                boundsForQuery.northeast.latitude + factorToExpandLatLngBoundsForQuery))
     }
 
     inner class MapCameraManager {
