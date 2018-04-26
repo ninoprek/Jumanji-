@@ -81,11 +81,28 @@ class MapFragment : Fragment() {
                         Log.d("TAG", "total pins on map: ${markersInView?.size}")
                     }
                 })
+
+                trashLocationViewModel.trashFreeLocationsCache.observe(this, Observer { trashFreeLocationsCache ->
+                    trashFreeLocationsCache?.let {
+                        markersInView?.filterNot { latLngBoundsOfCurrentView.contains(it.position) }
+                                ?.forEach { it.remove() }
+                        markersInView = it.filter { latLngBoundsOfCurrentView.contains(it) }
+                                .map {
+                                    map.addMarker(
+                                            MarkerOptions()
+                                                    .position(it)
+                                                    .icon(
+                                                            BitmapDescriptorFactory
+                                                                    .defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
+                                }
+                    }
+                })
             }
 
             refreshFab.setOnClickListener {
                 if (this::latLongBoundsForQuery.isInitialized) {
                     trashLocationViewModel.loadTrashLocations(latLongBoundsForQuery)
+                    trashLocationViewModel.loadTrashFreeLocations(latLongBoundsForQuery)
                 }
             }
         }
