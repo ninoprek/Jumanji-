@@ -1,16 +1,17 @@
 package jumanji.sda.com.jumanji
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_map.*
 
 class MapFragment : Fragment() {
@@ -33,25 +34,54 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    private
+    lateinit var latLongBoundsForQuery: LatLngBounds
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
+        val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
         mapCameraManager = MapCameraManager()
         val cameraPosition = mapCameraManager.getCameraState()
         mapView.getMapAsync {
             map = it
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
-            val currentLocation: LatLng? = null // To get from GPS for current user location
+            val currentLocation: LatLng? = LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble()) // To get from GPS for current user location
             if (currentLocation != null) {
                 val currentPositionMarker = MarkerOptions()
                 currentPositionMarker.title("You are here!")
                 currentPositionMarker.position(currentLocation)
                 currentPositionMarker.alpha(0.5f)
+                Log.d("TAG", "default Location")
                 map.addMarker(currentPositionMarker)
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, DEFAULT_ZOOM_LEVEL))
             }
+
+            var markersInView: List<Marker>? = null
+            map.setOnCameraIdleListener {
+                //TODO: query data from server
+
+                val latLngBoundsOfCurrentView = map.projection.visibleRegion.latLngBounds
+                latLongBoundsForQuery = latLngBoundsOfCurrentView
+                trashLocationViewModel.trashLocationsCache.observe(this, Observer { cacheLatLng ->
+                    cacheLatLng?.let {
+                        markersInView?.filter { !(latLongBoundsForQuery.contains(it.position)) }
+                                ?.forEach { it.remove() }
+                        markersInView = it.filter { latLngBoundsOfCurrentView.contains(it) }
+                                .map { map.addMarker(MarkerOptions().position(it)) }
+                    }
+                })
+            }
+        }
+
+        oneButton.setOnClickListener {
+            trashLocationViewModel.queryTrashLocations1()
+        }
+
+        twoButton.setOnClickListener {
+            trashLocationViewModel.queryTrashLocations2()
         }
     }
 
