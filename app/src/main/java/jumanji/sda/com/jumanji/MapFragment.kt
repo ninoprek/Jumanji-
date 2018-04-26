@@ -1,19 +1,18 @@
 package jumanji.sda.com.jumanji
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import jumanji.sda.com.jumanji.R.id.mapView
+import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_map.*
-
 
 class MapFragment : Fragment() {
     companion object {
@@ -30,6 +29,8 @@ class MapFragment : Fragment() {
 
     private lateinit var map: GoogleMap
     private lateinit var mapCameraManager: MapCameraManager
+    private lateinit var latLongBoundsForQuery: LatLngBounds
+    private val factorToExpandLatLngBoundsForQuery = 0.8
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -39,20 +40,70 @@ class MapFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
+        val trashLocationViewModel = ViewModelProviders.of(activity!!)[TrashLocationViewModel::class.java]
         mapCameraManager = MapCameraManager()
         val cameraPosition = mapCameraManager.getCameraState()
         mapView.getMapAsync {
             map = it
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
-            val currentLocation: LatLng? = null // To get from GPS for current user location
+            val currentLocation: LatLng? = LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble()) // TODO: To get from GPS for current user location
             if (currentLocation != null) {
                 val currentPositionMarker = MarkerOptions()
                 currentPositionMarker.title("You are here!")
                 currentPositionMarker.position(currentLocation)
                 currentPositionMarker.alpha(0.5f)
+                Log.d("TAG", "default Location")
                 map.addMarker(currentPositionMarker)
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, DEFAULT_ZOOM_LEVEL))
+            }
+
+            var markersInView: List<Marker>? = null
+            map.setOnCameraIdleListener {
+                val latLngBoundsOfCurrentView = map.projection.visibleRegion.latLngBounds
+                if (!this::latLongBoundsForQuery.isInitialized) {
+                    latLongBoundsForQuery = getLatLngBoundsForQuery(latLngBoundsOfCurrentView)
+                    trashLocationViewModel.loadTrashLocations(getLatLngBoundsForQuery(latLongBoundsForQuery))
+                }
+
+                trashLocationViewModel.trashLocationsCache.observe(this, Observer { trashLocationsCache ->
+                    trashLocationsCache?.let {
+                        Log.d("TAG", "total pins: ${it.size}")
+                        var number = 0 //TODO for testing only
+                        markersInView?.filterNot { latLngBoundsOfCurrentView.contains(it.position) }
+                                ?.forEach {
+                                    it.remove()
+                                    number += 1
+                                }
+                        Log.d("TAG", "total pins remove: $number")
+                        markersInView = it.filter { latLngBoundsOfCurrentView.contains(it) }
+                                .map { map.addMarker(MarkerOptions().position(it)) }
+                        Log.d("TAG", "total pins on map: ${markersInView?.size}")
+                    }
+                })
+
+                trashLocationViewModel.trashFreeLocationsCache.observe(this, Observer { trashFreeLocationsCache ->
+                    trashFreeLocationsCache?.let {
+                        markersInView?.filterNot { latLngBoundsOfCurrentView.contains(it.position) }
+                                ?.forEach { it.remove() }
+                        markersInView = it.filter { latLngBoundsOfCurrentView.contains(it) }
+                                .map {
+                                    map.addMarker(
+                                            MarkerOptions()
+                                                    .position(it)
+                                                    .icon(
+                                                            BitmapDescriptorFactory
+                                                                    .defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
+                                }
+                    }
+                })
+            }
+
+            refreshFab.setOnClickListener {
+                if (this::latLongBoundsForQuery.isInitialized) {
+                    trashLocationViewModel.loadTrashLocations(latLongBoundsForQuery)
+                    trashLocationViewModel.loadTrashFreeLocations(latLongBoundsForQuery)
+                }
             }
         }
     }
@@ -68,6 +119,15 @@ class MapFragment : Fragment() {
             mapCameraManager.saveMapCameraState()
         }
         mapView.onPause()
+    }
+
+    private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds): LatLngBounds {
+        val boundsForQuery = latLngBounds.including(LatLng(
+                latLngBounds.southwest.latitude - factorToExpandLatLngBoundsForQuery,
+                latLngBounds.southwest.longitude - factorToExpandLatLngBoundsForQuery))
+        return boundsForQuery.including(LatLng(
+                boundsForQuery.northeast.latitude + factorToExpandLatLngBoundsForQuery,
+                boundsForQuery.northeast.latitude + factorToExpandLatLngBoundsForQuery))
     }
 
     inner class MapCameraManager {
