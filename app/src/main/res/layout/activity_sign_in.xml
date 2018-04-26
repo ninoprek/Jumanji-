@@ -8,7 +8,7 @@
     tools:layout_editor_absoluteY="81dp">
 
 
-    <Button
+    <com.google.android.gms.common.SignInButton
         android:id="@+id/googleSignInButton"
         android:layout_width="352dp"
         android:layout_height="wrap_content"
@@ -19,6 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
+
 
     <Button
         android:id="@+id/createProfileButton"
