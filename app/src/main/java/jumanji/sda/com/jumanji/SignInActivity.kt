@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.activity_sign_in.*
 
 class SignInActivity : AppCompatActivity() {
 
-    val repository = UserProfileRepository()
+    val profileViewModel = CreateProfileViewModel()
     var userName = ""
     var email = ""
     var uriString = ""
@@ -25,7 +25,7 @@ class SignInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
 
-        createProfileButton.setOnClickListener {
+        profileSignUpButton.setOnClickListener {
             val createProfileIntent = Intent(this, CreateProfileActivity::class.java)
             startActivity(createProfileIntent)
         }
@@ -66,13 +66,12 @@ class SignInActivity : AppCompatActivity() {
 
     }
 
-
-    /* override fun onStart() {
+     /*override fun onStart() {
          super.onStart()
          // Check for existing Google Sign In account, if the user is already signed in
          // the GoogleSignInAccount will be non-null.
          val account = GoogleSignIn.getLastSignedInAccount(this)
-         //updateUI(account)
+         updateUI(account)
      }*/
 
     /* private fun updateUI(account: GoogleSignInAccount?) {
@@ -86,10 +85,8 @@ class SignInActivity : AppCompatActivity() {
              val intent = Intent(this, SignInActivity::class.java)
          }
          startActivity(intent)
+     }*/
 
-
-     }
- */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 10 && resultCode == Activity.RESULT_OK) {
@@ -109,7 +106,6 @@ class SignInActivity : AppCompatActivity() {
         uriString = result.photoUrl.toString()
 
         val profile = UserProfile(userName, email, uriString)
-        repository.storeToDatabase(profile)
-
+        profileViewModel.saveUserProfile(profile)
     }
 }
