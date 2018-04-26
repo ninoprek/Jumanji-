@@ -28,5 +28,4 @@ class TrashLocationViewModel(application: Application) : AndroidViewModel(applic
         //TODO: call method in repository to update trashLocationsCache
         //trashLocationsCache = repository.loadTrashLocations
     }
-
 }

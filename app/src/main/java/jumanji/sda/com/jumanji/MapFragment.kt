@@ -71,14 +71,22 @@ class MapFragment : Fragment() {
                         Log.d("TAG", "total pins: ${it.size}")
                         var number = 0 //TODO for testing only
                         markersInView?.filterNot { latLngBoundsOfCurrentView.contains(it.position) }
-                                ?.forEach { it.remove()
-                                number += 1 }
+                                ?.forEach {
+                                    it.remove()
+                                    number += 1
+                                }
                         Log.d("TAG", "total pins remove: $number")
                         markersInView = it.filter { latLngBoundsOfCurrentView.contains(it) }
                                 .map { map.addMarker(MarkerOptions().position(it)) }
                         Log.d("TAG", "total pins on map: ${markersInView?.size}")
                     }
                 })
+            }
+
+            refreshFab.setOnClickListener {
+                if (this::latLongBoundsForQuery.isInitialized) {
+                    trashLocationViewModel.loadTrashLocations(latLongBoundsForQuery)
+                }
             }
         }
     }
@@ -96,7 +104,7 @@ class MapFragment : Fragment() {
         mapView.onPause()
     }
 
-    private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds) : LatLngBounds {
+    private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds): LatLngBounds {
         val boundsForQuery = latLngBounds.including(LatLng(
                 latLngBounds.southwest.latitude - factorToExpandLatLngBoundsForQuery,
                 latLngBounds.southwest.longitude - factorToExpandLatLngBoundsForQuery))
