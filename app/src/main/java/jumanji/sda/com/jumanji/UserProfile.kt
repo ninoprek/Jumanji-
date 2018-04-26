@@ -27,13 +27,7 @@ class UserProfileRepository {
         user.put("email", userProfile.email)
         user.put("pictureURI", userProfile.pictureURI)
 
-        database.collection("userProfiles")
-                .add(user)
-                .addOnSuccessListener(OnSuccessListener<DocumentReference> { documentReference ->
-                    Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.id) })
-                .addOnFailureListener(OnFailureListener { e ->
-                    Log.w(TAG, "Error adding document", e) })
-
+        database.collection("userProfiles").document(user.get("userName") as String)
+                .set(user)
     }
-
 }
