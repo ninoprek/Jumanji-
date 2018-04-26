@@ -1,5 +1,6 @@
 package jumanji.sda.com.jumanji
 
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 
 import android.os.Bundle
@@ -9,14 +10,13 @@ import kotlinx.android.synthetic.main.activity_profile.*
 
 class CreateProfileActivity : AppCompatActivity() {
 
-    val repository = UserProfileRepository()
-    var userName = ""
-    var email = ""
-    var uriString = ""
+    private var uriString = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+
+        val viewModel: CreateProfileViewModel = ViewModelProviders.of(this)[CreateProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
             val intentPickImage = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -24,11 +24,11 @@ class CreateProfileActivity : AppCompatActivity() {
         }
 
         saveButton.setOnClickListener({
-            userName = userNameField.text.toString()
-            email = emailField.text.toString()
-
+            val userName = userNameField.text.toString()
+            val email = emailField.text.toString()
             val profile = UserProfile(userName, email, uriString)
-            repository.storeToDatabase(profile)
+
+            viewModel.saveUserProfile(profile)
 
             val intent = Intent(this, ProgramActivity::class.java )
             startActivity(intent)})
