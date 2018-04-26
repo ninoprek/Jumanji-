@@ -1,12 +1,8 @@
 package jumanji.sda.com.jumanji
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,12 +11,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
+import jumanji.sda.com.jumanji.R.id.mapView
 import kotlinx.android.synthetic.main.fragment_map.*
+
 
 class MapFragment : Fragment() {
     companion object {
@@ -33,7 +26,6 @@ class MapFragment : Fragment() {
         private const val CAMERA_TILT = "camera_tilt"
         private const val CAMERA_BEARING = "camera_bearing"
         private const val CAMERA_PREFERENCE = "camera_preference"
-        private val PICK_IMAGE_REQUEST = 71
     }
 
     private lateinit var map: GoogleMap
@@ -62,37 +54,6 @@ class MapFragment : Fragment() {
                 map.addMarker(currentPositionMarker)
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, DEFAULT_ZOOM_LEVEL))
             }
-        }
-
-        reportFab.setOnClickListener{
-            val intent = Intent()
-            intent.type = "image/*"
-            intent.action = Intent.ACTION_GET_CONTENT
-            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == AppCompatActivity.RESULT_OK
-                && data != null && data.data != null) {
-
-            val uri: Uri = data.data
-            val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference()
-            val filepath: StorageReference = mStorageRef.child("Images").child(uri.lastPathSegment)
-
-            filepath.putFile(uri)
-                    .addOnSuccessListener(OnSuccessListener<UploadTask.TaskSnapshot> { taskSnapshot ->
-                        // Get a URL to the uploaded content
-                        val downloadUrl = taskSnapshot.downloadUrl
-                    })
-                    .addOnFailureListener(OnFailureListener {
-                        // Handle unsuccessful uploads
-                        // ...
-                        Log.d("ERROR", "Unable to upload")
-                    })
-
         }
     }
 
