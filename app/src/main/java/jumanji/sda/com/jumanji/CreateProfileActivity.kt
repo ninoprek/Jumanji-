@@ -12,12 +12,14 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.Toast
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 import java.io.*
 
-class CreateProfileActivity : AppCompatActivity(), PhotoListener {
+class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
 
     companion object {
         private const val REQUEST_CAMERA = 100
@@ -31,6 +33,11 @@ class CreateProfileActivity : AppCompatActivity(), PhotoListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+        saveButton.isEnabled = false
+        userNameField.addTextChangedListener(this)
+        passwordField.addTextChangedListener(this)
+        confirmPasswordField.addTextChangedListener(this)
+        emailField.addTextChangedListener(this)
         val viewModel: ProfileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
@@ -39,20 +46,22 @@ class CreateProfileActivity : AppCompatActivity(), PhotoListener {
 
         saveButton.setOnClickListener({
 
-          //  if(            )
+            //  if(            )
             val userName = userNameField.text.toString()
             val email = emailField.text.toString()
 
             val profile = UserProfile(userName, email, uriString)
             viewModel.saveUserProfile(profile)
 
-            val intent = Intent(this, ProgramActivity::class.java )
-            startActivity(intent)})
+            val intent = Intent(this, ProgramActivity::class.java)
+            startActivity(intent)
+            this.finish()
+        })
 
         cancelButton.setOnClickListener({
-            val intent = Intent(this, ProgramActivity::class.java )
+            val intent = Intent(this, ProgramActivity::class.java)
             startActivity(intent)
-        this.finish()})
+        })
     }
 
     override fun selectImage()  {
@@ -147,4 +156,28 @@ class CreateProfileActivity : AppCompatActivity(), PhotoListener {
 
         profilePhoto.setImageBitmap(thumbnail)
     }
+
+    override fun afterTextChanged(s: Editable?) {
+        if (userNameField.text.isNotEmpty() &&
+                passwordField.text.isNotEmpty() &&
+                confirmPasswordField.text.isNotEmpty() &&
+                passwordField.text.toString() == confirmPasswordField.text.toString() &&
+                emailField.text.isNotEmpty()) {
+            saveButton.isEnabled = true
+        } else {
+            if (passwordField.text.toString() != confirmPasswordField.text.toString() &&
+                    passwordField.text.isNotEmpty() &&
+                    confirmPasswordField.text.isNotEmpty()) {
+                Toast.makeText(this,
+                        "Password doesn't match.",
+                        Toast.LENGTH_SHORT)
+                        .show()
+            }
+            saveButton.isEnabled = false
+        }
+    }
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 }
