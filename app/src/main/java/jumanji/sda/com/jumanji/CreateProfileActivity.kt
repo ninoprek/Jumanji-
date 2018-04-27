@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Toast
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 
@@ -59,9 +60,19 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher {
         if (userNameField.text.isNotEmpty() &&
                 passwordField.text.isNotEmpty() &&
                 confirmPasswordField.text.isNotEmpty() &&
-                passwordField.text == confirmPasswordField.text &&
+                passwordField.text.toString() == confirmPasswordField.text.toString() &&
                 emailField.text.isNotEmpty()) {
             saveButton.isEnabled = true
+        } else {
+            if (passwordField.text.toString() != confirmPasswordField.text.toString() &&
+                    passwordField.text.isNotEmpty() &&
+                    confirmPasswordField.text.isNotEmpty()) {
+                Toast.makeText(this,
+                        "Password doesn't match.",
+                        Toast.LENGTH_SHORT)
+                        .show()
+            }
+            saveButton.isEnabled = false
         }
     }
 

@@ -1,9 +1,9 @@
 package jumanji.sda.com.jumanji
 
-import com.google.firebase.firestore.FirebaseFirestore
 import android.util.Log
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 
 data class UserProfile(
         val userName: String,
