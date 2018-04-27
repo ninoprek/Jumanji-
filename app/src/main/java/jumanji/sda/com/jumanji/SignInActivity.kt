@@ -27,7 +27,7 @@ class SignInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
 
-        createProfileButton.setOnClickListener {
+        profileSignUpButton.setOnClickListener {
             val createProfileIntent = Intent(this, CreateProfileActivity::class.java)
             startActivity(createProfileIntent)
         }
@@ -57,15 +57,13 @@ class SignInActivity : AppCompatActivity() {
 
             if (signIn.isSuccessful) {
                 getInfo(signIn)
+                val intent = Intent(this, ProgramActivity::class.java )
+                startActivity(intent)
 
             } else {
                 startActivityForResult(client.signInIntent, 10)
             }
-
-            val intent = Intent(this, ProgramActivity::class.java )
-            startActivity(intent)
         })
-
     }
 
     private fun signIn(view: View, email: String, password: String) {
@@ -81,7 +79,6 @@ class SignInActivity : AppCompatActivity() {
                                 .show()
                 }
         })
-
     }
 
 
@@ -114,6 +111,8 @@ class SignInActivity : AppCompatActivity() {
             val signedInAccountFromIntent = GoogleSignIn.getSignedInAccountFromIntent(data)
             if (signedInAccountFromIntent.isSuccessful) {
                 getInfo(signedInAccountFromIntent)
+                val intent = Intent(this, ProgramActivity::class.java )
+                startActivity(intent)
             }
         }
     }

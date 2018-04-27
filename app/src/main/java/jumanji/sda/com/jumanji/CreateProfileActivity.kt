@@ -2,21 +2,25 @@ package jumanji.sda.com.jumanji
 
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
-
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
+import android.text.Editable
+import android.text.TextWatcher
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 
-class CreateProfileActivity : AppCompatActivity() {
-
+class CreateProfileActivity : AppCompatActivity(), TextWatcher {
     private var uriString = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+        saveButton.isEnabled = false
+        userNameField.addTextChangedListener(this)
+        passwordField.addTextChangedListener(this)
+        confirmPasswordField.addTextChangedListener(this)
+        emailField.addTextChangedListener(this)
         val viewModel: ProfileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
@@ -26,20 +30,22 @@ class CreateProfileActivity : AppCompatActivity() {
 
         saveButton.setOnClickListener({
 
-          //  if(            )
+            //  if(            )
             val userName = userNameField.text.toString()
             val email = emailField.text.toString()
 
             val profile = UserProfile(userName, email, uriString)
             viewModel.saveUserProfile(profile)
 
-            val intent = Intent(this, ProgramActivity::class.java )
-            startActivity(intent)})
+            val intent = Intent(this, ProgramActivity::class.java)
+            startActivity(intent)
+        })
 
         cancelButton.setOnClickListener({
-            val intent = Intent(this, ProgramActivity::class.java )
+            val intent = Intent(this, ProgramActivity::class.java)
             startActivity(intent)
-        this.finish()})
+            this.finish()
+        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -48,4 +54,18 @@ class CreateProfileActivity : AppCompatActivity() {
         Picasso.get().load(uri).into(profilePhoto)
         uriString = uri.toString()
     }
+
+    override fun afterTextChanged(s: Editable?) {
+        if (userNameField.text.isNotEmpty() &&
+                passwordField.text.isNotEmpty() &&
+                confirmPasswordField.text.isNotEmpty() &&
+                passwordField.text == confirmPasswordField.text &&
+                emailField.text.isNotEmpty()) {
+            saveButton.isEnabled = true
+        }
+    }
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 }
