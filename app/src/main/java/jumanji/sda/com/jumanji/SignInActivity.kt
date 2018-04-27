@@ -64,7 +64,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                 getInfo(signIn)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
-
+                this.finish()
             } else {
                 startActivityForResult(client.signInIntent, 10)
             }
@@ -79,6 +79,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                         // TODO add an ID or delete next line
                         //intent.putExtra(id, autentificator.currentUser?.email)
                         startActivity(intent)
+                        this.finish()
                     } else {
                         Toast.makeText(this, "something went wrong...", Toast.LENGTH_SHORT)
                                 .show()
@@ -118,6 +119,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                 getInfo(signedInAccountFromIntent)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
+                this.finish()
             }
         }
     }

@@ -40,12 +40,12 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher {
 
             val intent = Intent(this, ProgramActivity::class.java)
             startActivity(intent)
+            this.finish()
         })
 
         cancelButton.setOnClickListener({
             val intent = Intent(this, ProgramActivity::class.java)
             startActivity(intent)
-            this.finish()
         })
     }
 
