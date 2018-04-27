@@ -15,12 +15,12 @@
             android:layout_width="101dp"
             android:layout_height="101dp"
             android:layout_marginBottom="16dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             app:layout_constraintBottom_toTopOf="@+id/userNameField"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/googleg_standard_color_18" />
+            app:srcCompat="@drawable/download" />
 
         <EditText
             android:id="@+id/userNameField"

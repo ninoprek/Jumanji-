@@ -69,6 +69,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                 startActivityForResult(client.signInIntent, 10)
             }
         })
+
     }
 
     private fun signIn(view: View, email: String, password: String) {
