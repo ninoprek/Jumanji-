@@ -3,13 +3,14 @@ package jumanji.sda.com.jumanji
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
@@ -20,6 +21,7 @@ class SignInActivity : AppCompatActivity() {
     var email = ""
     var uriString = ""
 
+    var autentificator = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,9 +33,9 @@ class SignInActivity : AppCompatActivity() {
         }
 
         signInButton.setOnClickListener({
-            val dialog = AlertDialog.Builder(this)
-            dialog.setMessage("signing in...")
-                    .show()
+
+            signIn(it, userNameField.text.toString(), passwordField.text.toString())
+
         })
 
         googleSignInButton.setOnClickListener({
@@ -46,11 +48,9 @@ class SignInActivity : AppCompatActivity() {
                     .requestProfile()
                     .build()
 
-
             // Build a GoogleSignInClient with the options specified by options.
 
             val client = GoogleSignIn.getClient(this, options)
-
             val signIn = client.silentSignIn()
 
             if (signIn.isSuccessful) {
@@ -60,9 +60,25 @@ class SignInActivity : AppCompatActivity() {
                 startActivityForResult(client.signInIntent, 10)
             }
 
-
+            val intent = Intent(this, ProgramActivity::class.java )
+            startActivity(intent)
         })
 
+    }
+
+    private fun signIn(view: View, email: String, password: String) {
+        autentificator.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener (this, { task ->
+                    if(task.isSuccessful) {
+                        val intent = Intent(this, ProgramActivity::class.java)
+                        // TODO add an ID or delete next line
+                        //intent.putExtra(id, autentificator.currentUser?.email)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText (this, "something went wrong...", Toast.LENGTH_SHORT)
+                                .show()
+                }
+        })
 
     }
 
@@ -87,9 +103,9 @@ class SignInActivity : AppCompatActivity() {
          }
          startActivity(intent)
 
-
      }
  */
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 10 && resultCode == Activity.RESULT_OK) {

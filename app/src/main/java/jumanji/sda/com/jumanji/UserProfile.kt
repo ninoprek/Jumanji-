@@ -9,26 +9,30 @@ data class UserProfile(
         val userName: String,
         val email: String,
         val pictureURI: String
-        )
+)
 
 class UserProfileRepository {
     companion object {
         private const val TAG = "write to database"
     }
+
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     fun storeToDatabase(userProfile: UserProfile) {
 
-        var user: HashMap<String, Any> = HashMap()
+        if (userProfile.email.isEmpty()) return
+        //TODO notify user that email is obligatory
+
+        val user: HashMap<String, Any> = HashMap()
         user.put("userName", userProfile.userName)
         user.put("email", userProfile.email)
         user.put("pictureURI", userProfile.pictureURI)
 
-        database.collection("userProfiles").document(user.get("email") as String)
+        database.collection("userProfiles").document(userProfile.email)
                 .set(user)
     }
 
-    fun retriveUserProfileFromDatabase(email: String) : UserProfile? {
+    fun retriveUserProfileFromDatabase(email: String): UserProfile? {
 
         var userProfile: UserProfile? = null
         val documentReference = database.collection("userProfiles").document(email)
@@ -39,8 +43,8 @@ class UserProfileRepository {
                 if (document.exists()) {
                     Log.d(TAG, "DocumentSnapshot data: " + document.data!!)
 
-                     userProfile = UserProfile(document.data!!["userName"].toString()
-                            ,document.data!!["email"].toString(),
+                    userProfile = UserProfile(document.data!!["userName"].toString()
+                            , document.data!!["email"].toString(),
                             document.data!!["pictureURI"].toString())
                 } else {
                     Log.d(TAG, "No such document")
