@@ -24,6 +24,10 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener({
             val signInIntent = Intent(this, SignInActivity::class.java)
             startActivity(signInIntent)
+
+            val userProfilerepository : UserProfileRepository = UserProfileRepository()
+
+            userProfilerepository.retrivePhotoFromRepository("299")
         })
     }
 }

@@ -4,6 +4,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 
 data class UserProfile(
         val userName: String,
@@ -17,6 +21,7 @@ class UserProfileRepository {
     }
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val imageStorage: FirebaseStorage = FirebaseStorage.getInstance()
 
     fun storeToDatabase(userProfile: UserProfile) {
 
@@ -54,5 +59,20 @@ class UserProfileRepository {
             }
         })
         return userProfile
+    }
+
+    fun retrivePhotoFromRepository(userName: String) {
+
+        val storageRef: StorageReference = imageStorage.getReference("Images").child(userName)
+
+        storageRef.downloadUrl.addOnSuccessListener {
+            // Got the download URL for 'users/me/profile.png'
+            uri ->
+            Log.d(javaClass.simpleName, "The image URI is: $uri")
+
+        }.addOnFailureListener {
+            // Handle any errors
+            e -> Log.d(javaClass.simpleName, "Problem with getting image uri: $e")
+        }
     }
 }

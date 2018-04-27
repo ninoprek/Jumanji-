@@ -27,7 +27,7 @@ class SignInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
 
-        createProfileButton.setOnClickListener {
+        profileSignUpButton.setOnClickListener {
             val createProfileIntent = Intent(this, CreateProfileActivity::class.java)
             startActivity(createProfileIntent)
         }
