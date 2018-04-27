@@ -13,6 +13,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import android.app.Activity
+import android.content.DialogInterface
+import android.content.Intent
+import android.provider.MediaStore
+import android.support.v7.app.AlertDialog
+
 
 class MapFragment : Fragment() {
     companion object {
@@ -31,6 +37,13 @@ class MapFragment : Fragment() {
     private lateinit var mapCameraManager: MapCameraManager
     private lateinit var latLongBoundsForQuery: LatLngBounds
     private val factorToExpandLatLngBoundsForQuery = 0.8
+
+    private var listener: PhotoListener? = null
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        if (context is PhotoListener) listener=context
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -104,6 +117,10 @@ class MapFragment : Fragment() {
                     trashLocationViewModel.loadTrashLocations(latLongBoundsForQuery)
                     trashLocationViewModel.loadTrashFreeLocations(latLongBoundsForQuery)
                 }
+            }
+
+            reportFab.setOnClickListener{
+                listener?.selectImage()
             }
         }
     }

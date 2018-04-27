@@ -17,7 +17,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 import java.io.*
 
-class CreateProfileActivity : AppCompatActivity() {
+class CreateProfileActivity : AppCompatActivity(), PhotoListener {
 
     companion object {
         private const val REQUEST_CAMERA = 100
@@ -55,7 +55,7 @@ class CreateProfileActivity : AppCompatActivity() {
         this.finish()})
     }
 
-    private fun selectImage() {
+    override fun selectImage()  {
         val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@CreateProfileActivity)
         builder.setTitle("Add Photo!")
