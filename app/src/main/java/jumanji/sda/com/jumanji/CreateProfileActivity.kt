@@ -5,6 +5,7 @@ import android.content.Intent
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 
@@ -16,7 +17,7 @@ class CreateProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
-        val viewModel: CreateProfileViewModel = ViewModelProviders.of(this)[CreateProfileViewModel::class.java]
+        val viewModel: ProfileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
             val intentPickImage = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -24,10 +25,12 @@ class CreateProfileActivity : AppCompatActivity() {
         }
 
         saveButton.setOnClickListener({
+
+          //  if(            )
             val userName = userNameField.text.toString()
             val email = emailField.text.toString()
-            val profile = UserProfile(userName, email, uriString)
 
+            val profile = UserProfile(userName, email, uriString)
             viewModel.saveUserProfile(profile)
 
             val intent = Intent(this, ProgramActivity::class.java )

@@ -3,38 +3,39 @@ package jumanji.sda.com.jumanji
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
 class SignInActivity : AppCompatActivity() {
 
-    val profileViewModel = CreateProfileViewModel()
+    val repository = UserProfileRepository()
     var userName = ""
     var email = ""
     var uriString = ""
 
+    var autentificator = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
 
-        profileSignUpButton.setOnClickListener {
+        createProfileButton.setOnClickListener {
             val createProfileIntent = Intent(this, CreateProfileActivity::class.java)
             startActivity(createProfileIntent)
-            this.finish()
         }
 
         signInButton.setOnClickListener({
-            val dialog = AlertDialog.Builder(this)
-            dialog.setMessage("signing in...")
-                    .show()
+
+            signIn(it, userNameField.text.toString(), passwordField.text.toString())
+
         })
 
         googleSignInButton.setOnClickListener({
@@ -61,18 +62,35 @@ class SignInActivity : AppCompatActivity() {
                 startActivityForResult(client.signInIntent, 10)
             }
 
-
+            val intent = Intent(this, ProgramActivity::class.java )
+            startActivity(intent)
         })
-
 
     }
 
-     /*override fun onStart() {
+    private fun signIn(view: View, email: String, password: String) {
+        autentificator.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener (this, { task ->
+                    if(task.isSuccessful) {
+                        val intent = Intent(this, ProgramActivity::class.java)
+                        // TODO add an ID or delete next line
+                        //intent.putExtra(id, autentificator.currentUser?.email)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText (this, "something went wrong...", Toast.LENGTH_SHORT)
+                                .show()
+                }
+        })
+
+    }
+
+
+    /* override fun onStart() {
          super.onStart()
          // Check for existing Google Sign In account, if the user is already signed in
          // the GoogleSignInAccount will be non-null.
          val account = GoogleSignIn.getLastSignedInAccount(this)
-         updateUI(account)
+         //updateUI(account)
      }*/
 
     /* private fun updateUI(account: GoogleSignInAccount?) {
@@ -86,8 +104,10 @@ class SignInActivity : AppCompatActivity() {
              val intent = Intent(this, SignInActivity::class.java)
          }
          startActivity(intent)
-     }*/
 
+
+     }
+ */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 10 && resultCode == Activity.RESULT_OK) {
@@ -107,6 +127,7 @@ class SignInActivity : AppCompatActivity() {
         uriString = result.photoUrl.toString()
 
         val profile = UserProfile(userName, email, uriString)
-        profileViewModel.saveUserProfile(profile)
+        repository.storeToDatabase(profile)
+
     }
 }
