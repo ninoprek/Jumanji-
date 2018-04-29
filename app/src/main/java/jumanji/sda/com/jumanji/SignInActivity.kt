@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -14,8 +16,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
-class SignInActivity : AppCompatActivity() {
-
+class SignInActivity : AppCompatActivity(), TextWatcher {
     val repository = UserProfileRepository()
     var userName = ""
     var email = ""
@@ -26,6 +27,10 @@ class SignInActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
+
+        signInButton.isEnabled = false
+        userNameField.addTextChangedListener(this)
+        passwordField.addTextChangedListener(this)
 
         profileSignUpButton.setOnClickListener {
             val createProfileIntent = Intent(this, CreateProfileActivity::class.java)
@@ -57,31 +62,30 @@ class SignInActivity : AppCompatActivity() {
 
             if (signIn.isSuccessful) {
                 getInfo(signIn)
-
+                val intent = Intent(this, ProgramActivity::class.java)
+                startActivity(intent)
+                this.finish()
             } else {
                 startActivityForResult(client.signInIntent, 10)
             }
-
-            val intent = Intent(this, ProgramActivity::class.java )
-            startActivity(intent)
         })
 
     }
 
     private fun signIn(view: View, email: String, password: String) {
         autentificator.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener (this, { task ->
-                    if(task.isSuccessful) {
+                .addOnCompleteListener(this, { task ->
+                    if (task.isSuccessful) {
                         val intent = Intent(this, ProgramActivity::class.java)
                         // TODO add an ID or delete next line
                         //intent.putExtra(id, autentificator.currentUser?.email)
                         startActivity(intent)
+                        this.finish()
                     } else {
-                        Toast.makeText (this, "something went wrong...", Toast.LENGTH_SHORT)
+                        Toast.makeText(this, "something went wrong...", Toast.LENGTH_SHORT)
                                 .show()
-                }
-        })
-
+                    }
+                })
     }
 
 
@@ -114,6 +118,9 @@ class SignInActivity : AppCompatActivity() {
             val signedInAccountFromIntent = GoogleSignIn.getSignedInAccountFromIntent(data)
             if (signedInAccountFromIntent.isSuccessful) {
                 getInfo(signedInAccountFromIntent)
+                val intent = Intent(this, ProgramActivity::class.java)
+                startActivity(intent)
+                this.finish()
             }
         }
     }
@@ -128,6 +135,13 @@ class SignInActivity : AppCompatActivity() {
 
         val profile = UserProfile(userName, email, uriString)
         repository.storeToDatabase(profile)
-
     }
+
+    override fun afterTextChanged(s: Editable?) {
+        signInButton.isEnabled = userNameField.text.isNotEmpty() && passwordField.text.isNotEmpty()
+    }
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 }
