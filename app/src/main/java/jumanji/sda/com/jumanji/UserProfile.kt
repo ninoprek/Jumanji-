@@ -6,8 +6,6 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
 
 data class UserProfile(
         val userName: String,
@@ -67,8 +65,7 @@ class UserProfileRepository {
 
         storageRef.downloadUrl.addOnSuccessListener {
             // Got the download URL for 'users/me/profile.png'
-            uri ->
-            Log.d(javaClass.simpleName, "The image URI is: $uri")
+            uri -> Log.d(javaClass.simpleName, "The image URI is: $uri")
 
         }.addOnFailureListener {
             // Handle any errors
