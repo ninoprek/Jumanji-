@@ -33,4 +33,3 @@ class MainActivity : AppCompatActivity() {
         this.finish()
     }
 }
-

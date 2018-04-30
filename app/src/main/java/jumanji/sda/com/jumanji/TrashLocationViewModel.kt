@@ -1,41 +1,78 @@
 package jumanji.sda.com.jumanji
 
-import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
+import android.arch.lifecycle.Transformations
+import android.arch.lifecycle.ViewModel
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.*
+import kotlin.math.abs
 
-class TrashLocationViewModel(application: Application) : AndroidViewModel(application) {
-    val trashLocationsCache: LiveData<List<LatLng>> = MutableLiveData() //TODO: receive location data from database
-    val trashFreeLocationsCache: LiveData<List<LatLng>> = MutableLiveData() //TODO: receive location data from database
+class TrashLocationViewModel : ViewModel() {
+    lateinit var map: GoogleMap
+    private val locations: MutableLiveData<List<LatLng>> = MutableLiveData() //TODO: receive location data from database
+    private val trashFreeLocations: MutableLiveData<List<LatLng>> = MutableLiveData()//TODO: receive location data from database
+    val trashMarkers: LiveData<List<Marker>> = Transformations
+            .map(locations) {
+                it.map { map.addMarker(MarkerOptions().position(it).visible(false)) }
+            }
+    val trashFreeMarkers: LiveData<List<Marker>> = Transformations
+            .map(trashFreeLocations) {
+                it.map {
+                    map.addMarker(
+                            MarkerOptions()
+                                    .position(it)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_GREEN))
+                                    .visible(false))
+                }
+            }
 
-    init {
-        // TODO for testing purpose only
-        trashLocationsCache as MutableLiveData
-        trashLocationsCache.postValue(listOf(LatLng(59.3563219, 18.0935219),
-                LatLng(59.3463219, 18.0735219),
-                LatLng(59.3563219, 18.0835219),
-                LatLng(59.3663219, 18.0935219),
-                LatLng(59.3863219, 18.0535219),
-                LatLng(59.3863219, 18.0435219),
-                LatLng(59.3363219, 18.0335219),
-                LatLng(59.3263219, 18.0235219),
-                LatLng(59.3163219, 18.0135219)))
-        trashFreeLocationsCache as MutableLiveData
-        trashFreeLocationsCache.postValue(listOf((LatLng(59.3763219, 18.0635219))))
+    private val factorToExpandLatLngBoundsForQuery = 0.21
+    private lateinit var previousViewForQuery: LatLngBounds
+    private var previousCameraZoom: Float = MapFragment.DEFAULT_ZOOM_LEVEL
+
+    private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds): LatLngBounds {
+        val boundsForQuery = latLngBounds.including(LatLng(
+                latLngBounds.southwest.latitude - factorToExpandLatLngBoundsForQuery,
+                latLngBounds.southwest.longitude - factorToExpandLatLngBoundsForQuery))
+        return boundsForQuery.including(LatLng(
+                boundsForQuery.northeast.latitude + factorToExpandLatLngBoundsForQuery,
+                boundsForQuery.northeast.longitude + factorToExpandLatLngBoundsForQuery))
     }
 
-    fun loadTrashLocations(latLngBounds: LatLngBounds) {
-        //TODO: call method in repository to update trashLocationsCache
-        //trashLocationsCache = repository.loadTrashLocations
+    fun loadLocations(latLngBounds: LatLngBounds, isRefresh: Boolean) {
+        val latLngBoundsForQuery = getLatLngBoundsForQuery(latLngBounds)
+        if (isRefresh) {
+            map.clear()
+            previousCameraZoom = map.cameraPosition.zoom
+            previousViewForQuery = latLngBoundsForQuery
+            loadTrashLocations(latLngBoundsForQuery)
+            loadTrashFreeLocations(latLngBoundsForQuery)
+        } else {
+            if (!this::previousViewForQuery.isInitialized ||
+                    abs(previousViewForQuery.center.latitude -
+                            latLngBoundsForQuery.center.latitude) > factorToExpandLatLngBoundsForQuery ||
+                    previousCameraZoom > map.cameraPosition.zoom) {
+                map.clear()
+                previousCameraZoom = map.cameraPosition.zoom
+                previousViewForQuery = latLngBoundsForQuery
+                loadTrashLocations(latLngBoundsForQuery)
+                loadTrashFreeLocations(latLngBoundsForQuery)
+            }
+        }
+
     }
 
-    fun loadTrashFreeLocations(latLngBounds: LatLngBounds) {
-        //TODO: call method in repository to update trashLocationsCache
-        //trashLocationsCache = repository.loadTrashFreeLocations
-        trashFreeLocationsCache as MutableLiveData
-        trashFreeLocationsCache.postValue(listOf((LatLng(59.3063219, 18.0035219))))
+    private fun loadTrashLocations(latLngBounds: LatLngBounds) {
+        //TODO: call method in repository to update locations
+        //locations = repository.loadTrashLocations(latLngBoundsForQuery)
+    }
+
+    private fun loadTrashFreeLocations(latLngBounds: LatLngBounds) {
+        //TODO: call method in repository to update locations
+        //locations = repository.loadTrashFreeLocations
     }
 }
+
+
