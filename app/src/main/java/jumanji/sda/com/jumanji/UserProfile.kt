@@ -1,12 +1,17 @@
 package jumanji.sda.com.jumanji
 
+import android.net.Uri
 import android.util.Log
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.UserProfileChangeRequest
+
 
 data class UserProfile(
         val userName: String,
+        val password: String,
         val email: String,
         val pictureURI: String
 )
@@ -17,6 +22,8 @@ class UserProfileRepository {
     }
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
+
 
     fun storeToDatabase(userProfile: UserProfile) {
 
@@ -43,7 +50,7 @@ class UserProfileRepository {
                 if (document.exists()) {
                     Log.d(TAG, "DocumentSnapshot data: " + document.data!!)
 
-                    userProfile = UserProfile(document.data!!["userName"].toString()
+                    userProfile = UserProfile(document.data!!["userName"].toString(), document.data!!["password"].toString()
                             , document.data!!["email"].toString(),
                             document.data!!["pictureURI"].toString())
                 } else {
@@ -54,5 +61,40 @@ class UserProfileRepository {
             }
         })
         return userProfile
+    }
+
+    fun createNewUser(userProfile: UserProfile) {
+        userAuthentication.createUserWithEmailAndPassword(userProfile.email,userProfile.password)
+                .addOnCompleteListener(OnCompleteListener { task ->
+
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "createUserWithEmail:success")
+                        updateUserInformation(userProfile)
+
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                    }
+                })
+    }
+
+    fun updateUserInformation(userProfile: UserProfile) {
+
+        val user = userAuthentication.currentUser
+
+        val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(userProfile.userName)
+                .setPhotoUri(Uri.parse(userProfile.pictureURI))
+                .build()
+
+        user?.updateProfile(profileUpdates)
+                ?.addOnCompleteListener(OnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d(javaClass.simpleName, "User profile is updated.")
+                    } else {
+                        Log.d(javaClass.simpleName, "Problem with updating the profile.")
+                    }
+                })
     }
 }

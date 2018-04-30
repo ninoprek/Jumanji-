@@ -17,12 +17,13 @@ import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
 class SignInActivity : AppCompatActivity(), TextWatcher {
-    val repository = UserProfileRepository()
+    val profileViewModel = ProfileViewModel()
     var userName = ""
     var email = ""
     var uriString = ""
+    var password = ""
 
-    var autentificator = FirebaseAuth.getInstance()
+    var authenticator = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,9 +39,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
         }
 
         signInButton.setOnClickListener({
-
             signIn(it, userNameField.text.toString(), passwordField.text.toString())
-
         })
 
         googleSignInButton.setOnClickListener({
@@ -72,7 +71,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
     }
 
     private fun signIn(view: View, email: String, password: String) {
-        autentificator.signInWithEmailAndPassword(email, password)
+        authenticator.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, { task ->
                     if (task.isSuccessful) {
                         val intent = Intent(this, ProgramActivity::class.java)
@@ -104,12 +103,13 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
         val result = info.result
         Toast.makeText(this, "Welcome  " + result.displayName, Toast.LENGTH_LONG).show()
 
-        userName = result.givenName!!
+        /*userName = result.givenName!!
         email = result.email!!
         uriString = result.photoUrl.toString()
 
-        val profile = UserProfile(userName, email, uriString)
-        repository.storeToDatabase(profile)
+
+        val profile = UserProfile(userName, "", email, uriString)
+        profileViewModel.updateUserProfile(profile)*/
     }
 
     override fun afterTextChanged(s: Editable?) {
