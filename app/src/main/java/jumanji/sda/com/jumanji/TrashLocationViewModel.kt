@@ -32,8 +32,6 @@ class TrashLocationViewModel : ViewModel() {
     private lateinit var previousViewForQuery: LatLngBounds
     private var previousCameraZoom: Float = MapFragment.DEFAULT_ZOOM_LEVEL
 
-    private val repository = Repository()
-
     private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds): LatLngBounds {
         val boundsForQuery = latLngBounds.including(LatLng(
                 latLngBounds.southwest.latitude - factorToExpandLatLngBoundsForQuery,
@@ -67,56 +65,14 @@ class TrashLocationViewModel : ViewModel() {
     }
 
     private fun loadTrashLocations(latLngBounds: LatLngBounds) {
-        locations.postValue(repository.loadLocations(latLngBounds))
         //TODO: call method in repository to update locations
         //locations = repository.loadTrashLocations(latLngBoundsForQuery)
     }
 
     private fun loadTrashFreeLocations(latLngBounds: LatLngBounds) {
-        trashFreeLocations.postValue((repository.loadTrashFreeLocations(latLngBounds)))
         //TODO: call method in repository to update locations
         //locations = repository.loadTrashFreeLocations
     }
-
-    fun add() {
-        map.clear()
-        locations.postValue(listOf(
-                LatLng(59.3563219, 18.0735219),
-                LatLng(59.3463219, 18.0935219),
-                LatLng(59.2563219, 18.0935219),
-                LatLng(59.3663219, 18.0535219),
-                LatLng(59.3863219, 18.0435219),
-                LatLng(59.2863219, 18.0335219),
-                LatLng(59.3363219, 18.0235219),
-                LatLng(59.3263219, 18.0235219),
-                LatLng(59.3163219, 18.0835219)))
-
-        trashFreeLocations.postValue(listOf(
-                LatLng(59.3463219, 18.0735219),
-                LatLng(59.2563219, 18.0835219),
-                LatLng(59.3663219, 18.0935219),
-                LatLng(59.3863219, 18.0535219),
-                LatLng(59.2863219, 18.0435219),
-                LatLng(59.3363219, 18.0335219),
-                LatLng(59.3163219, 18.0135219)))
-    }
 }
 
-class Repository {
-    private val locations = listOf(
-            LatLng(59.3370304, 18.0687083),
-            LatLng(59.3457228, 18.0269944))
-
-    private val trashFreeLocations = listOf(
-            LatLng(59.3385767, 18.0530063),
-            LatLng(59.3690764, 17.6947272))
-
-    fun loadLocations(latLngBounds: LatLngBounds): List<LatLng> {
-        return locations.filter { latLngBounds.contains(it) }
-    }
-
-    fun loadTrashFreeLocations(latLngBounds: LatLngBounds): List<LatLng> {
-        return trashFreeLocations.filter { latLngBounds.contains(it) }
-    }
-}
 
