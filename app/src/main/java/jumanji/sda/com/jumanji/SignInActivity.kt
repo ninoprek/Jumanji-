@@ -53,7 +53,6 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                     .requestProfile()
                     .build()
 
-
             // Build a GoogleSignInClient with the options specified by options.
 
             val client = GoogleSignIn.getClient(this, options)
@@ -88,30 +87,6 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                 })
     }
 
-
-    /* override fun onStart() {
-         super.onStart()
-         // Check for existing Google Sign In account, if the user is already signed in
-         // the GoogleSignInAccount will be non-null.
-         val account = GoogleSignIn.getLastSignedInAccount(this)
-         //updateUI(account)
-     }*/
-
-    /* private fun updateUI(account: GoogleSignInAccount?) {
-         if (account != null) {
-
-             val intent = Intent(this, ProgramActivity::class.java)
-
-         } else {
-
-             //no last log in
-             val intent = Intent(this, SignInActivity::class.java)
-         }
-         startActivity(intent)
-
-
-     }
- */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 10 && resultCode == Activity.RESULT_OK) {
