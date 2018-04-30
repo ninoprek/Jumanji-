@@ -1,20 +1,24 @@
 package jumanji.sda.com.jumanji
 
+import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.design.widget.TabLayout
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-
+import android.util.Log
+import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
-class ProgramActivity : AppCompatActivity(),PhotoListener {
+class ProgramActivity : AppCompatActivity(), PhotoListener {
 
     companion object {
         private const val REQUEST_CAMERA = 100
@@ -51,7 +55,7 @@ class ProgramActivity : AppCompatActivity(),PhotoListener {
         override fun getCount(): Int = NO_OF_TABS
     }
 
-    override fun selectImage()  {
+    override fun selectImage() {
         val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@ProgramActivity)
         builder.setTitle("Add Photo!")
@@ -94,6 +98,8 @@ class ProgramActivity : AppCompatActivity(),PhotoListener {
             } else {
                 //code for deny
             }
+
+
         }
     }
 }
