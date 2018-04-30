@@ -15,7 +15,13 @@ class ProfileViewModel : ViewModel() {
     val uri = profile?.pictureURI
 
     fun saveUserProfile(profile: UserProfile) {
-        Single.fromCallable { repository.storeToDatabase(profile) }
+        Single.fromCallable { repository.createNewUser(profile) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()
+    }
+
+    fun updateUserProfile(profile: UserProfile) {
+        Single.fromCallable { repository.updateUserInformation(profile) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
@@ -25,5 +31,7 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun deleteUserProfile(profile: UserProfile) {}
+
+    fun signOut(){}
 
 }
