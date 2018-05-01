@@ -6,6 +6,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
@@ -15,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -23,7 +25,7 @@ import com.google.android.gms.maps.model.Marker
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
-class MapFragment : Fragment() {
+class MapFragment : Fragment(), OnLastLocationReadyListener {
     companion object {
         const val DEFAULT_ZOOM_LEVEL = 13.5f
         private const val DEFAULT_LATITUDE = 59.3498065f
@@ -34,8 +36,11 @@ class MapFragment : Fragment() {
     }
 
     private lateinit var map: GoogleMap
-    private var listener: PhotoListener? = null
+    private val defaultPosition = LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble())
     private lateinit var locationViewModel: LocationViewModel
+
+    private var listener: PhotoListener? = null
+
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -46,15 +51,14 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
-        var cameraPosition: CameraPosition? = null
-        var currentLocation: LatLng? = null
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
 
+        var cameraPosition: CameraPosition? = null
+        var currentLocation: LatLng? = null
         if (savedInstanceState != null) {
             cameraPosition = savedInstanceState.getParcelable(CAMERA_POSITION)
             currentLocation = savedInstanceState.getParcelable(LAST_KNOWN_LOCATION)
@@ -64,15 +68,14 @@ class MapFragment : Fragment() {
 
         mapView.getMapAsync {
             map = it
-            Log.d("TAG", "this run only once")
-            Log.d("TAG", "map loaded")
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultPosition, DEFAULT_ZOOM_LEVEL))
 
             map.setOnMapLoadedCallback {
                 Log.d("TAG", "map loaded")
-                enableMyLocationLayer()
+                enableMyLocationLayer(locationViewModel)
+//                map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM_LEVEL))
             }
 
-            Log.d("TAG", "get map async: ${map.cameraPosition.target}")
             val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
             val mapAdapter = GoogleMapAdapter()
             trashLocationViewModel.map = map
@@ -129,32 +132,35 @@ class MapFragment : Fragment() {
         super.onSaveInstanceState(outState)
     }
 
-    private fun enableMyLocationLayer() {
+    private fun enableMyLocationLayer(viewModel: LocationViewModel) {
         val permission = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION
                 , Manifest.permission.ACCESS_FINE_LOCATION)
         if (ActivityCompat.checkSelfPermission(context!!, permission[0]) != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(context!!, permission[1]) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(permission, LOCATION_REQUEST_CODE)
             Log.d("TAG", "request for permission")
+
         } else {
-            if (this::map.isInitialized) {
-                Log.d("TAG", "permission granted before.")
-                map.isMyLocationEnabled = true
-            }
+            Log.d("TAG", "permission granted before.")
+            map.isMyLocationEnabled = true
+            viewModel.getLastKnownLocation(this@MapFragment)
         }
     }
 
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-            if (this::map.isInitialized) {
-                Log.d("TAG", "permission granted.")
-                map.isMyLocationEnabled = true
-            }
+            Log.d("TAG", "permission granted.")
+            enableMyLocationLayer(locationViewModel)
         } else {
             Log.d("TAG", "permission denied.")
             Toast.makeText(context, "Permission is needed.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onResultReadyCallBack(location: Location) {
+        val position = LatLng(location.latitude, location.longitude)
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM_LEVEL))
     }
 
     class GoogleMapAdapter {
