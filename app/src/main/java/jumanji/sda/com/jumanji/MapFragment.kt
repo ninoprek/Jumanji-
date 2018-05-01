@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,22 +24,21 @@ import com.google.android.gms.maps.model.Marker
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
-class MapFragment : Fragment(), OnLastLocationReadyListener {
+class MapFragment : Fragment(), OnLastLocationWatcher {
     companion object {
-        const val DEFAULT_ZOOM_LEVEL = 13.5f
-        private const val DEFAULT_LATITUDE = 59.3498065f
-        private const val DEFAULT_LONGITUDE = 18.0684759f
-        private const val LAST_KNOWN_LOCATION = "last_known_location"
-        private const val CAMERA_POSITION = "camera_position"
+        private const val LAST_KNOWN_ZOOM = "last_known_zoom"
+        private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
+        private const val LAST_KNOWN_LATITUDE = "last_known_latitude"
+        private const val CAMERA_PREFERENCE = "camera_preference"
         private const val LOCATION_REQUEST_CODE = 300
     }
 
+    private lateinit var mapPreference: CameraStateManager
+
     private lateinit var map: GoogleMap
-    private val defaultPosition = LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble())
     private lateinit var locationViewModel: LocationViewModel
 
     private var listener: PhotoListener? = null
-
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -55,25 +53,16 @@ class MapFragment : Fragment(), OnLastLocationReadyListener {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
+        mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
-
-        var cameraPosition: CameraPosition? = null
-        var currentLocation: LatLng? = null
-        if (savedInstanceState != null) {
-            cameraPosition = savedInstanceState.getParcelable(CAMERA_POSITION)
-            currentLocation = savedInstanceState.getParcelable(LAST_KNOWN_LOCATION)
-        } else {
-//            currentLocation =  // TODO: To get from GPS for current user location
-        }
 
         mapView.getMapAsync {
             map = it
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultPosition, DEFAULT_ZOOM_LEVEL))
-
+            val cameraState = mapPreference.getCameraState()
+            map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
+            enableMyLocationLayer(locationViewModel)
             map.setOnMapLoadedCallback {
-                Log.d("TAG", "map loaded")
-                enableMyLocationLayer(locationViewModel)
-//                map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM_LEVEL))
+
             }
 
             val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
@@ -115,6 +104,11 @@ class MapFragment : Fragment(), OnLastLocationReadyListener {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+    }
+
     override fun onResume() {
         super.onResume()
         mapView.onResume()
@@ -123,13 +117,27 @@ class MapFragment : Fragment(), OnLastLocationReadyListener {
     override fun onPause() {
         super.onPause()
         mapView.onPause()
-        Log.d("TAG", "onPause")
+    }
+
+    override fun onStop() {
+        mapView.onStop()
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        mapPreference.saveMapCameraState()
+        mapView?.onDestroy()
+        super.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        mapView?.onLowMemory()
+        super.onLowMemory()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(CAMERA_POSITION, map.cameraPosition)
-        outState.putParcelable(LAST_KNOWN_LOCATION, map.cameraPosition.target)
         super.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
     }
 
     private fun enableMyLocationLayer(viewModel: LocationViewModel) {
@@ -138,10 +146,7 @@ class MapFragment : Fragment(), OnLastLocationReadyListener {
         if (ActivityCompat.checkSelfPermission(context!!, permission[0]) != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(context!!, permission[1]) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(permission, LOCATION_REQUEST_CODE)
-            Log.d("TAG", "request for permission")
-
         } else {
-            Log.d("TAG", "permission granted before.")
             map.isMyLocationEnabled = true
             viewModel.getLastKnownLocation(this@MapFragment)
         }
@@ -150,17 +155,15 @@ class MapFragment : Fragment(), OnLastLocationReadyListener {
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-            Log.d("TAG", "permission granted.")
             enableMyLocationLayer(locationViewModel)
         } else {
-            Log.d("TAG", "permission denied.")
-            Toast.makeText(context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun onResultReadyCallBack(location: Location) {
+    override fun onLastLocationReadyCallBack(location: Location) {
         val position = LatLng(location.latitude, location.longitude)
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM_LEVEL))
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, LocationViewModel.DEFAULT_ZOOM_LEVEL))
     }
 
     class GoogleMapAdapter {
@@ -182,6 +185,29 @@ class MapFragment : Fragment(), OnLastLocationReadyListener {
 
         private fun getCurrentView(): LatLngBounds {
             return map!!.projection.visibleRegion.latLngBounds
+        }
+    }
+
+    inner class CameraStateManager {
+        private val mapCameraPreferences = this@MapFragment.context!!.getSharedPreferences(CAMERA_PREFERENCE, Context.MODE_PRIVATE)
+
+        fun saveMapCameraState() {
+            val cameraPosition = map.cameraPosition
+            val latitude = cameraPosition.target.latitude.toFloat()
+            val longitude = cameraPosition.target.longitude.toFloat()
+            val zoom = cameraPosition.zoom
+            val editor = mapCameraPreferences.edit()
+            editor.putFloat(LAST_KNOWN_LATITUDE, latitude)
+            editor.putFloat(LAST_KNOWN_LONGITUDE, longitude)
+            editor.putFloat(LAST_KNOWN_ZOOM, zoom)
+            editor.apply()
+        }
+
+        fun getCameraState(): CameraPosition {
+            val latitude = mapCameraPreferences.getFloat(LAST_KNOWN_LATITUDE, LocationViewModel.DEFAULT_LATITUDE.toFloat()).toDouble()
+            val longitude = mapCameraPreferences.getFloat(LAST_KNOWN_LONGITUDE, LocationViewModel.DEFAULT_LONGITUDE.toFloat()).toDouble()
+            val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM, LocationViewModel.DEFAULT_ZOOM_LEVEL)
+            return CameraPosition(LatLng(latitude, longitude), zoom, 0.0f, 0.0f)
         }
     }
 }
