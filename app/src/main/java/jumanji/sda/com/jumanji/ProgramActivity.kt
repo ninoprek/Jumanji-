@@ -1,21 +1,17 @@
 package jumanji.sda.com.jumanji
 
-import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.design.widget.TabLayout
-import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity(), PhotoListener {
@@ -44,10 +40,8 @@ class ProgramActivity : AppCompatActivity(), PhotoListener {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-
-//                1 -> CommunityFragment()
-//                2 -> ProfileFragment()
-
+                1 -> Fragment()
+                2 -> Fragment()
                 else -> MapFragment()
             }
         }
@@ -89,6 +83,8 @@ class ProgramActivity : AppCompatActivity(), PhotoListener {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        Log.d("TAG", "in activity")
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE -> if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (userChoosenTask.equals("Take Photo"))
@@ -98,8 +94,7 @@ class ProgramActivity : AppCompatActivity(), PhotoListener {
             } else {
                 //code for deny
             }
-
-
         }
     }
+
 }

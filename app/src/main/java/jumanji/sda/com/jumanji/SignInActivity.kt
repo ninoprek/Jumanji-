@@ -37,6 +37,10 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
             startActivity(createProfileIntent)
         }
 
+        val intent = Intent(this, ProgramActivity::class.java)
+        startActivity(intent)
+        this.finish()
+
         signInButton.setOnClickListener({
 
             signIn(it, userNameField.text.toString(), passwordField.text.toString())

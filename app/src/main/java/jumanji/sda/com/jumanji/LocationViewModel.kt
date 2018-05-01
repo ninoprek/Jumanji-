@@ -11,13 +11,12 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
             application.applicationContext)
 
     @SuppressLint("MissingPermission")
-    fun getLastLocations(): LatLng? {
+    fun getLastKnownLocation(): LatLng? {
         var lastKnownLocation: LatLng? = null
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-            it?.let {
-                lastKnownLocation = LatLng(it.latitude, it.longitude)
-            }
+        fusedLocationProviderClient.lastLocation.addOnCompleteListener {
+            lastKnownLocation = LatLng(it.result.latitude, it.result.longitude)
         }
         return lastKnownLocation
     }
 }
+

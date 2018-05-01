@@ -2,7 +2,6 @@ package jumanji.sda.com.jumanji
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
@@ -11,12 +10,11 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -48,6 +46,7 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
@@ -65,14 +64,15 @@ class MapFragment : Fragment() {
 
         mapView.getMapAsync {
             map = it
-            getLocationPermission()
-            currentLocation = locationViewModel.getLastLocations()
-            if (cameraPosition != null) {
-                map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
-            } else {
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(DEFAULT_LATITUDE.toDouble(), DEFAULT_LONGITUDE.toDouble()), DEFAULT_ZOOM_LEVEL))
+            Log.d("TAG", "this run only once")
+            Log.d("TAG", "map loaded")
+
+            map.setOnMapLoadedCallback {
+                Log.d("TAG", "map loaded")
+                enableMyLocationLayer()
             }
 
+            Log.d("TAG", "get map async: ${map.cameraPosition.target}")
             val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
             val mapAdapter = GoogleMapAdapter()
             trashLocationViewModel.map = map
@@ -93,8 +93,8 @@ class MapFragment : Fragment() {
                     totalNoOfTrashLocationClearedText.text = it.size.toString()
                 }
             })
-
             map.setOnCameraIdleListener {
+
                 val currentView = map.projection.visibleRegion.latLngBounds
                 trashLocationViewModel.loadLocations(currentView, false)
                 mapAdapter.bindMarkers()
@@ -105,10 +105,10 @@ class MapFragment : Fragment() {
                     mapAdapter.bindMarkers()
                 }
             }
+        }
 
-            reportFab.setOnClickListener {
-                listener?.selectImage()
-            }
+        reportFab.setOnClickListener {
+            listener?.selectImage()
         }
     }
 
@@ -120,6 +120,7 @@ class MapFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         mapView.onPause()
+        Log.d("TAG", "onPause")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -128,14 +129,16 @@ class MapFragment : Fragment() {
         super.onSaveInstanceState(outState)
     }
 
-    private fun getLocationPermission() {
+    private fun enableMyLocationLayer() {
         val permission = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION
                 , Manifest.permission.ACCESS_FINE_LOCATION)
-        if (ContextCompat.checkSelfPermission(context!!, permission[0]) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context!!, permission[1]) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(context as Activity, permission, LOCATION_REQUEST_CODE)
+        if (ActivityCompat.checkSelfPermission(context!!, permission[0]) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(context!!, permission[1]) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(permission, LOCATION_REQUEST_CODE)
+            Log.d("TAG", "request for permission")
         } else {
             if (this::map.isInitialized) {
+                Log.d("TAG", "permission granted before.")
                 map.isMyLocationEnabled = true
             }
         }
@@ -143,16 +146,14 @@ class MapFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (LOCATION_REQUEST_CODE == requestCode) {
-            if ((grantResults.size == 2 &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                            grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
-                if (this::map.isInitialized) {
-                    map.isMyLocationEnabled = true
-                }
-            } else {
-                Toast.makeText(context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+        if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+            if (this::map.isInitialized) {
+                Log.d("TAG", "permission granted.")
+                map.isMyLocationEnabled = true
             }
+        } else {
+            Log.d("TAG", "permission denied.")
+            Toast.makeText(context, "Permission is needed.", Toast.LENGTH_SHORT).show()
         }
     }
 
