@@ -100,9 +100,23 @@ class MapFragment : Fragment() {
             }
 
             updateGPSFab.setOnClickListener {
-                val user=FirebaseAuth.getInstance().currentUser
-                Snackbar.make(it, "${user?.displayName}, you are signed out", Snackbar.LENGTH_SHORT).show()
-                FirebaseAuth.getInstance().signOut()
+                val user=FirebaseAuth.getInstance().currentUser?.displayName
+                val profileViewModel = ProfileViewModel()
+                profileViewModel.signOut()
+                Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
+            }
+
+            addPin.setOnClickListener{
+                val pinViewModel: PinViewModel = PinViewModel()
+                pinViewModel.testSavePinData()
+                Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
+            }
+
+            deletePin.setOnClickListener {
+                val pinViewModel = PinViewModel()
+                pinViewModel.deletePinData("1")
+
+                Snackbar.make(it, "Pin has been deleted!",Snackbar.LENGTH_SHORT).show()
             }
         }
     }

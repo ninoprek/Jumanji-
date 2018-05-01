@@ -16,7 +16,7 @@ data class UserProfile(
         val pictureURI: String
 )
 
-class Repository {
+class UserRepository {
     companion object {
         private const val TAG = "write to database"
     }
@@ -96,5 +96,23 @@ class Repository {
                         Log.d(javaClass.simpleName, "Problem with updating the profile.")
                     }
                 })
+    }
+
+    fun userSignOut() {
+        userAuthentication.signOut()
+    }
+
+    fun userDelete() : Boolean {
+
+        val user = userAuthentication.currentUser
+        var deleted = false
+
+        user?.delete()
+                ?.addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        deleted = true
+                    }
+                }
+        return  deleted
     }
 }
