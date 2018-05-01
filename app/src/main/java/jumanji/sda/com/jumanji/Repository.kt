@@ -16,7 +16,7 @@ data class UserProfile(
         val pictureURI: String
 )
 
-class UserProfileRepository {
+class Repository {
     companion object {
         private const val TAG = "write to database"
     }

@@ -7,7 +7,7 @@ import io.reactivex.schedulers.Schedulers
 
 class ProfileViewModel : ViewModel() {
 
-    private val repository = UserProfileRepository()
+    private val repository = Repository()
     private val profile: UserProfile? = getUserProfile()
 
     val userName = profile?.userName

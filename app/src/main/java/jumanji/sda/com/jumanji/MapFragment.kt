@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import kotlinx.android.synthetic.main.fragment_map.*
+import com.google.firebase.auth.FirebaseAuth
 
 
 class MapFragment : Fragment() {
@@ -96,6 +97,12 @@ class MapFragment : Fragment() {
 
             reportFab.setOnClickListener {
                 listener?.selectImage()
+            }
+
+            updateGPSFab.setOnClickListener {
+                val user=FirebaseAuth.getInstance().currentUser
+                Snackbar.make(it, "${user?.displayName}, you are signed out", Snackbar.LENGTH_SHORT).show()
+                FirebaseAuth.getInstance().signOut()
             }
         }
     }
