@@ -27,10 +27,17 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun getUserProfile() : UserProfile? {
-        return null //repository.retrieveUserFromDatabase()
+        email?.let { return repository.retriveUserProfileFromDatabase(email) }
+        return null
     }
 
-    fun deleteUserProfile(profile: UserProfile) {}
+    fun deleteUserProfile(profile: UserProfile) {
+        //repository.deleteProfile(profile)
+    }
+
+    fun editUserProfile(){
+
+    }
 
     fun signOut(){}
 

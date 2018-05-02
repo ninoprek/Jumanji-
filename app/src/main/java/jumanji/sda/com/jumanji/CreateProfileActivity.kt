@@ -15,8 +15,7 @@ import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
-import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_profile.*
+import kotlinx.android.synthetic.main.activity_create_profile.*
 import java.io.*
 
 class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
@@ -31,7 +30,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_profile)
+        setContentView(R.layout.activity_create_profile)
 
         saveButton.isEnabled = false
         userNameField.addTextChangedListener(this)

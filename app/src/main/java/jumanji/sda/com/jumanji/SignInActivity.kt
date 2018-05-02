@@ -75,8 +75,6 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                 .addOnCompleteListener(this, { task ->
                     if (task.isSuccessful) {
                         val intent = Intent(this, ProgramActivity::class.java)
-                        // TODO add an ID or delete next line
-                        //intent.putExtra(id, autentificator.currentUser?.email)
                         startActivity(intent)
                         this.finish()
                     } else {
