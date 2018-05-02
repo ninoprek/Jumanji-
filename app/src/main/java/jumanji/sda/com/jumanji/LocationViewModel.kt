@@ -4,14 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
-import android.location.Location
+import android.content.Context
 import android.support.annotation.RequiresPermission
+import android.support.v4.app.ActivityCompat
 import android.util.Log
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.Task
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
@@ -20,27 +21,67 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         const val DEFAULT_LONGITUDE = 18.0684759
     }
 
-    private val fusedLocationProviderClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(
-            application.applicationContext)
+    private val fusedLocationProviderClient: FusedLocationProviderClient = LocationServices
+            .getFusedLocationProviderClient(application.applicationContext)
+    lateinit var locationRequest: LocationRequest
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(map: GoogleMap): Location? {
-        var lastKnownLocation: Location? = null
+    fun getLastKnownLocation(map: GoogleMap) {
         fusedLocationProviderClient.lastLocation
                 .addOnSuccessListener {
                     it?.let { location ->
                         val position = LatLng(location.latitude, location.longitude)
-                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, LocationViewModel.DEFAULT_ZOOM_LEVEL))
+                        map.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                        position,
+                                        LocationViewModel.DEFAULT_ZOOM_LEVEL))
                     }
-                    Log.d("TAG", "last location: ${it.latitude}, ${it.longitude}.")
                 }
                 .addOnFailureListener {
                     Log.d("ERROR", "something went wrong: ${it.message}.")
                 }
-        return lastKnownLocation
     }
 
+    private fun createLocationSettingRequest() {
+        locationRequest = LocationRequest().apply {
+            interval = 600000
+            fastestInterval = 60000
+            priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+        }
+    }
 
+    fun initiateUserSettingCheck(context: Context?): Task<LocationSettingsResponse>? {
+        return if (context != null) {
+            val settingsClient = LocationServices.getSettingsClient(context)
+            createLocationSettingRequest()
+            val locationSettingsRequest = LocationSettingsRequest
+                    .Builder()
+                    .addLocationRequest(locationRequest)
+                    .build()
+            settingsClient.checkLocationSettings(locationSettingsRequest)
+        } else {
+            null
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates(context: Context?, locationCallBack: LocationCallback) {
+        if (context != null) {
+            fusedLocationProviderClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallBack,
+                    null)
+        }
+    }
+
+    fun stopLocationUpdates(locationCallback: LocationCallback) {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+    }
+
+    fun flushLocations() {
+        fusedLocationProviderClient.flushLocations()
+    }
 }
 
