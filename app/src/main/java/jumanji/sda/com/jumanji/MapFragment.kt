@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.support.annotation.RequiresPermission
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
+import android.support.v4.app.ActivityCompat.startActivityForResult
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.util.Log
@@ -27,7 +28,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
+import com.google.firebase.auth.FirebaseAuth
 import jumanji.sda.com.jumanji.R.id.*
+import jumanji.sda.com.jumanji.R.string.map
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
@@ -115,6 +118,42 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
+            reportFab.setOnClickListener {
+                listener?.selectImage()
+            }
+
+            updateGPSFab.setOnClickListener {
+                val user= FirebaseAuth.getInstance().currentUser?.displayName
+                val profileViewModel = ProfileViewModel()
+                profileViewModel.signOut()
+                Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
+            }
+        reportFab.setOnClickListener {
+            selectImage()
+        }
+    }
+
+            addPin.setOnClickListener{
+                val pinViewModel: PinViewModel = PinViewModel()
+                pinViewModel.testSavePinData()
+                Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
+            }
+
+            deletePin.setOnClickListener {
+                val view  = it
+                val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+                //pinViewModel.deletePinData("1")
+                //Snackbar.make(it, "Pin has been deleted!",Snackbar.LENGTH_SHORT).show()
+
+                pinViewModel.testGetPinData()
+
+                pinViewModel.pinData?.observe(this, Observer {
+                    Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
+                })
+
+
+            }
+        }
     }
 
     override fun onResume() {
@@ -265,26 +304,4 @@ class MapFragment : Fragment(), PhotoListener {
         }
     }
 
-    inner class CameraStateManager {
-        private val mapCameraPreferences = this@MapFragment.context!!.getSharedPreferences(CAMERA_PREFERENCE, Context.MODE_PRIVATE)
-
-        fun saveMapCameraState() {
-            val cameraPosition = map.cameraPosition
-            val latitude = cameraPosition.target.latitude.toFloat()
-            val longitude = cameraPosition.target.longitude.toFloat()
-            val zoom = cameraPosition.zoom
-            val editor = mapCameraPreferences.edit()
-            editor.putFloat(LAST_KNOWN_LATITUDE, latitude)
-            editor.putFloat(LAST_KNOWN_LONGITUDE, longitude)
-            editor.putFloat(LAST_KNOWN_ZOOM, zoom)
-            editor.apply()
-        }
-
-        fun getCameraState(): CameraPosition {
-            val latitude = mapCameraPreferences.getFloat(LAST_KNOWN_LATITUDE, LocationViewModel.DEFAULT_LATITUDE.toFloat()).toDouble()
-            val longitude = mapCameraPreferences.getFloat(LAST_KNOWN_LONGITUDE, LocationViewModel.DEFAULT_LONGITUDE.toFloat()).toDouble()
-            val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM, LocationViewModel.DEFAULT_ZOOM_LEVEL)
-            return CameraPosition(LatLng(latitude, longitude), zoom, 0.0f, 0.0f)
-        }
-    }
 }
