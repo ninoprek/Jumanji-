@@ -113,10 +113,18 @@ class MapFragment : Fragment() {
             }
 
             deletePin.setOnClickListener {
-                val pinViewModel = PinViewModel()
-                pinViewModel.deletePinData("1")
+                val view  = it
+                val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+                //pinViewModel.deletePinData("1")
+                //Snackbar.make(it, "Pin has been deleted!",Snackbar.LENGTH_SHORT).show()
 
-                Snackbar.make(it, "Pin has been deleted!",Snackbar.LENGTH_SHORT).show()
+                pinViewModel.testGetPinData()
+
+                pinViewModel.pinData?.observe(this, Observer {
+                    Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
+                })
+
+
             }
         }
     }

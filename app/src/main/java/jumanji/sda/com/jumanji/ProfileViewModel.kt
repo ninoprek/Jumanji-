@@ -1,5 +1,6 @@
 package jumanji.sda.com.jumanji
 
+import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 import io.reactivex.Single
@@ -50,6 +51,7 @@ class ProfileViewModel : ViewModel() {
 
 class PinViewModel : ViewModel() {
     private val repository = PinRepository()
+    val pinData: MutableLiveData<PinData>? = repository.pinData
 
     fun testSavePinData() {
         Single.fromCallable { repository.testPinWriteFunction() }
@@ -57,7 +59,15 @@ class PinViewModel : ViewModel() {
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
 
-    fun getPinData(pinId : String) : PinData {
+    fun testGetPinData() {
+       /* Single.fromCallable { repository.testGetPinFromDatabase(view) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()*/
+
+        repository.testGetPinFromDatabase()
+    }
+
+    fun getPinData(pinId : String) {
 
         return repository.getPinFromDatabase(pinId)
     }
