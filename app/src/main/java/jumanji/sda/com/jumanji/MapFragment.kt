@@ -2,6 +2,7 @@ package jumanji.sda.com.jumanji
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
@@ -16,19 +17,16 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.util.Log
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import jumanji.sda.com.jumanji.R.id.*
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
@@ -68,7 +66,7 @@ class MapFragment : Fragment(), PhotoListener {
             map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
             enableMyLocationLayer(locationViewModel)
 
-            map.setOnMyLocationButtonClickListener{
+            map.setOnMyLocationButtonClickListener {
                 map = it
                 locationViewModel.getLastKnownLocation(map)
                 true
@@ -189,22 +187,24 @@ class MapFragment : Fragment(), PhotoListener {
         Log.d("TAG", "in fragment, request code :  $requestCode")
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
-                if (resultCode == PackageManager.PERMISSION_GRANTED) {
+                if (resultCode == Activity.RESULT_OK) {
 
                 }
             }
 
             SELECT_FILE_CODE -> {
-                if (resultCode == PackageManager.PERMISSION_GRANTED) {
-                    val uri = data?.data
-
-                    val cursor = this@MapFragment.context!!.contentResolver.query(
-                            uri,
-                            null,
-                            null,
-                            null,
-                            null)
-                    Log.d("TAG", "${cursor.getColumnName(2)}")
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data != null) {
+                        val position = getLatLngFromPhoto(data)
+                        if (position.latitude == 0.0 && position.longitude == 0.0) {
+                            //TODO action if no location in photo
+                            Toast.makeText(this@MapFragment.context,
+                                    "No position available from photo",
+                                    Toast.LENGTH_SHORT).show()
+                        } else {
+                            Log.d("TAG", "lat lng of photo : $position")
+                        }
+                    }
                 }
             }
         }
@@ -242,6 +242,30 @@ class MapFragment : Fragment(), PhotoListener {
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT//
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE_CODE)
+    }
+
+    private fun getLatLngFromPhoto(data: Intent): LatLng {
+        val uri = data.data
+        var cursor = this@MapFragment.context!!.contentResolver.query(
+                uri,
+                null,
+                null,
+                null,
+                null)
+        cursor.moveToFirst()
+        val columnIndexOfDisplayName = 2
+        val fileName = cursor.getString(columnIndexOfDisplayName)
+        cursor.close()
+        val selection = "${MediaStore.Images.ImageColumns.DISPLAY_NAME}='$fileName'"
+        cursor = this@MapFragment.context!!.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Images.Media.LATITUDE,
+                        MediaStore.Images.Media.LONGITUDE),
+                selection,
+                null,
+                null)
+        cursor.moveToFirst()
+        return LatLng(cursor.getDouble(0), cursor.getDouble(1))
     }
 
     class GoogleMapAdapter {
