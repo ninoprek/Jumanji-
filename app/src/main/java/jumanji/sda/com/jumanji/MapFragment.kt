@@ -2,10 +2,10 @@ package jumanji.sda.com.jumanji
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -20,6 +20,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
@@ -46,6 +49,9 @@ class MapFragment : Fragment(), PhotoListener {
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
 
+    private lateinit var locationCallback: LocationCallback
+    private lateinit var currentLocation: LatLng
+
     var userChoosenTask: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -59,6 +65,8 @@ class MapFragment : Fragment(), PhotoListener {
 
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
+
+        checkUserLocationSetting()
 
         mapView.getMapAsync {
             map = it
@@ -143,10 +151,6 @@ class MapFragment : Fragment(), PhotoListener {
                 Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
             })
         }
-
-        reportFab.setOnClickListener {
-            selectImage()
-        }
     }
 
     override fun onResume() {
@@ -157,6 +161,9 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onPause() {
         super.onPause()
         mapView.onPause()
+        if (this::locationCallback.isInitialized) {
+            locationViewModel.stopLocationUpdates(locationCallback)
+        }
     }
 
     override fun onStop() {
@@ -178,6 +185,33 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         mapView.onSaveInstanceState(outState)
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    @SuppressLint("MissingPermission")
+    private fun checkUserLocationSetting() {
+        locationViewModel.initiateUserSettingCheck(this@MapFragment.context)
+                ?.addOnCompleteListener { task ->
+                    try {
+                        locationCallback = object : LocationCallback() {
+                            override fun onLocationResult(locationResult: LocationResult?) {
+                                val location = locationResult?.locations?.get(0)
+                                if (location != null) {
+                                    currentLocation = LatLng(location.latitude, location.longitude)
+                                }
+                            }
+                        }
+                        locationViewModel.startLocationUpdates(this.context, locationCallback)
+                    } catch (e: ApiException) {
+                        this@MapFragment.view?.let { view ->
+                            Snackbar.make(view,
+                                    "You have probably forget to on GPS or in airplane mode.",
+                                    Snackbar.LENGTH_LONG)
+                                    .show()
+                        }
+                        Log.d("TAG", "something went wrong in user setting check: ${e.message}")
+                    }
+                }
     }
 
     private fun enableMyLocationLayer(viewModel: LocationViewModel) {
@@ -204,49 +238,47 @@ class MapFragment : Fragment(), PhotoListener {
                 }
             }
 
-            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE -> if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (userChoosenTask.equals("Take Photo"))
-                    cameraIntent()
-                else if (userChoosenTask.equals("Choose from Library"))
-                    galleryIntent()
-            } else {
-                //code for deny
-            }
+            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (userChoosenTask.equals("Take Photo"))
+                        cameraIntent()
+                    else if (userChoosenTask.equals("Choose from Library"))
+                        galleryIntent()
+                } else {
+                    //code for deny
+                }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d("TAG", "in fragment, request code :  $requestCode")
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
-                if (resultCode == PackageManager.PERMISSION_GRANTED) {
-
+                if (resultCode == Activity.RESULT_OK) {
+                    currentLocation
                 }
             }
 
             SELECT_FILE_CODE -> {
-                if (resultCode == PackageManager.PERMISSION_GRANTED) {
-                    val uri = data?.data
-
-                    val cursor = this@MapFragment.context!!.contentResolver.query(
-                            uri,
-                            null,
-                            null,
-                            null,
-                            null)
-                    Log.d("TAG", "${cursor.getColumnName(2)}")
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    val position = getLatLngFromPhoto(data)
+                    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                        Toast.makeText(this@MapFragment.context,
+                                "No position available from photo",
+                                Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.d("TAG", "lat lng of photo : $position")
+                    }
                 }
             }
         }
     }
 
     override fun selectImage() {
-        Log.d("TAG", "select image")
-        val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
+        val items = arrayOf("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@MapFragment.context!!)
         builder.setTitle("Add Photo!")
-        builder.setItems(items, DialogInterface.OnClickListener { dialog, item ->
+        builder.setItems(items, { dialog, item ->
             val result = Utility.checkPermission(this@MapFragment.context!!)
             if (items[item] == "Take Photo") {
                 userChoosenTask = "Take Photo"
@@ -264,6 +296,7 @@ class MapFragment : Fragment(), PhotoListener {
     }
 
     private fun cameraIntent() {
+        locationViewModel.flushLocations()
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         startActivityForResult(intent, REQUEST_CAMERA_CODE)
     }
@@ -273,6 +306,30 @@ class MapFragment : Fragment(), PhotoListener {
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT//
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE_CODE)
+    }
+
+    private fun getLatLngFromPhoto(data: Intent): LatLng {
+        val uri = data.data
+        var cursor = this@MapFragment.context!!.contentResolver.query(
+                uri,
+                null,
+                null,
+                null,
+                null)
+        cursor.moveToFirst()
+        val columnIndexOfDisplayName = 2
+        val fileName = cursor.getString(columnIndexOfDisplayName)
+        cursor.close()
+        val selection = "${MediaStore.Images.ImageColumns.DISPLAY_NAME}='$fileName'"
+        cursor = this@MapFragment.context!!.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Images.Media.LATITUDE,
+                        MediaStore.Images.Media.LONGITUDE),
+                selection,
+                null,
+                null)
+        cursor.moveToFirst()
+        return LatLng(cursor.getDouble(0), cursor.getDouble(1))
     }
 
     class GoogleMapAdapter {
@@ -298,7 +355,9 @@ class MapFragment : Fragment(), PhotoListener {
     }
 
     inner class CameraStateManager {
-        private val mapCameraPreferences = this@MapFragment.context!!.getSharedPreferences(CAMERA_PREFERENCE, Context.MODE_PRIVATE)
+        private val mapCameraPreferences = this@MapFragment.context!!.getSharedPreferences(
+                CAMERA_PREFERENCE,
+                Context.MODE_PRIVATE)
 
         fun saveMapCameraState() {
             val cameraPosition = map.cameraPosition
@@ -313,9 +372,16 @@ class MapFragment : Fragment(), PhotoListener {
         }
 
         fun getCameraState(): CameraPosition {
-            val latitude = mapCameraPreferences.getFloat(LAST_KNOWN_LATITUDE, LocationViewModel.DEFAULT_LATITUDE.toFloat()).toDouble()
-            val longitude = mapCameraPreferences.getFloat(LAST_KNOWN_LONGITUDE, LocationViewModel.DEFAULT_LONGITUDE.toFloat()).toDouble()
-            val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM, LocationViewModel.DEFAULT_ZOOM_LEVEL)
+            val latitude = mapCameraPreferences.getFloat(
+                    LAST_KNOWN_LATITUDE,
+                    LocationViewModel.DEFAULT_LATITUDE.toFloat())
+                    .toDouble()
+            val longitude = mapCameraPreferences.getFloat(
+                    LAST_KNOWN_LONGITUDE,
+                    LocationViewModel.DEFAULT_LONGITUDE.toFloat())
+                    .toDouble()
+            val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM,
+                    LocationViewModel.DEFAULT_ZOOM_LEVEL)
             return CameraPosition(LatLng(latitude, longitude), zoom, 0.0f, 0.0f)
         }
     }

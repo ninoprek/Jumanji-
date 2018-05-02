@@ -130,7 +130,6 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-
         }
 
         profilePhoto.setImageBitmap(bm)
