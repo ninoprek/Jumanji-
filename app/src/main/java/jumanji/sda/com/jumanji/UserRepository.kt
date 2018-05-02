@@ -65,7 +65,7 @@ class UserRepository {
 
     fun createNewUser(userProfile: UserProfile) {
         userAuthentication.createUserWithEmailAndPassword(userProfile.email,userProfile.password)
-                .addOnCompleteListener(OnCompleteListener { task ->
+                .addOnCompleteListener({ task ->
 
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
