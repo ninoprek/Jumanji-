@@ -6,7 +6,6 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
@@ -154,10 +153,19 @@ class MapFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-            enableMyLocationLayer(locationViewModel)
-        } else {
-            Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+        when (requestCode) {
+            LOCATION_REQUEST_CODE -> {
+                if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+                    enableMyLocationLayer(locationViewModel)
+                } else {
+                    Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            ProgramActivity.REQUEST_CAMERA -> {}
+
+            ProgramActivity.SELECT_FILE -> {}
+
         }
     }
 
