@@ -168,4 +168,6 @@ class MapFragment : Fragment() {
             return map!!.projection.visibleRegion.latLngBounds
         }
     }
+
+
 }
