@@ -9,6 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.fragment_profile.*
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+
+
 
 class ProfileFragment : Fragment() {
 
@@ -29,7 +33,14 @@ class ProfileFragment : Fragment() {
             val user = FirebaseAuth.getInstance().currentUser?.displayName
             val profileViewModel = ProfileViewModel()
             profileViewModel.signOut()
-            Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
+
+            if (user != null) {
+                Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
+            } else {
+
+                val userName = GoogleSignIn.getLastSignedInAccount(activity)?.displayName
+                Snackbar.make(it, "${userName}, you are signed out", Snackbar.LENGTH_SHORT).show()
+            }
         }
     }
 }
