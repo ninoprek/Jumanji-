@@ -14,10 +14,9 @@ import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity(), PhotoListener {
-
     companion object {
-        private const val REQUEST_CAMERA = 100
-        private const val SELECT_FILE = 200
+        const val REQUEST_CAMERA = 100
+        const val SELECT_FILE = 200
     }
 
     var userChoosenTask: String = ""
