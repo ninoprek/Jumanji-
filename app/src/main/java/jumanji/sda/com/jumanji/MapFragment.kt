@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.annotation.RequiresPermission
@@ -26,7 +27,13 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.fragment_map.*
+import java.io.File
 
 
 class MapFragment : Fragment(), PhotoListener {
@@ -180,13 +187,34 @@ class MapFragment : Fragment(), PhotoListener {
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == PackageManager.PERMISSION_GRANTED) {
-
+                    //should call the same function as SELECT_FILE_CODE
                 }
             }
 
             SELECT_FILE_CODE -> {
-                if (resultCode == PackageManager.PERMISSION_GRANTED) {
-                    val uri = data?.data
+                //TODO!
+                //Put the following code in a function.
+                //Decide where to put the function.
+                //if (resultCode == PackageManager.PERMISSION_GRANTED) {
+                val uri = data?.data
+                val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("photo")
+
+                //val file = Uri.fromFile(File("file:///Users/tmp-sda-1164/Downloads/jumanji.jpg"))
+                val riversRef = mStorageRef.child("images/$uri")
+
+                if (uri != null) {
+                    riversRef.putFile(uri)
+                            .addOnSuccessListener(OnSuccessListener<UploadTask.TaskSnapshot> { taskSnapshot ->
+                                // Get a URL to the uploaded content
+                                val downloadUrl = taskSnapshot.downloadUrl
+                                Log.d("SUCCESS", "Able  to upload")
+                            })
+                            .addOnFailureListener(OnFailureListener {
+                                // Handle unsuccessful uploads
+                                // ...
+                                Log.d("ERROR", "Unable to upload")
+                            })
+
 
                     val cursor = this@MapFragment.context!!.contentResolver.query(
                             uri,
@@ -195,6 +223,10 @@ class MapFragment : Fragment(), PhotoListener {
                             null,
                             null)
                     Log.d("TAG", "${cursor.getColumnName(2)}")
+                    //}
+
+                } else {
+                    Log.d("TAG", "URI is NULL")
                 }
             }
         }
