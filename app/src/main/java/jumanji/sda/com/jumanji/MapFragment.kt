@@ -10,10 +10,12 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
@@ -48,6 +50,7 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
@@ -60,8 +63,11 @@ class MapFragment : Fragment() {
             val cameraState = mapPreference.getCameraState()
             map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
             enableMyLocationLayer(locationViewModel)
-            map.setOnMapLoadedCallback {
 
+            map.setOnMyLocationButtonClickListener{
+                map = it
+                locationViewModel.getLastKnownLocation(map)
+                true
             }
 
             val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
