@@ -1,13 +1,9 @@
 package jumanji.sda.com.jumanji
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
-import com.google.android.gms.flags.impl.SharedPreferencesFactory.getSharedPreferences
 import com.google.firebase.auth.FirebaseAuth
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers

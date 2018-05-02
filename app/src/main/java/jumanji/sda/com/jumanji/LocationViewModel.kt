@@ -9,10 +9,9 @@ import android.support.annotation.RequiresPermission
 import android.util.Log
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-
-interface OnLastLocationWatcher {
-    fun onLastLocationReadyCallBack(location: Location)
-}
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLng
 
 class LocationViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
@@ -26,11 +25,14 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(listener: OnLastLocationWatcher): Location? {
+    fun getLastKnownLocation(map: GoogleMap): Location? {
         var lastKnownLocation: Location? = null
         fusedLocationProviderClient.lastLocation
                 .addOnSuccessListener {
-                    it?.let { listener.onLastLocationReadyCallBack(it) }
+                    it?.let { location ->
+                        val position = LatLng(location.latitude, location.longitude)
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, LocationViewModel.DEFAULT_ZOOM_LEVEL))
+                    }
                     Log.d("TAG", "last location: ${it.latitude}, ${it.longitude}.")
                 }
                 .addOnFailureListener {

@@ -5,32 +5,42 @@ import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
+import android.provider.MediaStore
+import android.support.annotation.RequiresPermission
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
+import android.util.Log
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
+import jumanji.sda.com.jumanji.R.id.*
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
-class MapFragment : Fragment(), OnLastLocationWatcher {
+class MapFragment : Fragment(), PhotoListener {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
         private const val LAST_KNOWN_LATITUDE = "last_known_latitude"
         private const val CAMERA_PREFERENCE = "camera_preference"
         private const val LOCATION_REQUEST_CODE = 300
+        private const val REQUEST_CAMERA_CODE = 100
+        private const val SELECT_FILE_CODE = 200
     }
 
     private lateinit var mapPreference: CameraStateManager
@@ -38,17 +48,13 @@ class MapFragment : Fragment(), OnLastLocationWatcher {
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
 
-    private var listener: PhotoListener? = null
-
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        if (context is PhotoListener) listener = context
-    }
+    var userChoosenTask: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
@@ -61,8 +67,11 @@ class MapFragment : Fragment(), OnLastLocationWatcher {
             val cameraState = mapPreference.getCameraState()
             map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
             enableMyLocationLayer(locationViewModel)
-            map.setOnMapLoadedCallback {
 
+            map.setOnMyLocationButtonClickListener{
+                map = it
+                locationViewModel.getLastKnownLocation(map)
+                true
             }
 
             val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
@@ -100,7 +109,7 @@ class MapFragment : Fragment(), OnLastLocationWatcher {
         }
 
         reportFab.setOnClickListener {
-            listener?.selectImage()
+            selectImage()
         }
     }
 
@@ -148,22 +157,91 @@ class MapFragment : Fragment(), OnLastLocationWatcher {
             requestPermissions(permission, LOCATION_REQUEST_CODE)
         } else {
             map.isMyLocationEnabled = true
-            viewModel.getLastKnownLocation(this@MapFragment)
+            viewModel.getLastKnownLocation(map)
         }
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-            enableMyLocationLayer(locationViewModel)
-        } else {
-            Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+        when (requestCode) {
+            LOCATION_REQUEST_CODE -> {
+                if (grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+                    enableMyLocationLayer(locationViewModel)
+                } else {
+                    Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE -> if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (userChoosenTask.equals("Take Photo"))
+                    cameraIntent()
+                else if (userChoosenTask.equals("Choose from Library"))
+                    galleryIntent()
+            } else {
+                //code for deny
+            }
         }
     }
 
-    override fun onLastLocationReadyCallBack(location: Location) {
-        val position = LatLng(location.latitude, location.longitude)
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, LocationViewModel.DEFAULT_ZOOM_LEVEL))
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("TAG", "in fragment, request code :  $requestCode")
+        when (requestCode) {
+            REQUEST_CAMERA_CODE -> {
+                if (resultCode == PackageManager.PERMISSION_GRANTED) {
+
+                }
+            }
+
+            SELECT_FILE_CODE -> {
+                if (resultCode == PackageManager.PERMISSION_GRANTED) {
+                    val uri = data?.data
+
+                    val cursor = this@MapFragment.context!!.contentResolver.query(
+                            uri,
+                            null,
+                            null,
+                            null,
+                            null)
+                    Log.d("TAG", "${cursor.getColumnName(2)}")
+                }
+            }
+        }
+    }
+
+    override fun selectImage() {
+        Log.d("TAG", "select image")
+        val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
+        val builder = AlertDialog.Builder(this@MapFragment.context!!)
+        builder.setTitle("Add Photo!")
+        builder.setItems(items, DialogInterface.OnClickListener { dialog, item ->
+            val result = Utility.checkPermission(this@MapFragment.context!!)
+            if (items[item] == "Take Photo") {
+                userChoosenTask = "Take Photo"
+                if (result)
+                    cameraIntent()
+            } else if (items[item] == "Choose from Library") {
+                userChoosenTask = "Choose from Library"
+                if (result)
+                    galleryIntent()
+            } else if (items[item] == "Cancel") {
+                dialog.dismiss()
+            }
+        })
+        builder.show()
+    }
+
+    private fun cameraIntent() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(intent, REQUEST_CAMERA_CODE)
+    }
+
+    private fun galleryIntent() {
+        val intent = Intent()
+        intent.type = "image/*"
+        intent.action = Intent.ACTION_GET_CONTENT//
+        startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE_CODE)
     }
 
     class GoogleMapAdapter {
