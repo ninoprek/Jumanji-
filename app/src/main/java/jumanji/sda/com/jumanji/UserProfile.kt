@@ -16,14 +16,13 @@ data class UserProfile(
         val pictureURI: String
 )
 
-class UserProfileRepository {
+class UserRepository {
     companion object {
         private const val TAG = "write to database"
     }
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
-
 
     fun storeToDatabase(userProfile: UserProfile) {
 
@@ -65,8 +64,7 @@ class UserProfileRepository {
 
     fun createNewUser(userProfile: UserProfile) {
         userAuthentication.createUserWithEmailAndPassword(userProfile.email,userProfile.password)
-                .addOnCompleteListener(OnCompleteListener { task ->
-
+                .addOnCompleteListener({ task ->
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "createUserWithEmail:success")
@@ -89,12 +87,30 @@ class UserProfileRepository {
                 .build()
 
         user?.updateProfile(profileUpdates)
-                ?.addOnCompleteListener(OnCompleteListener { task ->
+                ?.addOnCompleteListener( { task ->
                     if (task.isSuccessful) {
                         Log.d(javaClass.simpleName, "User profile is updated.")
                     } else {
                         Log.d(javaClass.simpleName, "Problem with updating the profile.")
                     }
                 })
+    }
+
+    fun userSignOut() {
+        userAuthentication.signOut()
+    }
+
+    fun userDelete() : Boolean {
+
+        val user = userAuthentication.currentUser
+        var deleted = false
+
+        user?.delete()
+                ?.addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        deleted = true
+                    }
+                }
+        return  deleted
     }
 }
