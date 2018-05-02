@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/profilePhotoView"
+        android:layout_width="148dp"
+        android:layout_height="148dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/download" />
+
+    <ImageView
+        android:id="@+id/badgeView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/profilePhotoView"
+        android:layout_alignTop="@+id/profilePhotoView"
+        android:layout_marginStart="88dp"
+        android:layout_marginTop="88dp"
+        app:layout_constraintStart_toStartOf="@+id/profilePhotoView"
+        app:layout_constraintTop_toTopOf="@+id/profilePhotoView"
+        app:srcCompat="@mipmap/jumanji_launcher" />
+
+    <TextView
+        android:id="@+id/usernameText"
+        android:layout_width="181dp"
+        android:layout_height="51dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toEndOf="@+id/profilePhotoView"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="User Name" />
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/userActivityMapView"
+        android:layout_width="157dp"
+        android:layout_height="120dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="66dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/userActivityTextView"
+        app:layout_constraintTop_toBottomOf="@+id/yourActivityText" />
+
+    <TextView
+        android:id="@+id/userActivityTextView"
+        android:layout_width="137dp"
+        android:layout_height="122dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="66dp"
+        android:text="You are in the top 16%"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toStartOf="@+id/userActivityMapView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/yourActivityText"
+        tools:text="top 16%" />
+
+    <TextView
+        android:id="@+id/yourActivityText"
+        android:layout_width="357dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="64dp"
+        android:text="Your activity:"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profilePhotoView" />
+
+</android.support.constraint.ConstraintLayout>

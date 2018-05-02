@@ -42,7 +42,7 @@ class ProgramActivity : AppCompatActivity(),PhotoListener {
             return when (position) {
 
 //                1 -> CommunityFragment()
-//                2 -> ProfileFragment()
+                2 -> ProfileFragment()
 
                 else -> MapFragment()
             }
