@@ -24,7 +24,7 @@ import com.google.android.gms.maps.model.Marker
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
-class MapFragment : Fragment(), OnLastLocationWatcher {
+class MapFragment : Fragment() {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -148,7 +148,7 @@ class MapFragment : Fragment(), OnLastLocationWatcher {
             requestPermissions(permission, LOCATION_REQUEST_CODE)
         } else {
             map.isMyLocationEnabled = true
-            viewModel.getLastKnownLocation(this@MapFragment)
+            viewModel.getLastKnownLocation(map)
         }
     }
 
@@ -159,11 +159,6 @@ class MapFragment : Fragment(), OnLastLocationWatcher {
         } else {
             Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    override fun onLastLocationReadyCallBack(location: Location) {
-        val position = LatLng(location.latitude, location.longitude)
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, LocationViewModel.DEFAULT_ZOOM_LEVEL))
     }
 
     class GoogleMapAdapter {
