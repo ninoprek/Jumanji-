@@ -5,11 +5,14 @@ import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.annotation.RequiresPermission
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.content.PermissionChecker
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -151,21 +154,34 @@ class MapFragment : Fragment() {
         }
     }
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
-                if (requestCode == LOCATION_REQUEST_CODE && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+                if (grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
                     enableMyLocationLayer(locationViewModel)
                 } else {
                     Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
 
-            ProgramActivity.REQUEST_CAMERA -> {}
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when(requestCode) {
+            ProgramActivity.REQUEST_CAMERA -> {
+                if (resultCode == PackageManager.PERMISSION_GRANTED) {
 
-            ProgramActivity.SELECT_FILE -> {}
+                }
+            }
 
+            ProgramActivity.SELECT_FILE -> {
+                if (resultCode == PackageManager.PERMISSION_GRANTED) {
+                    val uri = data?.data
+                }
+            }
         }
     }
 
