@@ -30,7 +30,7 @@ class TrashLocationViewModel : ViewModel() {
 
     private val factorToExpandLatLngBoundsForQuery = 0.21
     private lateinit var previousViewForQuery: LatLngBounds
-    private var previousCameraZoom: Float = MapFragment.DEFAULT_ZOOM_LEVEL
+    private var previousCameraZoom: Float = LocationViewModel.DEFAULT_ZOOM_LEVEL
 
     private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds): LatLngBounds {
         val boundsForQuery = latLngBounds.including(LatLng(
