@@ -50,7 +50,7 @@ class ProfileFragment : Fragment() {
             if (user != null) {
                 Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
             } else {
-                val userName = GoogleSignIn.getLastSignedInAccount(activity)?.displayName
+                val userName = GoogleSignIn.getLastSignedInAccount(activity)?.givenName
                 Snackbar.make(it, "${userName}, you are signed out", Snackbar.LENGTH_SHORT).show()
             }
         }
