@@ -1,5 +1,6 @@
 package jumanji.sda.com.jumanji
 
+import android.app.Application
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.net.Uri
@@ -18,14 +19,13 @@ data class UserProfile(
         val pictureURI: String = ""
 )
 
-class UserRepository {
+class UserRepository (context: Context) {
     companion object {
         private const val TAG = "write to database"
     }
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
-
     val userInfo: MutableLiveData<UserProfile> = MutableLiveData()
 
     fun storeToDatabase(userProfile: UserProfile) {

@@ -1,5 +1,7 @@
 package jumanji.sda.com.jumanji
 
+import android.app.Application
+import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.content.Context
@@ -8,9 +10,9 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel (application: Application) : AndroidViewModel(application) {
 
-    private val repository = UserRepository()
+    private val repository = UserRepository(application)
     private val profile: UserProfile? = getUserProfile()
 
     val userInfo: MutableLiveData<UserProfile>? = repository.userInfo

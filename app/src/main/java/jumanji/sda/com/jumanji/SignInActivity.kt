@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
 class SignInActivity : AppCompatActivity(), TextWatcher {
-    val profileViewModel = ProfileViewModel()
+    //val profileViewModel = ProfileViewModel()
     var userName = ""
     var email = ""
     var uriString = ""

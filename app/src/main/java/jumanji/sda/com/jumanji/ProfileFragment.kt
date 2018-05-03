@@ -42,7 +42,9 @@ class ProfileFragment : Fragment() {
 
         signOutButton.setOnClickListener {
             val user = FirebaseAuth.getInstance().currentUser?.displayName
+
             val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+
             profileViewModel.signOut()
 
             if (user != null) {
