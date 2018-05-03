@@ -2,6 +2,7 @@ package jumanji.sda.com.jumanji
 
 import android.arch.lifecycle.MutableLiveData
 import android.util.Log
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -15,7 +16,7 @@ class PinRepository {
     private val database = FirebaseFirestore.getInstance()
     var pinData: MutableLiveData<PinData> = MutableLiveData()
 
-    fun storePinToDatabase(pinData: PinData) {
+    fun storePinToDatabase(pinData: PinData, user: String) {
 
         val pinInfo: HashMap<String, Any> = HashMap()
         pinInfo.put("longitude", pinData.longitude)
@@ -23,7 +24,7 @@ class PinRepository {
         pinInfo.put("imageURL", pinData.imageURL)
         pinInfo.put("pinId", pinData.pinId)
 
-        database.collection(FirebaseAuth.getInstance().currentUser?.displayName.toString()).document(pinData.pinId)
+        database.collection(user).document(pinData.pinId)
                 .set(pinInfo)
     }
 
@@ -63,16 +64,16 @@ class PinRepository {
          }
     }
 
-    fun testPinWriteFunction() {
+    fun testPinWriteFunction(user: String) {
         val pin1 = PinData(59.522433, 17.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "1")
         val pin2 = PinData(60.522433, 18.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "2")
-        storePinToDatabase(pin1)
-        storePinToDatabase(pin2)
+        storePinToDatabase(pin1, user)
+        storePinToDatabase(pin2, user)
 
         val pin3 = PinData(61.522433, 19.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
         val pin4 = PinData(62.522433, 20.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
-        storePinToDatabase(pin3)
-        storePinToDatabase(pin4)
+        storePinToDatabase(pin3, user)
+        storePinToDatabase(pin4, user)
     }
 
     fun testGetPinFromDatabase(){

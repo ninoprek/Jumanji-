@@ -23,12 +23,14 @@ import android.widget.Toast
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
@@ -131,24 +133,24 @@ class MapFragment : Fragment(), PhotoListener {
             selectImage()
         }
 
-        /*  updateGPSFab.setOnClickListener {
-              val user = FirebaseAuth.getInstance().currentUser?.displayName
-              val profileViewModel = ProfileViewModel()
-              profileViewModel.signOut()
-              Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
-          }*/
-
         addPin.setOnClickListener {
             val pinViewModel: PinViewModel = PinViewModel()
-            pinViewModel.testSavePinData()
+            var user: String
+
+            if (FirebaseAuth.getInstance().currentUser?.displayName != null) {
+                user = FirebaseAuth.getInstance().currentUser?.displayName.toString()
+            } else {
+                user = GoogleSignIn.getLastSignedInAccount(activity)?.displayName.toString()
+            }
+
+            pinViewModel.testSavePinData(user)
             Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
             val view = it
+
             val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
-            //pinViewModel.deletePinData("1")
-            //Snackbar.make(it, "Pin has been deleted!",Snackbar.LENGTH_SHORT).show()
 
             pinViewModel.testGetPinData()
 

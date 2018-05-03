@@ -1,19 +1,21 @@
 package jumanji.sda.com.jumanji
 
+import android.arch.lifecycle.MutableLiveData
+import android.content.Context
 import android.net.Uri
 import android.util.Log
-import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.UserProfileChangeRequest
+import java.util.*
 
 
 data class UserProfile(
-        val userName: String,
-        val password: String,
-        val email: String,
-        val pictureURI: String
+        val userName: String = "",
+        val password: String = "",
+        val email: String = "",
+        val pictureURI: String = ""
 )
 
 class UserRepository {
@@ -23,6 +25,8 @@ class UserRepository {
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
+
+    val userInfo: MutableLiveData<UserProfile> = MutableLiveData()
 
     fun storeToDatabase(userProfile: UserProfile) {
 
@@ -38,28 +42,21 @@ class UserRepository {
                 .set(user)
     }
 
-    fun retriveUserProfileFromDatabase(email: String): UserProfile? {
+    fun getUserInformation(context: Context) {
+        if (userAuthentication.currentUser?.displayName != null) {
+            userInfo.value = UserProfile(userAuthentication.currentUser?.displayName.toString(),
+                    "",
+                    userAuthentication.currentUser?.email.toString(),
+                    userAuthentication.currentUser?.photoUrl.toString())
+        } else {
 
-        var userProfile: UserProfile? = null
-        val documentReference = database.collection("userProfiles").document(email)
+            val acct = GoogleSignIn.getLastSignedInAccount(context)
 
-        documentReference.get().addOnCompleteListener(OnCompleteListener<DocumentSnapshot> { task ->
-            if (task.isSuccessful) {
-                val document = task.result
-                if (document.exists()) {
-                    Log.d(TAG, "DocumentSnapshot data: " + document.data!!)
-
-                    userProfile = UserProfile(document.data!!["userName"].toString(), document.data!!["password"].toString()
-                            , document.data!!["email"].toString(),
-                            document.data!!["pictureURI"].toString())
-                } else {
-                    Log.d(TAG, "No such document")
-                }
-            } else {
-                Log.d(TAG, "get failed with ", task.exception)
-            }
-        })
-        return userProfile
+            userInfo.value = UserProfile(acct?.displayName.toString(),
+                    "",
+                    acct?.email.toString(),
+                    acct?.photoUrl.toString())
+        }
     }
 
     fun createNewUser(userProfile: UserProfile) {
