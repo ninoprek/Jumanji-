@@ -26,10 +26,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.fragment_map.*
 
@@ -129,9 +126,6 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
-        reportFab.setOnClickListener {
-            selectImage()
-        }
 
         addPin.setOnClickListener {
             val pinViewModel: PinViewModel = PinViewModel()
@@ -266,6 +260,8 @@ class MapFragment : Fragment(), PhotoListener {
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
+                    //TODO for presentation only
+                    map.addMarker(MarkerOptions().position(currentLocation).visible(true))
                     currentLocation
                 }
             }
