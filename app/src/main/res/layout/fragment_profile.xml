@@ -35,6 +35,7 @@
         android:layout_height="51dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:text="User Name"
         android:textSize="18sp"
         app:layout_constraintStart_toEndOf="@+id/profilePhotoView"
         app:layout_constraintTop_toTopOf="parent"
@@ -83,14 +84,17 @@
         android:id="@+id/signOutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="16dp"
         android:text="Sign Out"
-        tools:layout_editor_absoluteX="239dp"
-        tools:layout_editor_absoluteY="469dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userActivityMapView" />
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="4dp"
         app:layout_constraintBottom_toBottomOf="@+id/userActivityMapView"
         app:layout_constraintEnd_toStartOf="@+id/userActivityMapView"
@@ -102,8 +106,10 @@
         android:id="@+id/menuButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
         android:text="menu"
-        tools:layout_editor_absoluteX="256dp"
-        tools:layout_editor_absoluteY="78dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/usernameText" />
 
 </android.support.constraint.ConstraintLayout>
