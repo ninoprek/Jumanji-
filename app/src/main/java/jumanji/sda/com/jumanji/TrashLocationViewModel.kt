@@ -41,27 +41,28 @@ class TrashLocationViewModel : ViewModel() {
                 boundsForQuery.northeast.longitude + factorToExpandLatLngBoundsForQuery))
     }
 
-    fun loadLocations(latLngBounds: LatLngBounds, isRefresh: Boolean) {
-        val latLngBoundsForQuery = getLatLngBoundsForQuery(latLngBounds)
-        if (isRefresh) {
-            map.clear()
-            previousCameraZoom = map.cameraPosition.zoom
-            previousViewForQuery = latLngBoundsForQuery
-            loadTrashLocations(latLngBoundsForQuery)
-            loadTrashFreeLocations(latLngBoundsForQuery)
-        } else {
-            if (!this::previousViewForQuery.isInitialized ||
-                    abs(previousViewForQuery.center.latitude -
-                            latLngBoundsForQuery.center.latitude) > factorToExpandLatLngBoundsForQuery ||
-                    previousCameraZoom > map.cameraPosition.zoom) {
+    fun loadLocations(latLngBounds: LatLngBounds?, isRefresh: Boolean) {
+        if (latLngBounds != null) {
+            val latLngBoundsForQuery = getLatLngBoundsForQuery(latLngBounds)
+            if (isRefresh) {
                 map.clear()
                 previousCameraZoom = map.cameraPosition.zoom
                 previousViewForQuery = latLngBoundsForQuery
                 loadTrashLocations(latLngBoundsForQuery)
                 loadTrashFreeLocations(latLngBoundsForQuery)
+            } else {
+                if (!this::previousViewForQuery.isInitialized ||
+                        abs(previousViewForQuery.center.latitude -
+                                latLngBoundsForQuery.center.latitude) > factorToExpandLatLngBoundsForQuery ||
+                        previousCameraZoom > map.cameraPosition.zoom) {
+                    map.clear()
+                    previousCameraZoom = map.cameraPosition.zoom
+                    previousViewForQuery = latLngBoundsForQuery
+                    loadTrashLocations(latLngBoundsForQuery)
+                    loadTrashFreeLocations(latLngBoundsForQuery)
+                }
             }
         }
-
     }
 
     private fun loadTrashLocations(latLngBounds: LatLngBounds) {

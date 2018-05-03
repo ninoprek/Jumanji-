@@ -24,6 +24,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
         private const val REQUEST_CAMERA = 100
         private const val SELECT_FILE = 200
     }
+
     var userChoosenTask: String = ""
 
     private var uriString = ""
@@ -64,7 +65,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
         })
     }
 
-    override fun selectImage()  {
+    override fun selectImage() {
         val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@CreateProfileActivity)
         builder.setTitle("Add Photo!")
@@ -164,9 +165,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
                 emailField.text.isNotEmpty()) {
             saveButton.isEnabled = true
         } else {
-            if (passwordField.text.toString() != confirmPasswordField.text.toString() &&
-                    passwordField.text.isNotEmpty() &&
-                    confirmPasswordField.text.isNotEmpty()) {
+            if (passwordField.text.length == confirmPasswordField.text.length &&
+                    passwordField.text.toString() != confirmPasswordField.text.toString()) {
                 Toast.makeText(this,
                         "Password doesn't match.",
                         Toast.LENGTH_SHORT)
