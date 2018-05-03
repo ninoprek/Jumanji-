@@ -162,7 +162,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
                 passwordField.text.isNotEmpty() &&
                 confirmPasswordField.text.isNotEmpty() &&
                 passwordField.text.toString() == confirmPasswordField.text.toString() &&
-                emailField.text.isNotEmpty()) {
+                emailField.text.contains("@")) {
             saveButton.isEnabled = true
         } else {
             if (passwordField.text.length == confirmPasswordField.text.length &&
