@@ -198,20 +198,24 @@ class MapFragment : Fragment(), PhotoListener {
         locationViewModel.initiateUserSettingCheck(this@MapFragment.context)
                 ?.addOnCompleteListener { task ->
                     try {
-                        locationCallback = object : LocationCallback() {
-                            override fun onLocationResult(locationResult: LocationResult?) {
-                                val location = locationResult?.locations?.get(0)
-                                if (location != null) {
-                                    currentLocation = LatLng(location.latitude, location.longitude)
+                        val result = task.getResult(ApiException::class.java)
+                        if (result.locationSettingsStates.isGpsUsable) {
+                            locationCallback = object : LocationCallback() {
+                                override fun onLocationResult(locationResult: LocationResult?) {
+                                    val location = locationResult?.locations?.get(0)
+                                    if (location != null) {
+                                        currentLocation = LatLng(location.latitude, location.longitude)
+                                    }
                                 }
                             }
+                            locationViewModel.startLocationUpdates(this.context, locationCallback)
                         }
-                        locationViewModel.startLocationUpdates(this.context, locationCallback)
                     } catch (e: ApiException) {
                         this@MapFragment.view?.let { view ->
                             Snackbar.make(view,
-                                    "You have probably forget to on GPS or in airplane mode.",
-                                    Snackbar.LENGTH_LONG)
+                                    "You probably forget to on GPS or are in airplane mode.",
+                                    Snackbar.LENGTH_SHORT)
+                                    .setDuration(3000)
                                     .show()
                         }
                         Log.d("TAG", "something went wrong in user setting check: ${e.message}")
