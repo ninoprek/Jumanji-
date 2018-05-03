@@ -28,7 +28,7 @@ class ProgramActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment {
             return when (position) {
 
-//                1 -> CommunityFragment()
+                1 -> Fragment()
                 2 -> ProfileFragment()
                 else -> MapFragment()
             }

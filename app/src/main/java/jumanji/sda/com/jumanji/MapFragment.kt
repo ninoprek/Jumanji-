@@ -29,7 +29,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
@@ -65,6 +64,9 @@ class MapFragment : Fragment(), PhotoListener {
 
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
+        var trashLocationViewModel: TrashLocationViewModel? = null
+        var currentView: LatLngBounds? = null
+        val mapAdapter = GoogleMapAdapter()
 
         checkUserLocationSetting()
 
@@ -80,37 +82,40 @@ class MapFragment : Fragment(), PhotoListener {
                 true
             }
 
-            val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
-            val mapAdapter = GoogleMapAdapter()
-            trashLocationViewModel.map = map
-            mapAdapter.map = map
+            trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
+            trashLocationViewModel?.let { trashLocationViewModel ->
+                trashLocationViewModel.map = map
+                mapAdapter.map = map
 
-            trashLocationViewModel.trashMarkers.observe(this, Observer {
-                it?.let {
-                    mapAdapter.trashLocationMarkers = it
+                trashLocationViewModel.trashMarkers.observe(this, Observer {
+                    it?.let {
+                        mapAdapter.trashLocationMarkers = it
+                        mapAdapter.bindMarkers()
+                        totalNoOfTrashLocationText.text = it.size.toString()
+                    }
+                })
+
+                trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
+                    it?.let {
+                        mapAdapter.trashFreeMarkers = it
+                        mapAdapter.bindMarkers()
+                        totalNoOfTrashLocationClearedText.text = it.size.toString()
+                    }
+                })
+                map.setOnCameraIdleListener {
+
+                    currentView = map.projection.visibleRegion.latLngBounds
+                    trashLocationViewModel.loadLocations(currentView, false)
                     mapAdapter.bindMarkers()
-                    totalNoOfTrashLocationText.text = it.size.toString()
                 }
-            })
+            }
+        }
 
-            trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
-                it?.let {
-                    mapAdapter.trashFreeMarkers = it
-                    mapAdapter.bindMarkers()
-                    totalNoOfTrashLocationClearedText.text = it.size.toString()
-                }
-            })
-            map.setOnCameraIdleListener {
-
-                val currentView = map.projection.visibleRegion.latLngBounds
-                trashLocationViewModel.loadLocations(currentView, false)
+        refreshFab.setOnClickListener {
+            if (currentView != null && mapAdapter.map != null) {
+                Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
+                trashLocationViewModel?.loadLocations(currentView, true)
                 mapAdapter.bindMarkers()
-
-                refreshFab.setOnClickListener {
-                    Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
-                    trashLocationViewModel.loadLocations(currentView, true)
-                    mapAdapter.bindMarkers()
-                }
             }
         }
 
@@ -126,12 +131,12 @@ class MapFragment : Fragment(), PhotoListener {
             selectImage()
         }
 
-      /*  updateGPSFab.setOnClickListener {
-            val user = FirebaseAuth.getInstance().currentUser?.displayName
-            val profileViewModel = ProfileViewModel()
-            profileViewModel.signOut()
-            Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
-        }*/
+        /*  updateGPSFab.setOnClickListener {
+              val user = FirebaseAuth.getInstance().currentUser?.displayName
+              val profileViewModel = ProfileViewModel()
+              profileViewModel.signOut()
+              Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
+          }*/
 
         addPin.setOnClickListener {
             val pinViewModel: PinViewModel = PinViewModel()
@@ -184,7 +189,7 @@ class MapFragment : Fragment(), PhotoListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView.onSaveInstanceState(outState)
+        mapView?.onSaveInstanceState(outState)
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -193,20 +198,24 @@ class MapFragment : Fragment(), PhotoListener {
         locationViewModel.initiateUserSettingCheck(this@MapFragment.context)
                 ?.addOnCompleteListener { task ->
                     try {
-                        locationCallback = object : LocationCallback() {
-                            override fun onLocationResult(locationResult: LocationResult?) {
-                                val location = locationResult?.locations?.get(0)
-                                if (location != null) {
-                                    currentLocation = LatLng(location.latitude, location.longitude)
+                        val result = task.getResult(ApiException::class.java)
+                        if (result.locationSettingsStates.isGpsUsable) {
+                            locationCallback = object : LocationCallback() {
+                                override fun onLocationResult(locationResult: LocationResult?) {
+                                    val location = locationResult?.locations?.get(0)
+                                    if (location != null) {
+                                        currentLocation = LatLng(location.latitude, location.longitude)
+                                    }
                                 }
                             }
+                            locationViewModel.startLocationUpdates(this.context, locationCallback)
                         }
-                        locationViewModel.startLocationUpdates(this.context, locationCallback)
                     } catch (e: ApiException) {
                         this@MapFragment.view?.let { view ->
                             Snackbar.make(view,
-                                    "You have probably forget to on GPS or in airplane mode.",
-                                    Snackbar.LENGTH_LONG)
+                                    "You probably forget to on GPS or are in airplane mode.",
+                                    Snackbar.LENGTH_SHORT)
+                                    .setDuration(3000)
                                     .show()
                         }
                         Log.d("TAG", "something went wrong in user setting check: ${e.message}")
