@@ -44,20 +44,25 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
             selectImage()
         }
 
-        saveButton.setOnClickListener({
+        saveButton.setOnClickListener {
+            if (passwordField.text.length >= 6) {
+                val userName = userNameField.text.toString()
+                val email = emailField.text.toString()
+                val password = passwordField.text.toString()
 
-            //  if(            )
-            val userName = userNameField.text.toString()
-            val email = emailField.text.toString()
-            val password = passwordField.text.toString()
+                val profile = UserProfile(userName, password, email, "")
+                viewModel.saveUserProfile(profile)
 
-            val profile = UserProfile(userName, password, email, "")
-            viewModel.saveUserProfile(profile)
-
-            val intent = Intent(this, ProgramActivity::class.java)
-            startActivity(intent)
-            this.finish()
-        })
+                val intent = Intent(this, ProgramActivity::class.java)
+                startActivity(intent)
+                this.finish()
+            } else {
+                Toast.makeText(this@CreateProfileActivity,
+                        "Password is too short.",
+                        Toast.LENGTH_SHORT)
+                        .show()
+            }
+        }
 
         cancelButton.setOnClickListener({
             val intent = Intent(this, ProgramActivity::class.java)
