@@ -20,14 +20,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
@@ -257,25 +264,56 @@ class MapFragment : Fragment(), PhotoListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        fun saveFile() {
+            val uri = data?.data
+            val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("images")
+            val riversRef = mStorageRef.child("$uri")
+            Log.e("value", "uri Value: $uri")
+
+            if (uri != null) {
+                riversRef.putFile(uri)
+                        .addOnSuccessListener(OnSuccessListener<UploadTask.TaskSnapshot> { taskSnapshot ->
+                            // Get a URL to the uploaded content
+                            val downloadUrl = taskSnapshot.downloadUrl
+                            Log.d("SUCCESS", "Able  to upload")
+                            val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_SHORT)
+                            toast.show()
+
+                        })
+                        .addOnFailureListener { exception ->
+                            Toast.makeText(activity, exception.message, Toast.LENGTH_SHORT).show()
+                            Log.d("ERROR", "Unable to upload")
+                        }
+            } else {
+                Toast.makeText(activity, "File not found ", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     //TODO for presentation only
-                    map.addMarker(MarkerOptions().position(currentLocation).visible(true))
-                    currentLocation
+                    saveFile()
+                    //   map.addMarker(MarkerOptions().position(currentLocation).visible(true))
+                    //  currentLocation
                 }
             }
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    val position = getLatLngFromPhoto(data)
-                    if (position.latitude == 0.0 && position.longitude == 0.0) {
-                        Toast.makeText(this@MapFragment.context,
-                                "No position available from photo",
-                                Toast.LENGTH_SHORT).show()
-                    } else {
-                        Log.d("TAG", "lat lng of photo : $position")
-                    }
+
+                    saveFile()
+
+                    //   val position = getLatLngFromPhoto(data)
+                    //    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                    //        Toast.makeText(this@MapFragment.context,
+                    //               "No position available from photo",
+                    //               Toast.LENGTH_SHORT).show()
+                    //   } else {
+                    //       Log.d("TAG", "lat lng of photo : $position")
+                    //   }
                 }
             }
         }
