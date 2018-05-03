@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.annotation.RequiresPermission
@@ -27,13 +26,11 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.fragment_map.*
-import java.io.File
 
 
 class MapFragment : Fragment(), PhotoListener {
@@ -184,23 +181,12 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         Log.d("TAG", "in fragment, request code :  $requestCode")
-        when (requestCode) {
-            REQUEST_CAMERA_CODE -> {
-                if (resultCode == PackageManager.PERMISSION_GRANTED) {
-                    //should call the same function as SELECT_FILE_CODE
-                }
-            }
 
-            SELECT_FILE_CODE -> {
-                //TODO!
-                //Put the following code in a function.
-                //Decide where to put the function.
-                //if (resultCode == PackageManager.PERMISSION_GRANTED) {
+        fun saveFile() {
                 val uri = data?.data
-                val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("photo")
-
-                //val file = Uri.fromFile(File("file:///Users/tmp-sda-1164/Downloads/jumanji.jpg"))
-                val riversRef = mStorageRef.child("images/$uri")
+                val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("images")
+                val riversRef = mStorageRef.child("$uri")
+                Log.e("value", "uri Value: $uri")
 
                 if (uri != null) {
                     riversRef.putFile(uri)
@@ -208,12 +194,14 @@ class MapFragment : Fragment(), PhotoListener {
                                 // Get a URL to the uploaded content
                                 val downloadUrl = taskSnapshot.downloadUrl
                                 Log.d("SUCCESS", "Able  to upload")
+                                val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_LONG)
+                                toast.show()
+
                             })
-                            .addOnFailureListener(OnFailureListener {
-                                // Handle unsuccessful uploads
-                                // ...
+                            .addOnFailureListener { exception ->
+                                Toast.makeText(activity, exception.message, Toast.LENGTH_LONG).show()
                                 Log.d("ERROR", "Unable to upload")
-                            })
+                            }
 
 
                     val cursor = this@MapFragment.context!!.contentResolver.query(
@@ -223,11 +211,20 @@ class MapFragment : Fragment(), PhotoListener {
                             null,
                             null)
                     Log.d("TAG", "${cursor.getColumnName(2)}")
-                    //}
-
                 } else {
-                    Log.d("TAG", "URI is NULL")
+                    Toast.makeText(activity, "File not found ", Toast.LENGTH_SHORT).show()
                 }
+        }
+
+
+        when (requestCode) {
+            REQUEST_CAMERA_CODE -> {
+                saveFile()
+            }
+
+
+            SELECT_FILE_CODE -> {
+                saveFile()
             }
         }
     }
