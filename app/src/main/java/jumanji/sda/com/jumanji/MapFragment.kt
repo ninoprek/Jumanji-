@@ -146,7 +146,9 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     }
 
     override fun onDestroy() {
-        mapPreference.saveMapCameraState()
+        if (this::mapPreference.isInitialized) {
+            mapPreference.saveMapCameraState()
+        }
         mapView?.onDestroy()
         super.onDestroy()
     }

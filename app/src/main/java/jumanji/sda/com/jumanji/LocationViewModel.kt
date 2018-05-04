@@ -26,7 +26,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(map: GoogleMap) {
+    fun getLastKnownLocation(map: GoogleMap, zoomLevel : Float = DEFAULT_ZOOM_LEVEL) {
         fusedLocationProviderClient.lastLocation
                 .addOnSuccessListener {
                     it?.let { location ->
@@ -34,7 +34,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
                         map.animateCamera(
                                 CameraUpdateFactory.newLatLngZoom(
                                         position,
-                                        LocationViewModel.DEFAULT_ZOOM_LEVEL))
+                                        zoomLevel))
                     }
                 }
                 .addOnFailureListener {
