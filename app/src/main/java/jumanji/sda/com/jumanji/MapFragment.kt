@@ -7,6 +7,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
@@ -22,8 +23,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -48,15 +50,15 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         private const val LOCATION_REQUEST_CODE = 300
         private const val REQUEST_CAMERA_CODE = 100
         private const val SELECT_FILE_CODE = 200
+        private const val REQUEST_SETTING_CHECK = 30
     }
 
     private lateinit var mapPreference: CameraStateManager
 
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
-
     private lateinit var locationCallback: LocationCallback
-    private lateinit var currentLocation: LatLng
+    private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
 
     var userChoosenTask: String = ""
 
@@ -69,7 +71,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
@@ -80,6 +81,11 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         mapAdapter = GoogleMapAdapter()
 
         checkUserLocationSetting()
+        locationViewModel.currentLocation.observe(activity!!, Observer {
+            if (it != null) {
+                currentLocation = it
+            }
+        })
 
         mapView.getMapAsync(this)
 
@@ -146,6 +152,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     }
 
     override fun onDestroy() {
+        Log.d("TAG", "On destroy")
         if (this::mapPreference.isInitialized) {
             mapPreference.saveMapCameraState()
         }
@@ -159,20 +166,21 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
         mapView?.onSaveInstanceState(outState)
+        super.onSaveInstanceState(outState)
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        map.isIndoorEnabled = false
         val cameraState = mapPreference.getCameraState()
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
-        enableMyLocationLayer(locationViewModel)
+        enableMyLocationLayer()
 
         map.setOnMyLocationButtonClickListener {
-            locationViewModel.getLastKnownLocation(map)
+            if (currentLocation != null) {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, LocationViewModel.DEFAULT_ZOOM_LEVEL))
+            }
             true
         }
 
@@ -205,58 +213,65 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         }
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
     private fun checkUserLocationSetting() {
-        locationViewModel.initiateUserSettingCheck(this@MapFragment.context)
-                ?.addOnCompleteListener { task ->
+        val context = this@MapFragment.context ?: return
+        locationViewModel.initiateUserSettingCheck(context)
+                .addOnCompleteListener { task ->
                     try {
                         val result = task.getResult(ApiException::class.java)
-                        if (result.locationSettingsStates.isGpsUsable) {
-                            locationCallback = object : LocationCallback() {
-                                override fun onLocationResult(locationResult: LocationResult?) {
-                                    val location = locationResult?.locations?.get(0)
-                                    if (location != null) {
-                                        currentLocation = LatLng(location.latitude, location.longitude)
-                                    }
-                                }
-                            }
-                            locationViewModel.startLocationUpdates(this.context, locationCallback)
-                        }
+                            locationViewModel.startLocationUpdates(context)
                     } catch (e: ApiException) {
-                        this@MapFragment.view?.let { view ->
-                            Snackbar.make(view,
-                                    "You probably forget to on GPS or are in airplane mode.",
-                                    Snackbar.LENGTH_SHORT)
-                                    .setDuration(3000)
-                                    .show()
+                        if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                            try {
+                                (e as? ResolvableApiException)
+                                        ?.startResolutionForResult(this@MapFragment.activity,
+                                                REQUEST_SETTING_CHECK)
+                            } catch (error: IntentSender.SendIntentException) {
+                                Log.d("ERROR", "${error.message}")
+                            }
                         }
-                        Log.d("TAG", "something went wrong in user setting check: ${e.message}")
                     }
                 }
     }
 
-    private fun enableMyLocationLayer(viewModel: LocationViewModel) {
+    private fun enableMyLocationLayer() {
         val permission = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION
                 , Manifest.permission.ACCESS_FINE_LOCATION)
         if (ActivityCompat.checkSelfPermission(context!!, permission[0]) != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(context!!, permission[1]) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(permission, LOCATION_REQUEST_CODE)
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity as Activity, permission[1])) {
+                android.app.AlertDialog.Builder(context)
+                        .setTitle("Permission Request")
+                        .setMessage("This app required your permission in order to provide location awareness service.")
+                        .setCancelable(true)
+                        .setNegativeButton("OK", { dialog, _ ->
+                            run {
+                                dialog.dismiss()
+                                requestPermissions(permission, LOCATION_REQUEST_CODE)
+                            }
+                        })
+                        .create()
+                        .show()
+            } else {
+                requestPermissions(permission, LOCATION_REQUEST_CODE)
+            }
         } else {
-            map.isMyLocationEnabled = true
-            viewModel.getLastKnownLocation(map)
+            if (this::map.isInitialized) {
+                map.isMyLocationEnabled = true
+            }
         }
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
                 if (grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-                    enableMyLocationLayer(locationViewModel)
+                    enableMyLocationLayer()
                 } else {
-                    Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,
+                            "Please enable permission to access your device location.",
+                            Toast.LENGTH_LONG)
+                            .show()
                 }
             }
 

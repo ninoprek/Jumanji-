@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.PathMeasure
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
@@ -13,10 +14,13 @@ import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
@@ -87,7 +91,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        userActivityMapView.onSaveInstanceState(outState)
+        userActivityMapView?.onSaveInstanceState(outState)
         super.onSaveInstanceState(outState)
     }
 
@@ -98,19 +102,22 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap ?: return
+        map.isIndoorEnabled = false
+        val zoomLevelForProfile = 14.5f
         val viewModel = ViewModelProviders.of(this@ProfileFragment)[LocationViewModel::class.java]
-        val context = this@ProfileFragment.context ?: return
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            viewModel.getLastKnownLocation(map, 14.5f)
-            map.setOnCameraIdleListener {
-                map.clear()
-                val currentLocation = map.cameraPosition.target //TODO to listen to GPS for location.
-                map.addCircle(CircleOptions().radius(5.0)
-                        .fillColor(Color.GREEN)
-                        .strokeColor(Color.GREEN)
-                        .center(currentLocation))
-            }
+        viewModel.moveToLastKnowLocation(map, zoomLevelForProfile)
+        val context = this@ProfileFragment.context?: return
+        if (ContextCompat.checkSelfPermission(context,
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            map.isMyLocationEnabled = true
+            map.uiSettings.isMyLocationButtonEnabled = false
+            map.uiSettings.isZoomGesturesEnabled = false
+
+        } else {
+            Toast.makeText(context,
+                    "Please enable permission to access your device location.",
+                    Toast.LENGTH_LONG)
+                    .show()
         }
     }
 }
