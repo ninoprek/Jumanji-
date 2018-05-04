@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -38,7 +39,7 @@ import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
-class MapFragment : Fragment(), PhotoListener {
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -59,6 +60,11 @@ class MapFragment : Fragment(), PhotoListener {
 
     var userChoosenTask: String = ""
 
+    private var trashLocationViewModel: TrashLocationViewModel? = null
+    private var currentView: LatLngBounds? = null
+    private lateinit var mapAdapter: GoogleMapAdapter
+
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
@@ -70,52 +76,12 @@ class MapFragment : Fragment(), PhotoListener {
 
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
-        var trashLocationViewModel: TrashLocationViewModel? = null
-        var currentView: LatLngBounds? = null
-        val mapAdapter = GoogleMapAdapter()
+
+        mapAdapter = GoogleMapAdapter()
 
         checkUserLocationSetting()
 
-        mapView.getMapAsync {
-            map = it
-            val cameraState = mapPreference.getCameraState()
-            map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
-            enableMyLocationLayer(locationViewModel)
-
-            map.setOnMyLocationButtonClickListener {
-                map = it
-                locationViewModel.getLastKnownLocation(map)
-                true
-            }
-
-            trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
-            trashLocationViewModel?.let { trashLocationViewModel ->
-                trashLocationViewModel.map = map
-                mapAdapter.map = map
-
-                trashLocationViewModel.trashMarkers.observe(this, Observer {
-                    it?.let {
-                        mapAdapter.trashLocationMarkers = it
-                        mapAdapter.bindMarkers()
-                        totalNoOfTrashLocationText.text = it.size.toString()
-                    }
-                })
-
-                trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
-                    it?.let {
-                        mapAdapter.trashFreeMarkers = it
-                        mapAdapter.bindMarkers()
-                        totalNoOfTrashLocationClearedText.text = it.size.toString()
-                    }
-                })
-                map.setOnCameraIdleListener {
-
-                    currentView = map.projection.visibleRegion.latLngBounds
-                    trashLocationViewModel.loadLocations(currentView, false)
-                    mapAdapter.bindMarkers()
-                }
-            }
-        }
+        mapView.getMapAsync(this)
 
         refreshFab.setOnClickListener {
             if (currentView != null && mapAdapter.map != null) {
@@ -193,6 +159,48 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         mapView?.onSaveInstanceState(outState)
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    @SuppressLint("MissingPermission")
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        val cameraState = mapPreference.getCameraState()
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
+        enableMyLocationLayer(locationViewModel)
+
+        map.setOnMyLocationButtonClickListener {
+            locationViewModel.getLastKnownLocation(map)
+            true
+        }
+
+        trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
+        trashLocationViewModel?.let { trashLocationViewModel ->
+            trashLocationViewModel.map = map
+            mapAdapter.map = map
+
+            trashLocationViewModel.trashMarkers.observe(this, Observer {
+                it?.let {
+                    mapAdapter.trashLocationMarkers = it
+                    mapAdapter.bindMarkers()
+                    totalNoOfTrashLocationText.text = it.size.toString()
+                }
+            })
+
+            trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
+                it?.let {
+                    mapAdapter.trashFreeMarkers = it
+                    mapAdapter.bindMarkers()
+                    totalNoOfTrashLocationClearedText.text = it.size.toString()
+                }
+            })
+            map.setOnCameraIdleListener {
+
+                currentView = map.projection.visibleRegion.latLngBounds
+                trashLocationViewModel.loadLocations(currentView, false)
+                mapAdapter.bindMarkers()
+            }
+        }
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -290,30 +298,25 @@ class MapFragment : Fragment(), PhotoListener {
             }
         }
 
-
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    //TODO for presentation only
                     saveFile()
-                    //   map.addMarker(MarkerOptions().position(currentLocation).visible(true))
-                    //  currentLocation
+
                 }
             }
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-
                     saveFile()
-
-                    //   val position = getLatLngFromPhoto(data)
-                    //    if (position.latitude == 0.0 && position.longitude == 0.0) {
-                    //        Toast.makeText(this@MapFragment.context,
-                    //               "No position available from photo",
-                    //               Toast.LENGTH_SHORT).show()
-                    //   } else {
-                    //       Log.d("TAG", "lat lng of photo : $position")
-                    //   }
+                    val position = getLatLngFromPhoto(data)
+                    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                        Toast.makeText(this@MapFragment.context,
+                                "No position available from photo",
+                                Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.d("TAG", "lat lng of photo : $position")
+                    }
                 }
             }
         }
