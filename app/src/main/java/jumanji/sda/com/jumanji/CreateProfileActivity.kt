@@ -14,6 +14,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_create_profile.*
 import java.io.*
@@ -50,7 +51,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
                 val email = emailField.text.toString()
                 val password = passwordField.text.toString()
 
-                val profile = UserProfile(userName, password, email, "")
+                val profile = UserProfile(userName, password, email, uriString)
                 viewModel.saveUserProfile(profile)
 
                 val intent = Intent(this, ProgramActivity::class.java)
@@ -133,12 +134,14 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
         if (data != null) {
             try {
                 bm = MediaStore.Images.Media.getBitmap(applicationContext.contentResolver, data.data)
+                uriString = data.dataString
             } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
 
         profilePhoto.setImageBitmap(bm)
+        Log.d(javaClass.simpleName, "Setting image to profile.")
     }
 
     private fun onCaptureImageResult(data: Intent) {
