@@ -59,6 +59,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var locationCallback: LocationCallback
+    private lateinit var pinViewModel: PinViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
 
     var userChoosenTask: String = ""
@@ -78,6 +79,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
+        pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
 
         mapAdapter = GoogleMapAdapter()
 
@@ -120,18 +122,16 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 user = GoogleSignIn.getLastSignedInAccount(activity)?.displayName.toString()
             }
 
-            pinViewModel.testSavePinData(user)
+            pinViewModel.testSavePinData()
             Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
+
             val view = it
-
-            val pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
-
             pinViewModel.testGetPinData()
 
-            pinViewModel.pinData?.observe(this, Observer {
+            pinViewModel.pinDataAll?.observe(this, Observer {
                 Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
             })
         }

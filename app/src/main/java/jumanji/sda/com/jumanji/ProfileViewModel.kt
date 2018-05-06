@@ -61,32 +61,4 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
     }
 }
 
-class PinViewModel (application: Application) : AndroidViewModel(application) {
-    private val repository = PinRepository(application)
-    val pinData: MutableLiveData<PinDataInfo>? = repository.pinDataTemp
 
-    fun testSavePinData(user: String) {
-        Single.fromCallable { repository.testPinWriteFunction(user) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()
-    }
-
-    fun testGetPinData() {
-       /* Single.fromCallable { repository.testGetPinFromDatabase(view) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()*/
-
-        repository.testGetPinFromDatabase()
-    }
-
-    fun getPinData(pinId : String) {
-
-        return repository.getPinFromDatabase(pinId)
-    }
-
-    fun deletePinData(pinId: String) {
-        Single.fromCallable { repository.deletePinFromDatabase(pinId) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()
-    }
-}

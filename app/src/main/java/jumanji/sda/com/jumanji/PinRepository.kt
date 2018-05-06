@@ -9,37 +9,38 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.Database
-import android.content.Context
 import android.arch.persistence.room.Room
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 
+data class PinDataInfo(val longitude: Float = 0.0f, val latitude: Float = 0.0f, val imageURL: String = "", val pinId: String = "")
 
-
-data class PinDataInfo(val longitude: Double = 0.0, val latitude: Double = 0.0, val imageURL: String = "", val pinId: String = "")
-
-class PinRepository (application: Application){
+class PinRepository(application: Application) {
     companion object {
         private final val TAG = "Log tag"
     }
 
-
     private var roomPinDb = Room.databaseBuilder(application,
-                AppDatabase::class.java, "database-name").build()
-
+            AppDatabase::class.java, "database-name")
+            .fallbackToDestructiveMigration()
+            .build()
 
     private val database = FirebaseFirestore.getInstance()
     var pinDataTemp: MutableLiveData<PinDataInfo> = MutableLiveData()
+    var pinDataAll: MutableLiveData<List<PinData>> = MutableLiveData()
 
     fun storePinToDatabase(pinData: PinDataInfo, user: String) {
 
-        val pinInfo: HashMap<String, Any> = HashMap()
-        pinInfo.put("longitude", pinData.longitude)
-        pinInfo.put("latitude", pinData.latitude)
-        pinInfo.put("imageURL", pinData.imageURL)
-        pinInfo.put("pinId", pinData.pinId)
+        val pin: HashMap<String, Any> = HashMap()
+        pin.put("longitude", pinData.longitude)
+        pin.put("latitude", pinData.latitude)
+        pin.put("imageURL", pinData.imageURL)
+        pin.put("pinId", pinData.pinId)
+        pin.put("username", user)
 
-        database.collection(user).document(pinData.pinId)
-                .set(pinInfo)
+        database.collection("allPins").document().set(pin)
     }
 
     fun getPinFromDatabase(pinId: String) {
@@ -48,13 +49,13 @@ class PinRepository (application: Application){
         Log.d(javaClass.simpleName, "The name that is searched: $userName and pinId: $pinId")
         val documentReference = database.collection(userName).document(pinId)
 
-        documentReference.get().addOnCompleteListener( { task ->
+        documentReference.get().addOnCompleteListener({ task ->
             if (task.isSuccessful) {
                 val document = task.result
                 if (document.exists()) {
                     Log.d(javaClass.simpleName, "DocumentSnapshot data: " + document.data!!)
 
-                    pinDataTemp.value = PinDataInfo(document["longitude"].toString().toDouble(), document["latitude"].toString().toDouble(),
+                    pinDataTemp.value = PinDataInfo(document["longitude"].toString().toFloat(), document["latitude"].toString().toFloat(),
                             document["imageURL"].toString(), document["pinId"].toString())
 
                     Log.d(javaClass.simpleName, "pinData: ${pinDataTemp.value}")
@@ -68,66 +69,94 @@ class PinRepository (application: Application){
         })
     }
 
+    fun storeFromFirebaseToRoom() {
+
+        val firebaseDb = FirebaseFirestore.getInstance()
+
+        firebaseDb.collection("allPins").get()
+                .addOnCompleteListener ({ task ->
+                    if(task.isSuccessful) {
+                        val pins = task.result
+
+                        for (document in pins) {
+
+                            val pin = PinData(0, document["longitude"].toString().toFloat(),
+                                    document["latitude"].toString().toFloat(),
+                                    document["username"].toString(),
+                                    document["imageURL"].toString()
+                                    )
+                            Single.fromCallable { roomPinDb.userDao().insert(pin) }
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe()
+                        }
+
+                    } else {
+                        Log.d(javaClass.simpleName, "Error in reading from Firebase: " + task.exception)
+                    }
+                })
+    }
+
     fun deletePinFromDatabase(pinId: String) {
 
         val documentReference = database.collection(FirebaseAuth.getInstance().currentUser?.displayName.toString()).document(pinId)
-         if (documentReference.delete().isSuccessful) {
-             Log.d(javaClass.simpleName, "Pin with id: $pinId has been deleted")
-         } else {
-             Log.d(javaClass.simpleName, "Pin with id: $pinId was not been deleted")
-         }
+        if (documentReference.delete().isSuccessful) {
+            Log.d(javaClass.simpleName, "Pin with id: $pinId has been deleted")
+        } else {
+            Log.d(javaClass.simpleName, "Pin with id: $pinId was not been deleted")
+        }
     }
 
-    fun testPinWriteFunction(user: String) {
-        val pin1 = PinData(1,59.522433.toFloat(), 17.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "http://mediad.publicbroadcasting.net/p/michigan/files/styles/medium/public/201307/172690560_98ae354df2.jpg", "1")
-        val pin2 = PinData(2,60.522433.toFloat(), 18.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "https://www.freedomok.net/wp-content/uploads/2016/11/trash.jpg", "2")
+    fun testPinWriteFunction() {
+        val pin1 = PinData(1, 59.522433.toFloat(), 17.917423.toFloat(), "ninoprek", "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700")
+        val pin2 = PinData(2, 60.522433.toFloat(), 18.917423.toFloat(), "onino", "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700")
         //storePinToDatabase(pin1, user)
         //storePinToDatabase(pin2, user)
 
         roomPinDb.userDao().insert(pin1)
         roomPinDb.userDao().insert(pin2)
 
-        val returnRoomValue = roomPinDb.userDao().getAll()
+        val user = "onino"
 
-        Log.d(javaClass.simpleName, returnRoomValue.toString())
-
-        val pin3 = PinDataInfo(61.522433, 19.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
-        val pin4 = PinDataInfo(62.522433, 20.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
-        //storePinToDatabase(pin3, user)
-        //storePinToDatabase(pin4, user)
+        val pin3 = PinDataInfo(61.522433f, 19.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
+        val pin4 = PinDataInfo(62.522433f, 20.917423f   , "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
+        storePinToDatabase(pin3, user)
+        storePinToDatabase(pin4, user)
     }
 
-    fun testGetPinFromDatabase(){
+    fun testGetPinFromDatabase() {
 
-        val testPin = getPinFromDatabase("3")
+        val returnRoomValue = roomPinDb.userDao().getAll()
+        pinDataAll.postValue(returnRoomValue)
+        Log.d(javaClass.simpleName, returnRoomValue.toString())
     }
 }
 
 @Entity(tableName = "pinData")
-data class PinData (@PrimaryKey(autoGenerate = true) var id: Int,
-                        @ColumnInfo(name = "longitude") var longitude: Float,
-                        @ColumnInfo(name = "latitude") var latitude: Float,
-                        @ColumnInfo(name = "username") var userName: String,
-                        @ColumnInfo(name = "pictureURL") var pictureURL: String,
-                        @ColumnInfo(name = "firebaseId") var firebaseId: String
-                        )
+data class PinData(@PrimaryKey(autoGenerate = true) var id: Int,
+                   @ColumnInfo(name = "longitude") var longitude: Float,
+                   @ColumnInfo(name = "latitude") var latitude: Float,
+                   @ColumnInfo(name = "username") var userName: String,
+                   @ColumnInfo(name = "imageURL") var imageURL: String
+)
+
 @Dao
 interface PinDataDao {
 
-    @Query ("SELECT * from pinData")
+    @Query("SELECT * from pinData")
     fun getAll(): List<PinData>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
 
-    @Insert (onConflict = REPLACE)
+    @Insert(onConflict = REPLACE)
     fun insert(pinData: PinData)
 
     @Delete
     fun deletePinData(pinData: PinData)
 }
 
-@Database(entities = [PinData::class], version = 1)
+@Database(entities = [PinData::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): PinDataDao
 }
