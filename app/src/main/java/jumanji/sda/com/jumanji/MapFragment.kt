@@ -289,43 +289,22 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        fun saveFile() {
-            val uri = data?.data
-            val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("images")
-            val riversRef = mStorageRef.child("$uri")
-            Log.e("value", "uri Value: $uri")
-
-            if (uri != null) {
-                riversRef.putFile(uri)
-                        .addOnSuccessListener(OnSuccessListener<UploadTask.TaskSnapshot> { taskSnapshot ->
-                            // Get a URL to the uploaded content
-                            val downloadUrl = taskSnapshot.downloadUrl
-                            Log.d("SUCCESS", "Able  to upload")
-                            val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_SHORT)
-                            toast.show()
-
-                        })
-                        .addOnFailureListener { exception ->
-                            Toast.makeText(activity, exception.message, Toast.LENGTH_SHORT).show()
-                            Log.d("ERROR", "Unable to upload")
-                        }
-            } else {
-                Toast.makeText(activity, "File not found ", Toast.LENGTH_SHORT).show()
-            }
-        }
+        val photoRepository = PhotoRepository("user@email.com")
 
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    saveFile()
+                    photoRepository.savePhoto(data,activity)
+
+                    //TODO for presentation only
+
 
                 }
             }
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    saveFile()
+                    photoRepository.savePhoto(data,activity)
                     val position = getLatLngFromPhoto(data)
                     if (position.latitude == 0.0 && position.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
@@ -334,6 +313,17 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                     } else {
                         Log.d("TAG", "lat lng of photo : $position")
                     }
+
+
+
+                    //   val position = getLatLngFromPhoto(data)
+                    //    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                    //        Toast.makeText(this@MapFragment.context,
+                    //               "No position available from photo",
+                    //               Toast.LENGTH_SHORT).show()
+                    //   } else {
+                    //       Log.d("TAG", "lat lng of photo : $position")
+                    //   }
                 }
             }
         }
