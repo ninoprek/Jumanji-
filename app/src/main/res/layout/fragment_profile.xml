@@ -11,8 +11,8 @@
         android:layout_height="148dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/download" />
@@ -35,6 +35,8 @@
         android:layout_height="51dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:text="User Name"
+        android:textSize="18sp"
         app:layout_constraintStart_toEndOf="@+id/profilePhotoView"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="User Name" />
@@ -53,9 +55,9 @@
     <TextView
         android:id="@+id/userActivityTextView"
         android:layout_width="137dp"
-        android:layout_height="122dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="66dp"
+        android:layout_marginTop="32dp"
         android:text="You are in the top 16%"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintEnd_toStartOf="@+id/userActivityMapView"
@@ -66,8 +68,8 @@
 
     <TextView
         android:id="@+id/yourActivityText"
-        android:layout_width="357dp"
-        android:layout_height="35dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="64dp"
@@ -82,11 +84,31 @@
         android:id="@+id/signOutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:text="Sign Out"
-        app:layout_constraintBottom_toTopOf="@+id/yourActivityText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userActivityMapView" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/userActivityMapView"
+        app:layout_constraintEnd_toStartOf="@+id/userActivityMapView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userActivityTextView"
+        app:srcCompat="@drawable/graph" />
+
+    <Button
+        android:id="@+id/menuButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:text="menu"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usernameText" />
 

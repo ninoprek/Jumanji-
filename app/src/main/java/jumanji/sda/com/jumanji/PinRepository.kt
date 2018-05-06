@@ -22,10 +22,10 @@ class PinRepository (application: Application){
         private final val TAG = "Log tag"
     }
 
-    init {
-        var roomPinDb = Room.databaseBuilder(application,
+
+    private var roomPinDb = Room.databaseBuilder(application,
                 AppDatabase::class.java, "database-name").build()
-    }
+
 
     private val database = FirebaseFirestore.getInstance()
     var pinDataTemp: MutableLiveData<PinDataInfo> = MutableLiveData()
@@ -79,17 +79,17 @@ class PinRepository (application: Application){
     }
 
     fun testPinWriteFunction(user: String) {
-        val pin1 = PinData(1,59.522433.toFloat(), 17.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "1")
-        val pin2 = PinData(2,60.522433.toFloat(), 18.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "2")
+        val pin1 = PinData(1,59.522433.toFloat(), 17.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "http://mediad.publicbroadcasting.net/p/michigan/files/styles/medium/public/201307/172690560_98ae354df2.jpg", "1")
+        val pin2 = PinData(2,60.522433.toFloat(), 18.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "https://www.freedomok.net/wp-content/uploads/2016/11/trash.jpg", "2")
         //storePinToDatabase(pin1, user)
         //storePinToDatabase(pin2, user)
 
-        /*roomPinDb.userDao().insert(pin1)
+        roomPinDb.userDao().insert(pin1)
         roomPinDb.userDao().insert(pin2)
 
         val returnRoomValue = roomPinDb.userDao().getAll()
 
-        Log.d(javaClass.simpleName, returnRoomValue.toString())*/
+        Log.d(javaClass.simpleName, returnRoomValue.toString())
 
         val pin3 = PinDataInfo(61.522433, 19.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
         val pin4 = PinDataInfo(62.522433, 20.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
@@ -108,7 +108,8 @@ data class PinData (@PrimaryKey(autoGenerate = true) var id: Int,
                         @ColumnInfo(name = "longitude") var longitude: Float,
                         @ColumnInfo(name = "latitude") var latitude: Float,
                         @ColumnInfo(name = "username") var userName: String,
-                        @ColumnInfo(name = "pictureURL") var pictureURL: String
+                        @ColumnInfo(name = "pictureURL") var pictureURL: String,
+                        @ColumnInfo(name = "firebaseId") var firebaseId: String
                         )
 @Dao
 interface PinDataDao {
@@ -116,7 +117,7 @@ interface PinDataDao {
     @Query ("SELECT * from pinData")
     fun getAll(): List<PinData>
 
-    @Query("select * from pinData where username = userName")
+    @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
 
     @Insert (onConflict = REPLACE)

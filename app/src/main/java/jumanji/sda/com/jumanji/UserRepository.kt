@@ -51,7 +51,7 @@ class UserRepository (context: Context) {
 
             val acct = GoogleSignIn.getLastSignedInAccount(context)
 
-            userInfo.value = UserProfile(acct?.displayName.toString(),
+            userInfo.value = UserProfile(acct?.givenName.toString(),
                     "",
                     acct?.email.toString(),
                     acct?.photoUrl.toString())

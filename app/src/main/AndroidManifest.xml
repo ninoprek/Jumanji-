@@ -31,8 +31,10 @@
         <activity android:name=".ProgramActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity android:name=".SignInActivity" />
-        <activity android:name=".CreateProfileActivity"></activity>
+        <activity android:name=".SignInActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".CreateProfileActivity"
+            android:windowSoftInputMode="stateHidden"></activity>
 
     </application>
 
