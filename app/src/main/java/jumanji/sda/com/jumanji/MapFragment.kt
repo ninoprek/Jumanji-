@@ -129,12 +129,12 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
+        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
         reportFab.setOnClickListener {
             selectImage()
         }
 
         addPin.setOnClickListener {
-            val pinViewModel: PinViewModel = PinViewModel()
             var user: String
 
             if (FirebaseAuth.getInstance().currentUser?.displayName != null) {
@@ -150,7 +150,7 @@ class MapFragment : Fragment(), PhotoListener {
         deletePin.setOnClickListener {
             val view = it
 
-            val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+            val pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
             pinViewModel.testGetPinData()
 

@@ -3,7 +3,6 @@ package jumanji.sda.com.jumanji
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
 import android.content.Context
 import android.util.Log
 import io.reactivex.Single
@@ -62,9 +61,9 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
     }
 }
 
-class PinViewModel : ViewModel() {
-    private val repository = PinRepository()
-    val pinData: MutableLiveData<PinData>? = repository.pinData
+class PinViewModel (application: Application) : AndroidViewModel(application) {
+    private val repository = PinRepository(application)
+    val pinData: MutableLiveData<PinDataInfo>? = repository.pinDataTemp
 
     fun testSavePinData(user: String) {
         Single.fromCallable { repository.testPinWriteFunction(user) }

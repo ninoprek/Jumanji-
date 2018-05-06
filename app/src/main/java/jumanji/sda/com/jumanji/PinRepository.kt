@@ -1,22 +1,36 @@
 package jumanji.sda.com.jumanji
 
+import android.app.Application
 import android.arch.lifecycle.MutableLiveData
+import android.arch.persistence.room.*
+import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.util.Log
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import android.arch.persistence.room.RoomDatabase
+import android.arch.persistence.room.Database
+import android.content.Context
+import android.arch.persistence.room.Room
 
-data class PinData(val longitude: Double = 0.0, val latitude: Double = 0.0, val imageURL: String = "", val pinId: String = "")
 
-class PinRepository {
+
+
+data class PinDataInfo(val longitude: Double = 0.0, val latitude: Double = 0.0, val imageURL: String = "", val pinId: String = "")
+
+class PinRepository (application: Application){
     companion object {
         private final val TAG = "Log tag"
     }
 
-    private val database = FirebaseFirestore.getInstance()
-    var pinData: MutableLiveData<PinData> = MutableLiveData()
+    init {
+        var roomPinDb = Room.databaseBuilder(application,
+                AppDatabase::class.java, "database-name").build()
+    }
 
-    fun storePinToDatabase(pinData: PinData, user: String) {
+    private val database = FirebaseFirestore.getInstance()
+    var pinDataTemp: MutableLiveData<PinDataInfo> = MutableLiveData()
+
+    fun storePinToDatabase(pinData: PinDataInfo, user: String) {
 
         val pinInfo: HashMap<String, Any> = HashMap()
         pinInfo.put("longitude", pinData.longitude)
@@ -40,10 +54,10 @@ class PinRepository {
                 if (document.exists()) {
                     Log.d(javaClass.simpleName, "DocumentSnapshot data: " + document.data!!)
 
-                    pinData.value = PinData(document["longitude"].toString().toDouble(), document["latitude"].toString().toDouble(),
+                    pinDataTemp.value = PinDataInfo(document["longitude"].toString().toDouble(), document["latitude"].toString().toDouble(),
                             document["imageURL"].toString(), document["pinId"].toString())
 
-                    Log.d(javaClass.simpleName, "pinData: ${pinData.value}")
+                    Log.d(javaClass.simpleName, "pinData: ${pinDataTemp.value}")
 
                 } else {
                     Log.d(javaClass.simpleName, "No such document")
@@ -65,19 +79,54 @@ class PinRepository {
     }
 
     fun testPinWriteFunction(user: String) {
-        val pin1 = PinData(59.522433, 17.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "1")
-        val pin2 = PinData(60.522433, 18.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "2")
-        storePinToDatabase(pin1, user)
-        storePinToDatabase(pin2, user)
+        val pin1 = PinData(1,59.522433.toFloat(), 17.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "1")
+        val pin2 = PinData(2,60.522433.toFloat(), 18.917423.toFloat(), "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "2")
+        //storePinToDatabase(pin1, user)
+        //storePinToDatabase(pin2, user)
 
-        val pin3 = PinData(61.522433, 19.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
-        val pin4 = PinData(62.522433, 20.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
-        storePinToDatabase(pin3, user)
-        storePinToDatabase(pin4, user)
+        /*roomPinDb.userDao().insert(pin1)
+        roomPinDb.userDao().insert(pin2)
+
+        val returnRoomValue = roomPinDb.userDao().getAll()
+
+        Log.d(javaClass.simpleName, returnRoomValue.toString())*/
+
+        val pin3 = PinDataInfo(61.522433, 19.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
+        val pin4 = PinDataInfo(62.522433, 20.917423, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
+        //storePinToDatabase(pin3, user)
+        //storePinToDatabase(pin4, user)
     }
 
     fun testGetPinFromDatabase(){
 
         val testPin = getPinFromDatabase("3")
     }
+}
+
+@Entity(tableName = "pinData")
+data class PinData (@PrimaryKey(autoGenerate = true) var id: Int,
+                        @ColumnInfo(name = "longitude") var longitude: Float,
+                        @ColumnInfo(name = "latitude") var latitude: Float,
+                        @ColumnInfo(name = "username") var userName: String,
+                        @ColumnInfo(name = "pictureURL") var pictureURL: String
+                        )
+@Dao
+interface PinDataDao {
+
+    @Query ("SELECT * from pinData")
+    fun getAll(): List<PinData>
+
+    @Query("select * from pinData where username = userName")
+    fun findTaskById(userName: String): List<PinData>
+
+    @Insert (onConflict = REPLACE)
+    fun insert(pinData: PinData)
+
+    @Delete
+    fun deletePinData(pinData: PinData)
+}
+
+@Database(entities = [PinData::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): PinDataDao
 }
