@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Thread.sleep
 
 class MainActivity : AppCompatActivity() {
@@ -18,6 +19,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
+    //Animation for logo on startup the application.
+        logo_Image_View.animate()
+                .translationXBy(-900f)
+                .translationYBy(-1400f)
+                .scaleX(0.000001f)
+                .scaleY(0.000001f)
+                .rotation(-360f)
+                .duration= 2000
+
+        logo_Image_View2.animate()
+                .translationXBy(900f)
+                .translationYBy(1400f)
+                .scaleX(0.000001f)
+                .scaleY(0.000001f)
+                .rotation(360f)
+                .duration= 2000
+
+
 
         //Check if the user is sign in (go to the map) or he/she should redirected to the sign in activity
         if (user != null) {
