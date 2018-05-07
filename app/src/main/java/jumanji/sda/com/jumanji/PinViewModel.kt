@@ -9,26 +9,27 @@ import io.reactivex.schedulers.Schedulers
 
 class PinViewModel (application: Application) : AndroidViewModel(application) {
     private val repository = PinRepository(application)
-    val pinData: MutableLiveData<PinDataInfo>? = repository.pinDataTemp
+    val userPinData: MutableLiveData<List<PinData>> = repository.userPinData
     val pinDataAll: MutableLiveData<List<PinData>> = repository.pinDataAll
 
     fun testSavePinData() {
-        Single.fromCallable { repository.storeFromFirebaseToRoom() }
+
+        Single.fromCallable { repository.storeAllPinsFromFirebaseToRoom() }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
     }
 
     fun testGetPinData() {
-        Single.fromCallable { repository.testGetPinFromDatabase() }
+        Single.fromCallable { repository.getAllPinsFromRoom() }
                  .subscribeOn(Schedulers.io())
                  .observeOn(AndroidSchedulers.mainThread())
                  .subscribe()
     }
 
-    fun getPinData(pinId : String) {
+    fun getPinData(user : String) {
 
-        return repository.getPinFromDatabase(pinId)
+        return repository.getUserPins(user)
     }
 
     fun deletePinData(pinId: String) {

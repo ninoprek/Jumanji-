@@ -114,13 +114,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         }
 
         addPin.setOnClickListener {
-            var user: String
-
-            if (FirebaseAuth.getInstance().currentUser?.displayName != null) {
-                user = FirebaseAuth.getInstance().currentUser?.displayName.toString()
-            } else {
-                user = GoogleSignIn.getLastSignedInAccount(activity)?.displayName.toString()
-            }
 
             pinViewModel.testSavePinData()
             Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
