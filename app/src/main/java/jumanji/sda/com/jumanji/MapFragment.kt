@@ -18,9 +18,12 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.PopupWindow
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
@@ -30,15 +33,12 @@ import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
-import jumanji.sda.com.jumanji.R.id.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
 import java.io.IOException
@@ -219,6 +219,40 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 currentView = map.projection.visibleRegion.latLngBounds
                 trashLocationViewModel.loadLocations(currentView, false)
                 mapAdapter.bindMarkers()
+            }
+        }
+
+        var shouldShowWindow = false
+
+        map.setOnMarkerClickListener { marker ->
+
+            val point = map.projection.toScreenLocation(marker.position)
+            val widthPixels = context!!.resources.displayMetrics.widthPixels
+            val heightPixels = context!!.resources.displayMetrics.heightPixels
+            val xTargetPosition = widthPixels / 2
+            val yTargetPosition = (heightPixels / 2) + 300
+            val xOffset = (point.x - xTargetPosition).toFloat()
+            val yOffset = (point.y - yTargetPosition).toFloat()
+            map.animateCamera(CameraUpdateFactory.scrollBy(xOffset, yOffset))
+
+            shouldShowWindow = true
+            true
+        }
+
+        map.setOnCameraIdleListener {
+            if (shouldShowWindow) {
+                val popUpWindowView = layoutInflater.inflate(R.layout.fragment_info_window, null)
+                val popupWindow = PopupWindow(popUpWindowView,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        true)
+                val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
+                clearButton.setOnClickListener {
+                    //TODO for reporting location is clear from trash
+                    Toast.makeText(context, "this is working", Toast.LENGTH_SHORT).show()
+                }
+                popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
+                shouldShowWindow = false
             }
         }
     }
