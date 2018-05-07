@@ -15,9 +15,12 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.PopupWindow
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
@@ -207,21 +210,39 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
             }
         }
 
+        var shouldShowWindow = false
+
         map.setOnMarkerClickListener { marker ->
-            marker.showInfoWindow()
+
+            val point = map.projection.toScreenLocation(marker.position)
+            val widthPixels = context!!.resources.displayMetrics.widthPixels
+            val heightPixels = context!!.resources.displayMetrics.heightPixels
+            val xTargetPosition = widthPixels / 2
+            val yTargetPosition = (heightPixels / 2) + 300
+            val xOffset = (point.x - xTargetPosition).toFloat()
+            val yOffset = (point.y - yTargetPosition).toFloat()
+            map.animateCamera(CameraUpdateFactory.scrollBy(xOffset, yOffset))
+
+            shouldShowWindow = true
             true
         }
 
-        map.setInfoWindowAdapter(object: GoogleMap.InfoWindowAdapter {
-            override fun getInfoContents(marker: Marker?): View {
-                Log.d("TAG", "Inflate marker info window.")
-                return layoutInflater.inflate(R.layout.fragment_info_window, null)
+        map.setOnCameraIdleListener {
+            if (shouldShowWindow) {
+                val popUpWindowView = layoutInflater.inflate(R.layout.fragment_info_window, null)
+                val popupWindow = PopupWindow(popUpWindowView,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        true)
+                val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
+                clearButton.setOnClickListener {
+                    //TODO for reporting location is clear from trash
+                    Toast.makeText(context, "this is working", Toast.LENGTH_SHORT).show()
+                }
+                popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
+                shouldShowWindow = false
             }
-
-            override fun getInfoWindow(marker: Marker?): View? {
-                return null
-            }
-        })
+        }
     }
 
     private fun checkUserLocationSetting() {
