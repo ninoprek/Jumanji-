@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="jumanji.sda.com.jumanji">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -31,8 +32,21 @@
         <activity android:name=".ProgramActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity android:name=".SignInActivity" />
-        <activity android:name=".CreateProfileActivity"></activity>
+        <activity android:name=".SignInActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".CreateProfileActivity"
+            android:windowSoftInputMode="stateHidden"></activity>
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.android.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false"
+            tools:replace="android:authorities">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths"
+                tools:replace="android:resource"/>
+        </provider>
 
     </application>
 

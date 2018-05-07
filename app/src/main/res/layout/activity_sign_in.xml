@@ -8,44 +8,47 @@
     tools:layout_editor_absoluteY="81dp">
 
     <android.support.constraint.ConstraintLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <Button
             android:id="@+id/googleSignInButton"
-            android:layout_width="352dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginStart="24dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="32dp"
+
             android:background="@drawable/style_button"
             android:text="Sign In With Google"
+
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/or" />
 
         <Button
             android:id="@+id/profileSignUpButton"
-            android:layout_width="352dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+
             android:layout_marginEnd="24dp"
             android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/style_button"
             android:text="Create a Profile"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/googleSignInButton"
+            app:layout_constraintStart_toStartOf="@+id/googleSignInButton"
             app:layout_constraintTop_toBottomOf="@+id/googleSignInButton" />
 
         <EditText
             android:id="@+id/userNameField"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginStart="24dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="40dp"
             android:ems="10"
-            android:gravity="center"
+            android:gravity="left"
             android:hint="Email"
             android:inputType="textEmailAddress"
             android:textSize="14sp"
@@ -57,11 +60,11 @@
             android:id="@+id/passwordField"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginStart="24dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="8dp"
             android:ems="10"
-            android:gravity="center"
+            android:gravity="left"
             android:hint="Password"
             android:inputType="textPassword"
             android:textSize="14sp"
@@ -73,7 +76,7 @@
             android:id="@+id/signInButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
+            android:layout_marginEnd="32dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/style_button"
             android:text="Sign In"
@@ -89,6 +92,7 @@
             android:layout_marginTop="16dp"
             android:text="Sign In"
             android:textSize="18sp"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -101,6 +105,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="32dp"
             android:text="or"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signInButton" />

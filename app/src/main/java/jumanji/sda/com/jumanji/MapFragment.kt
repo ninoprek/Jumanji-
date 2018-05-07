@@ -1,39 +1,52 @@
 package jumanji.sda.com.jumanji
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
-import android.support.annotation.RequiresPermission
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
+import jumanji.sda.com.jumanji.R.id.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 
-class MapFragment : Fragment(), PhotoListener {
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -42,75 +55,61 @@ class MapFragment : Fragment(), PhotoListener {
         private const val LOCATION_REQUEST_CODE = 300
         private const val REQUEST_CAMERA_CODE = 100
         private const val SELECT_FILE_CODE = 200
+        private const val REQUEST_SETTING_CHECK = 30
     }
 
     private lateinit var mapPreference: CameraStateManager
 
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
-
     private lateinit var locationCallback: LocationCallback
-    private lateinit var currentLocation: LatLng
+    private lateinit var pinViewModel: PinViewModel
+    private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
 
     var userChoosenTask: String = ""
+
+    private var trashLocationViewModel: TrashLocationViewModel? = null
+    private var currentView: LatLngBounds? = null
+    private lateinit var mapAdapter: GoogleMapAdapter
+    private lateinit var profileViewModel: ProfileViewModel
+    private var email: String? = ""
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
+        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        profileViewModel.getUserProfile(this.context!!)
+
+        profileViewModel.userInfo?.observe(this, Observer {
+            email = it?.email
+        })
+
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
+        pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+
+        mapAdapter = GoogleMapAdapter()
 
         checkUserLocationSetting()
-
-        mapView.getMapAsync {
-            map = it
-            val cameraState = mapPreference.getCameraState()
-            map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
-            enableMyLocationLayer(locationViewModel)
-
-            map.setOnMyLocationButtonClickListener {
-                map = it
-                locationViewModel.getLastKnownLocation(map)
-                true
+        locationViewModel.currentLocation.observe(activity!!, Observer {
+            if (it != null) {
+                currentLocation = it
             }
+        })
 
-            val trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
-            val mapAdapter = GoogleMapAdapter()
-            trashLocationViewModel.map = map
-            mapAdapter.map = map
+        mapView.getMapAsync(this)
 
-            trashLocationViewModel.trashMarkers.observe(this, Observer {
-                it?.let {
-                    mapAdapter.trashLocationMarkers = it
-                    mapAdapter.bindMarkers()
-                    totalNoOfTrashLocationText.text = it.size.toString()
-                }
-            })
-
-            trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
-                it?.let {
-                    mapAdapter.trashFreeMarkers = it
-                    mapAdapter.bindMarkers()
-                    totalNoOfTrashLocationClearedText.text = it.size.toString()
-                }
-            })
-            map.setOnCameraIdleListener {
-
-                val currentView = map.projection.visibleRegion.latLngBounds
-                trashLocationViewModel.loadLocations(currentView, false)
+        refreshFab.setOnClickListener {
+            if (currentView != null && mapAdapter.map != null) {
+                Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
+                trashLocationViewModel?.loadLocations(currentView, true)
                 mapAdapter.bindMarkers()
-
-                refreshFab.setOnClickListener {
-                    Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
-                    trashLocationViewModel.loadLocations(currentView, true)
-                    mapAdapter.bindMarkers()
-                }
             }
         }
 
@@ -122,32 +121,23 @@ class MapFragment : Fragment(), PhotoListener {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
+        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
         reportFab.setOnClickListener {
             selectImage()
         }
 
-      /*  updateGPSFab.setOnClickListener {
-            val user = FirebaseAuth.getInstance().currentUser?.displayName
-            val profileViewModel = ProfileViewModel()
-            profileViewModel.signOut()
-            Snackbar.make(it, "${user}, you are signed out", Snackbar.LENGTH_SHORT).show()
-        }*/
-
         addPin.setOnClickListener {
-            val pinViewModel: PinViewModel = PinViewModel()
+
             pinViewModel.testSavePinData()
             Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
-            val view = it
-            val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
-            //pinViewModel.deletePinData("1")
-            //Snackbar.make(it, "Pin has been deleted!",Snackbar.LENGTH_SHORT).show()
 
+            val view = it
             pinViewModel.testGetPinData()
 
-            pinViewModel.pinData?.observe(this, Observer {
+            pinViewModel.pinDataAll?.observe(this, Observer {
                 Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
             })
         }
@@ -172,7 +162,10 @@ class MapFragment : Fragment(), PhotoListener {
     }
 
     override fun onDestroy() {
-        mapPreference.saveMapCameraState()
+        Log.d("TAG", "On destroy")
+        if (this::mapPreference.isInitialized) {
+            mapPreference.saveMapCameraState()
+        }
         mapView?.onDestroy()
         super.onDestroy()
     }
@@ -183,58 +176,112 @@ class MapFragment : Fragment(), PhotoListener {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        mapView?.onSaveInstanceState(outState)
         super.onSaveInstanceState(outState)
-        mapView.onSaveInstanceState(outState)
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        map.isIndoorEnabled = false
+        val cameraState = mapPreference.getCameraState()
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
+        enableMyLocationLayer()
+
+        map.setOnMyLocationButtonClickListener {
+            if (currentLocation != null) {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, LocationViewModel.DEFAULT_ZOOM_LEVEL))
+            }
+            true
+        }
+
+        trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
+        trashLocationViewModel?.let { trashLocationViewModel ->
+            trashLocationViewModel.map = map
+            mapAdapter.map = map
+
+            trashLocationViewModel.trashMarkers.observe(this, Observer {
+                it?.let {
+                    mapAdapter.trashLocationMarkers = it
+                    mapAdapter.bindMarkers()
+                    totalNoOfTrashLocationText.text = it.size.toString()
+                }
+            })
+
+            trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
+                it?.let {
+                    mapAdapter.trashFreeMarkers = it
+                    mapAdapter.bindMarkers()
+                    totalNoOfTrashLocationClearedText.text = it.size.toString()
+                }
+            })
+            map.setOnCameraIdleListener {
+
+                currentView = map.projection.visibleRegion.latLngBounds
+                trashLocationViewModel.loadLocations(currentView, false)
+                mapAdapter.bindMarkers()
+            }
+        }
+    }
+
     private fun checkUserLocationSetting() {
-        locationViewModel.initiateUserSettingCheck(this@MapFragment.context)
-                ?.addOnCompleteListener { task ->
+        val context = this@MapFragment.context ?: return
+        locationViewModel.initiateUserSettingCheck(context)
+                .addOnCompleteListener { task ->
                     try {
-                        locationCallback = object : LocationCallback() {
-                            override fun onLocationResult(locationResult: LocationResult?) {
-                                val location = locationResult?.locations?.get(0)
-                                if (location != null) {
-                                    currentLocation = LatLng(location.latitude, location.longitude)
-                                }
+                        val result = task.getResult(ApiException::class.java)
+                        locationViewModel.startLocationUpdates(context)
+                    } catch (e: ApiException) {
+                        if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                            try {
+                                (e as? ResolvableApiException)
+                                        ?.startResolutionForResult(this@MapFragment.activity,
+                                                REQUEST_SETTING_CHECK)
+                            } catch (error: IntentSender.SendIntentException) {
+                                Log.d("ERROR", "${error.message}")
                             }
                         }
-                        locationViewModel.startLocationUpdates(this.context, locationCallback)
-                    } catch (e: ApiException) {
-                        this@MapFragment.view?.let { view ->
-                            Snackbar.make(view,
-                                    "You have probably forget to on GPS or in airplane mode.",
-                                    Snackbar.LENGTH_LONG)
-                                    .show()
-                        }
-                        Log.d("TAG", "something went wrong in user setting check: ${e.message}")
                     }
                 }
     }
 
-    private fun enableMyLocationLayer(viewModel: LocationViewModel) {
+    private fun enableMyLocationLayer() {
         val permission = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION
                 , Manifest.permission.ACCESS_FINE_LOCATION)
         if (ActivityCompat.checkSelfPermission(context!!, permission[0]) != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(context!!, permission[1]) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(permission, LOCATION_REQUEST_CODE)
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity as Activity, permission[1])) {
+                android.app.AlertDialog.Builder(context)
+                        .setTitle("Permission Request")
+                        .setMessage("This app required your permission in order to provide location awareness service.")
+                        .setCancelable(true)
+                        .setNegativeButton("OK", { dialog, _ ->
+                            run {
+                                dialog.dismiss()
+                                requestPermissions(permission, LOCATION_REQUEST_CODE)
+                            }
+                        })
+                        .create()
+                        .show()
+            } else {
+                requestPermissions(permission, LOCATION_REQUEST_CODE)
+            }
         } else {
-            map.isMyLocationEnabled = true
-            viewModel.getLastKnownLocation(map)
+            if (this::map.isInitialized) {
+                map.isMyLocationEnabled = true
+            }
         }
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
                 if (grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-                    enableMyLocationLayer(locationViewModel)
+                    enableMyLocationLayer()
                 } else {
-                    Toast.makeText(this@MapFragment.context, "Permission is needed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,
+                            "Please enable permission to access your device location.",
+                            Toast.LENGTH_LONG)
+                            .show()
                 }
             }
 
@@ -252,15 +299,28 @@ class MapFragment : Fragment(), PhotoListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        val photoRepository = PhotoRepository(email)
+
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    currentLocation
+                    val photoFile = File(mCurrentPhotoPath)
+                    // Continue only if the File was successfully created
+                    val photoURI: Uri = FileProvider.getUriForFile(context!!,
+                            "com.android.fileprovider",
+                            photoFile)
+                    data?.data = photoURI
+                    photoRepository.storePhotoToDatabase(photoURI, activity)
+
+                    //TODO for presentation only
+
+
                 }
             }
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
+                    photoRepository.storePhotoToDatabase(data.data, activity)
                     val position = getLatLngFromPhoto(data)
                     if (position.latitude == 0.0 && position.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
@@ -269,6 +329,16 @@ class MapFragment : Fragment(), PhotoListener {
                     } else {
                         Log.d("TAG", "lat lng of photo : $position")
                     }
+
+
+                    //   val position = getLatLngFromPhoto(data)
+                    //    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                    //        Toast.makeText(this@MapFragment.context,
+                    //               "No position available from photo",
+                    //               Toast.LENGTH_SHORT).show()
+                    //   } else {
+                    //       Log.d("TAG", "lat lng of photo : $position")
+                    //   }
                 }
             }
         }
@@ -295,10 +365,47 @@ class MapFragment : Fragment(), PhotoListener {
         builder.show()
     }
 
+    private var mCurrentPhotoPath: String = ""
+
+    private fun createImageFile(): File
+    {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date ());
+        val imageFileName: String = "JPEG_"+timeStamp+"_"
+        val storageDir = Environment.getExternalStoragePublicDirectory(Environment.MEDIA_SHARED)
+
+        if (!storageDir.isDirectory)
+            storageDir.mkdir()
+
+        val imageFile = File.createTempFile (
+                imageFileName, /* prefix */
+                ".jpg", /* suffix */
+                storageDir     /* directory */
+        )
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = imageFile.absolutePath
+        return imageFile
+    }
+
     private fun cameraIntent() {
         locationViewModel.flushLocations()
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, REQUEST_CAMERA_CODE)
+        if (intent.resolveActivity(context?.packageManager) != null) {
+            try {
+                val photoFile: File = createImageFile()
+            // Continue only if the File was successfully created
+                var photoURI: Uri = FileProvider.getUriForFile(context!!,
+                "com.android.fileprovider",
+                photoFile)
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                intent.putExtra("return-data", true)
+                startActivityForResult(intent, REQUEST_CAMERA_CODE)
+            } catch (ex: IOException) {
+                // Error occurred while creating the File
+                Log.e(ex.message, ex.toString())
+            }
+        }
     }
 
     private fun galleryIntent() {

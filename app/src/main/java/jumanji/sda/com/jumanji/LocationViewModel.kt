@@ -1,12 +1,15 @@
 package jumanji.sda.com.jumanji
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import android.content.Context
-import android.support.annotation.RequiresPermission
+import android.content.pm.PackageManager
+import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.widget.Toast
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -20,60 +23,73 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         const val DEFAULT_LONGITUDE = 18.0684759
     }
 
-    private val fusedLocationProviderClient: FusedLocationProviderClient = LocationServices
-            .getFusedLocationProviderClient(application.applicationContext)
-    lateinit var locationRequest: LocationRequest
+    private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(
+            application.applicationContext)
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+    var currentLocation: LiveData<LatLng> = MutableLiveData()
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(map: GoogleMap) {
-        fusedLocationProviderClient.lastLocation
-                .addOnSuccessListener {
-                    it?.let { location ->
-                        val position = LatLng(location.latitude, location.longitude)
-                        map.animateCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                        position,
-                                        LocationViewModel.DEFAULT_ZOOM_LEVEL))
-                    }
-                }
-                .addOnFailureListener {
-                    Log.d("ERROR", "something went wrong: ${it.message}.")
-                }
+    fun moveToDefaultLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                LatLng(LocationViewModel.DEFAULT_LATITUDE,
+                        LocationViewModel.DEFAULT_LONGITUDE), zoomLevel))
+    }
+
+    fun moveToLastKnowLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
+        if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                val location = LatLng(it.latitude, it.longitude)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
+            }
+        }
     }
 
     private fun createLocationSettingRequest() {
         locationRequest = LocationRequest().apply {
-            interval = 600000
-            fastestInterval = 60000
+            interval = 60000
+            fastestInterval = 10000
             priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
         }
     }
 
-    fun initiateUserSettingCheck(context: Context?): Task<LocationSettingsResponse>? {
-        return if (context != null) {
-            val settingsClient = LocationServices.getSettingsClient(context)
-            createLocationSettingRequest()
-            val locationSettingsRequest = LocationSettingsRequest
-                    .Builder()
-                    .addLocationRequest(locationRequest)
-                    .build()
-            settingsClient.checkLocationSettings(locationSettingsRequest)
-        } else {
-            null
+    fun initiateUserSettingCheck(context: Context): Task<LocationSettingsResponse> {
+        val settingsClient = LocationServices.getSettingsClient(context)
+        createLocationSettingRequest()
+        val locationSettingsRequest = LocationSettingsRequest
+                .Builder()
+                .addLocationRequest(locationRequest)
+                .build()
+        return settingsClient.checkLocationSettings(locationSettingsRequest)
+    }
+
+    private fun createLocationCallback() {
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult?.let { locationResult ->
+                    val lastIndex = locationResult.locations.lastIndex
+                    val location = locationResult.locations[lastIndex]
+                    Log.d("TAG", "${location.latitude}, ${location.longitude}")
+                    (currentLocation as MutableLiveData).postValue(
+                            LatLng(location.latitude, location.longitude))
+                }
+            }
         }
     }
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    @SuppressLint("MissingPermission")
-    fun startLocationUpdates(context: Context?, locationCallBack: LocationCallback) {
-        if (context != null) {
-            fusedLocationProviderClient.requestLocationUpdates(
-                    locationRequest,
-                    locationCallBack,
-                    null)
+    fun startLocationUpdates(context: Context) {
+        createLocationCallback()
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
+        } else {
+            Toast.makeText(context,
+                    "Please enable permission to access your device location.",
+                    Toast.LENGTH_LONG)
+                    .show()
         }
     }
+
 
     fun stopLocationUpdates(locationCallback: LocationCallback) {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
@@ -82,5 +98,6 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     fun flushLocations() {
         fusedLocationProviderClient.flushLocations()
     }
+
 }
 

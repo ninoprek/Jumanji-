@@ -1,16 +1,20 @@
 package jumanji.sda.com.jumanji
 
+import android.app.Application
+import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
+import android.content.Context
 import android.util.Log
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel (application: Application) : AndroidViewModel(application) {
 
-    private val repository = UserRepository()
+    private val repository = UserRepository(application)
     private val profile: UserProfile? = getUserProfile()
+
+    val userInfo: MutableLiveData<UserProfile>? = repository.userInfo
 
     val userName = profile?.userName
     val email = profile?.email
@@ -20,6 +24,14 @@ class ProfileViewModel : ViewModel() {
         Single.fromCallable { repository.createNewUser(profile) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
+    }
+
+    fun getUserProfile(context: Context) {
+        /*Single.fromCallable { repository.getUserInformation(context) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()*/
+
+        repository.getUserInformation(context)
     }
 
     fun updateUserProfile(profile: UserProfile) {
@@ -49,32 +61,4 @@ class ProfileViewModel : ViewModel() {
     }
 }
 
-class PinViewModel : ViewModel() {
-    private val repository = PinRepository()
-    val pinData: MutableLiveData<PinData>? = repository.pinData
 
-    fun testSavePinData() {
-        Single.fromCallable { repository.testPinWriteFunction() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()
-    }
-
-    fun testGetPinData() {
-       /* Single.fromCallable { repository.testGetPinFromDatabase(view) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()*/
-
-        repository.testGetPinFromDatabase()
-    }
-
-    fun getPinData(pinId : String) {
-
-        return repository.getPinFromDatabase(pinId)
-    }
-
-    fun deletePinData(pinId: String) {
-        Single.fromCallable { repository.deletePinFromDatabase(pinId) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()
-    }
-}
