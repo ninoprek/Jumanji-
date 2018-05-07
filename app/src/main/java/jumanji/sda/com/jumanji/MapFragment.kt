@@ -25,7 +25,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.PopupWindow
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationCallback
@@ -33,12 +32,10 @@ import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.*
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
 import java.io.IOException
@@ -356,23 +353,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     photoRepository.storePhotoToDatabase(data.data, activity)
                     val position = getLatLngFromPhoto(data)
-                    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                    if (position?.latitude == 0.0 && position?.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
                                 "No position available from photo",
                                 Toast.LENGTH_SHORT).show()
                     } else {
                         Log.d("TAG", "lat lng of photo : $position")
                     }
-
-
-                    //   val position = getLatLngFromPhoto(data)
-                    //    if (position.latitude == 0.0 && position.longitude == 0.0) {
-                    //        Toast.makeText(this@MapFragment.context,
-                    //               "No position available from photo",
-                    //               Toast.LENGTH_SHORT).show()
-                    //   } else {
-                    //       Log.d("TAG", "lat lng of photo : $position")
-                    //   }
                 }
             }
         }
@@ -401,17 +388,16 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
     private var mCurrentPhotoPath: String = ""
 
-    private fun createImageFile(): File
-    {
+    private fun createImageFile(): File {
         // Create an image file name
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date ());
-        val imageFileName: String = "JPEG_"+timeStamp+"_"
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date());
+        val imageFileName: String = "JPEG_" + timeStamp + "_"
         val storageDir = Environment.getExternalStoragePublicDirectory(Environment.MEDIA_SHARED)
 
         if (!storageDir.isDirectory)
             storageDir.mkdir()
 
-        val imageFile = File.createTempFile (
+        val imageFile = File.createTempFile(
                 imageFileName, /* prefix */
                 ".jpg", /* suffix */
                 storageDir     /* directory */
@@ -428,10 +414,10 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         if (intent.resolveActivity(context?.packageManager) != null) {
             try {
                 val photoFile: File = createImageFile()
-            // Continue only if the File was successfully created
+                // Continue only if the File was successfully created
                 var photoURI: Uri = FileProvider.getUriForFile(context!!,
-                "com.android.fileprovider",
-                photoFile)
+                        "com.android.fileprovider",
+                        photoFile)
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                 intent.putExtra("return-data", true)
                 startActivityForResult(intent, REQUEST_CAMERA_CODE)
@@ -449,7 +435,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE_CODE)
     }
 
-    private fun getLatLngFromPhoto(data: Intent): LatLng {
+    private fun getLatLngFromPhoto(data: Intent): LatLng? {
         val uri = data.data
         var cursor = this@MapFragment.context!!.contentResolver.query(
                 uri,
@@ -469,8 +455,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 selection,
                 null,
                 null)
-        cursor.moveToFirst()
-        return LatLng(cursor.getDouble(0), cursor.getDouble(1))
+        var metaData : LatLng? = null
+        if (cursor.count == 1) {
+            cursor.moveToFirst()
+            metaData = LatLng(cursor.getDouble(0), cursor.getDouble(1))
+        }
+        cursor.close()
+        return metaData
     }
 
     class GoogleMapAdapter {
