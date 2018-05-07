@@ -310,7 +310,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                             "com.android.fileprovider",
                             photoFile)
                     data?.data = photoURI
-                    photoRepository.storePhotoToDatabase(data, activity)
+                    photoRepository.storePhotoToDatabase(photoURI, activity)
 
                     //TODO for presentation only
 
@@ -320,7 +320,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    photoRepository.storePhotoToDatabase(data, activity)
+                    photoRepository.storePhotoToDatabase(data.data, activity)
                     val position = getLatLngFromPhoto(data)
                     if (position.latitude == 0.0 && position.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
