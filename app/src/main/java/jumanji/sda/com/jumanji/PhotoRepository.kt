@@ -19,16 +19,16 @@ class PhotoRepository (email: String?) {
 
     val email = email
 
-    fun storePhotoToDatabase(data: Intent?, activity: FragmentActivity?) {
+    fun storePhotoToDatabase(uri: Uri?, activity: FragmentActivity?) {
 
-        var uri = data?.data
+        //var uri = data?.data
         val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("$email/images")
         val imageRef = mStorageRef.child("$uri")
         Log.e("value", "uri Value: $uri")
 
-        if (uri == null) {
-            uri = data!!.extras[MediaStore.EXTRA_OUTPUT] as Uri
-        }
+        //if (uri == null) {
+        //    uri = data!!.extras[MediaStore.EXTRA_OUTPUT] as Uri
+        //}
 
         if (uri != null) {
             imageRef.putFile(uri)
