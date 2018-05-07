@@ -25,6 +25,9 @@ class UserRepository (context: Context) {
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
+    val reportedPins: MutableLiveData<String> = MutableLiveData()
+    val cleanedPins: MutableLiveData<String> = MutableLiveData()
+
     val userInfo: MutableLiveData<UserProfile> = MutableLiveData()
 
     fun storeToDatabase(userProfile: UserProfile) {
@@ -117,9 +120,10 @@ class UserRepository (context: Context) {
         userPins.put("cleanedPins", 0)
 
         database.collection("userStatistics").document(user).set(userPins)
+        updateUserStatistics(user)
     }
 
-    fun updateUserPinNumber  (user: String) {
+    fun updateUserPinNumber (user: String) {
 
         val documentReference = database.collection("userStatistics").document(user)
 
@@ -131,12 +135,56 @@ class UserRepository (context: Context) {
 
                     val reportedPins = document["reportedPins"].toString().toInt() + 1
                     documentReference.update("reportedPins", reportedPins)
+                    updateUserStatistics(user)
 
                 } else {
                     Log.d(javaClass.simpleName, "No such document")
                 }
             } else {
                 Log.d(javaClass.simpleName, "get failed with " + task.exception)
+            }
+        })
+    }
+
+    fun updateUserCleanedPinNumber (user: String) {
+
+        val documentReference = database.collection("userStatistics").document(user)
+
+        documentReference.get().addOnCompleteListener({ task ->
+            if (task.isSuccessful) {
+                val document = task.result
+                if (document.exists()) {
+                    Log.d(javaClass.simpleName, "User statistics data: " + document.data!!)
+
+                    val reportedPins = document["cleanedPins"].toString().toInt() + 1
+                    documentReference.update("cleanedPins", reportedPins)
+                    updateUserStatistics(user)
+
+                } else {
+                    Log.d(javaClass.simpleName, "No such document")
+                }
+            } else {
+                Log.d(javaClass.simpleName, "get failed with " + task.exception)
+            }
+        })
+    }
+
+    fun updateUserStatistics(user: String){
+        val documentReference = database.collection("userStatistics").document(user)
+
+        documentReference.get().addOnCompleteListener({ task ->
+            if (task.isSuccessful) {
+                val document = task.result
+                if (document.exists()) {
+
+                    cleanedPins.postValue(document["cleanedPins"].toString())
+                    reportedPins.postValue(document["reportedPins"].toString())
+
+                } else {
+                    Log.d(javaClass.simpleName, "No such document")
+                }
+            } else {
+                Log.d(javaClass.simpleName, "Update statistics failed" + task.exception)
             }
         })
     }

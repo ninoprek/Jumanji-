@@ -97,7 +97,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                 val userName = GoogleSignIn.getLastSignedInAccount(this)?.givenName.toString()
 
 
-                if (database.collection("userStatistics").document(userName) != null) {
+                if (database.collection("userStatistics").document(userName) == null) {
                     profileViewModel.initializeUserPinNumber(userName)
                 }
 

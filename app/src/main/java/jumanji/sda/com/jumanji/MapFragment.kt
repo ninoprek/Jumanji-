@@ -120,34 +120,43 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
-        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
         reportFab.setOnClickListener {
             selectImage()
         }
 
-        addPin.setOnClickListener {
-            val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
-            var user = ""
+        var user = ""
+        val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
 
-            if (userAuthentication.currentUser?.displayName != null) {
-                    user = userAuthentication.currentUser?.displayName.toString()
-            } else {
-                val acct = GoogleSignIn.getLastSignedInAccount(context)
-                user = acct?.givenName.toString()
-            }
+        if (userAuthentication.currentUser?.displayName != null) {
+            user = userAuthentication.currentUser?.displayName.toString()
+        } else {
+            val acct = GoogleSignIn.getLastSignedInAccount(context)
+            user = acct?.givenName.toString()
+        }
+
+        profileViewModel.updateUserStatistics(user)
+
+        addPin.setOnClickListener {
             profileViewModel.updateUserPinNumber(user)
             Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
-
-            val view = it
-            pinViewModel.testGetPinData()
-
-            pinViewModel.pinDataAll?.observe(this, Observer {
-                Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
-            })
+            profileViewModel.updateUserCleanedPinNumber(user)
+            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
+
+        profileViewModel.reportedPins.observe(this, Observer { reportedPins ->
+            if (reportedPins != null) {
+                totalNoOfTrashLocationText.text = reportedPins
+            }
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer { cleanedPins ->
+            if (cleanedPins != null) {
+                totalNoOfTrashLocationClearedText.text = cleanedPins
+            }
+        })
     }
 
     override fun onResume() {

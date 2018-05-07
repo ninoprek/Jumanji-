@@ -14,6 +14,9 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
     private val repository = UserRepository(application)
     private val profile: UserProfile? = getUserProfile()
 
+    val reportedPins: MutableLiveData<String> = repository.reportedPins
+    val cleanedPins: MutableLiveData<String> = repository.cleanedPins
+
     val userInfo: MutableLiveData<UserProfile>? = repository.userInfo
 
     val userName = profile?.userName
@@ -68,6 +71,18 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
 
     fun updateUserPinNumber (user: String) {
         Single.fromCallable { repository.updateUserPinNumber(user) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()
+    }
+
+    fun updateUserCleanedPinNumber (user: String) {
+        Single.fromCallable { repository.updateUserCleanedPinNumber(user) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()
+    }
+
+    fun updateUserStatistics (user: String) {
+        Single.fromCallable { repository.updateUserStatistics(user) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
