@@ -124,7 +124,6 @@ class PinRepository(application: Application) {
 
         val returnRoomValue = roomPinDb.userDao().getAll()
         pinDataAll.postValue(returnRoomValue)
-        Log.d(javaClass.simpleName, returnRoomValue.toString())
     }
 
     fun getUserPins(user: String) {
