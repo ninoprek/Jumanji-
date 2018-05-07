@@ -1,7 +1,6 @@
 package jumanji.sda.com.jumanji
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -11,7 +10,6 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.annotation.RequiresPermission
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
@@ -29,10 +27,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
@@ -211,6 +206,22 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 mapAdapter.bindMarkers()
             }
         }
+
+        map.setOnMarkerClickListener { marker ->
+            marker.showInfoWindow()
+            true
+        }
+
+        map.setInfoWindowAdapter(object: GoogleMap.InfoWindowAdapter {
+            override fun getInfoContents(marker: Marker?): View {
+                Log.d("TAG", "Inflate marker info window.")
+                return layoutInflater.inflate(R.layout.fragment_info_window, null)
+            }
+
+            override fun getInfoWindow(marker: Marker?): View? {
+                return null
+            }
+        })
     }
 
     private fun checkUserLocationSetting() {
@@ -219,7 +230,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 .addOnCompleteListener { task ->
                     try {
                         val result = task.getResult(ApiException::class.java)
-                            locationViewModel.startLocationUpdates(context)
+                        locationViewModel.startLocationUpdates(context)
                     } catch (e: ApiException) {
                         if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             try {
