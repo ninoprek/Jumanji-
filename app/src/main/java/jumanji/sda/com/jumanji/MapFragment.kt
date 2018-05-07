@@ -38,6 +38,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import jumanji.sda.com.jumanji.R.id.*
 import kotlinx.android.synthetic.main.fragment_map.*
 
 
@@ -58,6 +59,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var locationCallback: LocationCallback
+    private lateinit var pinViewModel: PinViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
 
     var userChoosenTask: String = ""
@@ -77,6 +79,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
+        pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
 
         mapAdapter = GoogleMapAdapter()
 
@@ -105,29 +108,23 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
+        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+        reportFab.setOnClickListener {
+            selectImage()
+        }
 
         addPin.setOnClickListener {
-            val pinViewModel: PinViewModel = PinViewModel()
-            var user: String
 
-            if (FirebaseAuth.getInstance().currentUser?.displayName != null) {
-                user = FirebaseAuth.getInstance().currentUser?.displayName.toString()
-            } else {
-                user = GoogleSignIn.getLastSignedInAccount(activity)?.displayName.toString()
-            }
-
-            pinViewModel.testSavePinData(user)
+            pinViewModel.testSavePinData()
             Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
+
             val view = it
-
-            val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
-
             pinViewModel.testGetPinData()
 
-            pinViewModel.pinData?.observe(this, Observer {
+            pinViewModel.pinDataAll?.observe(this, Observer {
                 Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
             })
         }
