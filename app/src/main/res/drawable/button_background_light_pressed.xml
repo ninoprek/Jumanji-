@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="#80e27e"></solid>
+    //Change the angles of the button to a circular shape.
+    <corners android:radius="8dp"></corners>
+</shape>
