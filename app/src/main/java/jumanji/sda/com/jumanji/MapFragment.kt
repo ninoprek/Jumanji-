@@ -61,6 +61,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var locationCallback: LocationCallback
     private lateinit var pinViewModel: PinViewModel
+    private lateinit var profileViewModel: ProfileViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
 
     var userChoosenTask: String = ""
@@ -90,6 +91,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
         pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         mapAdapter = GoogleMapAdapter()
 
@@ -124,9 +126,17 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         }
 
         addPin.setOnClickListener {
+            val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
+            var user = ""
 
-            pinViewModel.testSavePinData()
-            Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
+            if (userAuthentication.currentUser?.displayName != null) {
+                    user = userAuthentication.currentUser?.displayName.toString()
+            } else {
+                val acct = GoogleSignIn.getLastSignedInAccount(context)
+                user = acct?.givenName.toString()
+            }
+            profileViewModel.updateUserPinNumber(user)
+            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {

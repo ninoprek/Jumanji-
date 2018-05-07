@@ -1,6 +1,7 @@
 package jumanji.sda.com.jumanji
 
 import android.app.Activity
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -13,6 +14,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
@@ -89,6 +91,16 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
         if (requestCode == 10 && resultCode == Activity.RESULT_OK) {
             val signedInAccountFromIntent = GoogleSignIn.getSignedInAccountFromIntent(data)
             if (signedInAccountFromIntent.isSuccessful) {
+
+                val database  = FirebaseFirestore.getInstance()
+                var  profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+                val userName = GoogleSignIn.getLastSignedInAccount(this)?.givenName.toString()
+
+
+                if (database.collection("userStatistics").document(userName) != null) {
+                    profileViewModel.initializeUserPinNumber(userName)
+                }
+
                 getInfo(signedInAccountFromIntent)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)

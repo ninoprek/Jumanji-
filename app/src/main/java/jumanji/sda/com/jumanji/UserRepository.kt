@@ -109,5 +109,36 @@ class UserRepository (context: Context) {
                 }
         return  deleted
     }
+
+    fun initializeUserPinNumber(user: String) {
+
+        val userPins: HashMap<String, Any> = HashMap()
+        userPins.put("reportedPins", 0)
+        userPins.put("cleanedPins", 0)
+
+        database.collection("userStatistics").document(user).set(userPins)
+    }
+
+    fun updateUserPinNumber  (user: String) {
+
+        val documentReference = database.collection("userStatistics").document(user)
+
+        documentReference.get().addOnCompleteListener({ task ->
+            if (task.isSuccessful) {
+                val document = task.result
+                if (document.exists()) {
+                    Log.d(javaClass.simpleName, "User statistics data: " + document.data!!)
+
+                    val reportedPins = document["reportedPins"].toString().toInt() + 1
+                    documentReference.update("reportedPins", reportedPins)
+
+                } else {
+                    Log.d(javaClass.simpleName, "No such document")
+                }
+            } else {
+                Log.d(javaClass.simpleName, "get failed with " + task.exception)
+            }
+        })
+    }
 }
 

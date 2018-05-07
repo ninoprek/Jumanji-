@@ -59,6 +59,18 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
         Log.d(javaClass.simpleName, "DISPOSABLE result: " + result.isDisposed)
         return result.isDisposed.equals(true)
     }
+
+    fun initializeUserPinNumber (user: String) {
+        Single.fromCallable { repository.initializeUserPinNumber(user) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()
+    }
+
+    fun updateUserPinNumber (user: String) {
+        Single.fromCallable { repository.updateUserPinNumber(user) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe()
+    }
 }
 
 
