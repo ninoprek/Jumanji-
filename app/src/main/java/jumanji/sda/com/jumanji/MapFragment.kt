@@ -1,7 +1,6 @@
 package jumanji.sda.com.jumanji
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -9,12 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
-import android.support.annotation.RequiresPermission
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
@@ -33,12 +34,12 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.fragment_map.*
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
@@ -65,6 +66,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private var trashLocationViewModel: TrashLocationViewModel? = null
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
+    private lateinit var profileViewModel: ProfileViewModel
+    private var email: String? = ""
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -74,6 +77,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
+
+        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        profileViewModel.getUserProfile(this.context!!)
+
+        profileViewModel.userInfo?.observe(this, Observer {
+            email = it?.email
+        })
 
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
@@ -219,7 +229,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 .addOnCompleteListener { task ->
                     try {
                         val result = task.getResult(ApiException::class.java)
-                            locationViewModel.startLocationUpdates(context)
+                        locationViewModel.startLocationUpdates(context)
                     } catch (e: ApiException) {
                         if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             try {
@@ -289,12 +299,18 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val photoRepository = PhotoRepository("user@email.com")
+        val photoRepository = PhotoRepository(email)
 
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    photoRepository.savePhoto(data,activity)
+                    val photoFile = File(mCurrentPhotoPath)
+                    // Continue only if the File was successfully created
+                    val photoURI: Uri = FileProvider.getUriForFile(context!!,
+                            "com.android.fileprovider",
+                            photoFile)
+                    data?.data = photoURI
+                    photoRepository.storePhotoToDatabase(data, activity)
 
                     //TODO for presentation only
 
@@ -304,7 +320,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    photoRepository.savePhoto(data,activity)
+                    photoRepository.storePhotoToDatabase(data, activity)
                     val position = getLatLngFromPhoto(data)
                     if (position.latitude == 0.0 && position.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
@@ -313,7 +329,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                     } else {
                         Log.d("TAG", "lat lng of photo : $position")
                     }
-
 
 
                     //   val position = getLatLngFromPhoto(data)
@@ -350,10 +365,47 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         builder.show()
     }
 
+    private var mCurrentPhotoPath: String = ""
+
+    private fun createImageFile(): File
+    {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date ());
+        val imageFileName: String = "JPEG_"+timeStamp+"_"
+        val storageDir = Environment.getExternalStoragePublicDirectory(Environment.MEDIA_SHARED)
+
+        if (!storageDir.isDirectory)
+            storageDir.mkdir()
+
+        val imageFile = File.createTempFile (
+                imageFileName, /* prefix */
+                ".jpg", /* suffix */
+                storageDir     /* directory */
+        )
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = imageFile.absolutePath
+        return imageFile
+    }
+
     private fun cameraIntent() {
         locationViewModel.flushLocations()
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, REQUEST_CAMERA_CODE)
+        if (intent.resolveActivity(context?.packageManager) != null) {
+            try {
+                val photoFile: File = createImageFile()
+            // Continue only if the File was successfully created
+                var photoURI: Uri = FileProvider.getUriForFile(context!!,
+                "com.android.fileprovider",
+                photoFile)
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                intent.putExtra("return-data", true)
+                startActivityForResult(intent, REQUEST_CAMERA_CODE)
+            } catch (ex: IOException) {
+                // Error occurred while creating the File
+                Log.e(ex.message, ex.toString())
+            }
+        }
     }
 
     private fun galleryIntent() {

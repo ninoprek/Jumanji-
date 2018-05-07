@@ -2,6 +2,7 @@ package jumanji.sda.com.jumanji
 
 import android.content.Intent
 import android.net.Uri
+import android.provider.MediaStore
 import android.support.annotation.NonNull
 import android.support.v4.app.FragmentActivity
 import android.util.Log
@@ -18,12 +19,16 @@ class PhotoRepository (email: String?) {
 
     val email = email
 
-    fun savePhoto(data: Intent?, activity: FragmentActivity?) {
+    fun storePhotoToDatabase(data: Intent?, activity: FragmentActivity?) {
 
-        val uri = data?.data
+        var uri = data?.data
         val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("$email/images")
         val imageRef = mStorageRef.child("$uri")
         Log.e("value", "uri Value: $uri")
+
+        if (uri == null) {
+            uri = data!!.extras[MediaStore.EXTRA_OUTPUT] as Uri
+        }
 
         if (uri != null) {
             imageRef.putFile(uri)
