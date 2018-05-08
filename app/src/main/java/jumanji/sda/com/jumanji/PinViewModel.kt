@@ -99,12 +99,12 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 .subscribe()
     }
 
-    fun getPinData(user: String) {
-        return repository.getUserPins(user)
+    fun getPinData(user : String) {
+        return repository.getUserPinsFromRoom(user)
     }
 
     fun deletePinData(pinId: String) {
-        Single.fromCallable { repository.deletePinFromDatabase(pinId) }
+        Single.fromCallable { repository.deletePinFromFirebase(pinId) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }

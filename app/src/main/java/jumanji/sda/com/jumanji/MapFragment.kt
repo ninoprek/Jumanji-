@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.PopupWindow
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationCallback
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
 import java.io.IOException
@@ -61,6 +63,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var locationCallback: LocationCallback
     private lateinit var pinViewModel: PinViewModel
+    private lateinit var profileViewModel: ProfileViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
 
     var userChoosenTask: String = ""
@@ -68,7 +71,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private var pinViewModel1: PinViewModel? = null
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
-    private lateinit var profileViewModel: ProfileViewModel
     private var email: String? = ""
 
 
@@ -90,6 +92,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         mapPreference = CameraStateManager()
         locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
         pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         mapAdapter = GoogleMapAdapter()
 
@@ -118,26 +121,43 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
-        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
         reportFab.setOnClickListener {
             selectImage()
         }
 
-        addPin.setOnClickListener {
+        var user = ""
+        val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
 
-            pinViewModel.testSavePinData()
-            Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
+        if (userAuthentication.currentUser?.displayName != null) {
+            user = userAuthentication.currentUser?.displayName.toString()
+        } else {
+            val acct = GoogleSignIn.getLastSignedInAccount(context)
+            user = acct?.givenName.toString()
+        }
+
+        profileViewModel.updateUserStatistics(user)
+
+        addPin.setOnClickListener {
+            profileViewModel.updateUserPinNumber(user)
+            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
-
-            val view = it
-            pinViewModel.testGetPinData()
-
-            pinViewModel.pinDataAll?.observe(this, Observer {
-                Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
-            })
+            profileViewModel.updateUserCleanedPinNumber(user)
+            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
+
+        profileViewModel.reportedPins.observe(this, Observer { reportedPins ->
+            if (reportedPins != null) {
+                totalNoOfTrashLocationText.text = reportedPins
+            }
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer { cleanedPins ->
+            if (cleanedPins != null) {
+                totalNoOfTrashLocationClearedText.text = cleanedPins
+            }
+        })
     }
 
     override fun onResume() {

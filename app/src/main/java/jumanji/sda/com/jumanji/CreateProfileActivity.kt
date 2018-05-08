@@ -54,6 +54,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
                 val profile = UserProfile(userName, password, email, uriString)
                 viewModel.saveUserProfile(profile)
 
+                viewModel.initializeUserPinNumber(userName)
+
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
                 this.finish()
