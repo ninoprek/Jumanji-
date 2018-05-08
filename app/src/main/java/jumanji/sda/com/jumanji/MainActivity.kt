@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
     //Animation for logo on startup the application.
         logo_Image_View.animate()
                 .translationXBy(-900f)

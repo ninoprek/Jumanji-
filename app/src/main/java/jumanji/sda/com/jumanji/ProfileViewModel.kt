@@ -3,7 +3,6 @@ package jumanji.sda.com.jumanji
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
-import android.content.Context
 import android.util.Log
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -16,25 +15,16 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
 
     val reportedPins: MutableLiveData<String> = repository.reportedPins
     val cleanedPins: MutableLiveData<String> = repository.cleanedPins
-
     val userInfo: MutableLiveData<UserProfile>? = repository.userInfo
 
     val userName = profile?.userName
     val email = profile?.email
-    val uri = profile?.pictureURI
+    val uri = profile?.photoURL
 
     fun saveUserProfile(profile: UserProfile) {
         Single.fromCallable { repository.createNewUser(profile) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
-    }
-
-    fun getUserProfile(context: Context) {
-        /*Single.fromCallable { repository.getUserInformation(context) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()*/
-
-        repository.getUserInformation(context)
     }
 
     fun updateUserProfile(profile: UserProfile) {

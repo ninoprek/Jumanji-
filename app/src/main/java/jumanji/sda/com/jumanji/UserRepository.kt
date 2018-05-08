@@ -15,20 +15,60 @@ data class UserProfile(
         val userName: String = "",
         val password: String = "",
         val email: String = "",
-        val pictureURI: String = ""
+        val photoURL: String = ""
 )
 
 class UserRepository (context: Context) {
     companion object {
         private const val TAG = "write to database"
+        const val PREFERENCE_NAME = "user_data"
+        const val KEY_USER_NAME = "user_name"
+        const val KEY_PASSWORD = "password"
+        const val KEY_EMAIL = "email"
+        const val KEY_PHOTO_URL = "photo_url"
     }
 
     private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
     val reportedPins: MutableLiveData<String> = MutableLiveData()
     val cleanedPins: MutableLiveData<String> = MutableLiveData()
-
     val userInfo: MutableLiveData<UserProfile> = MutableLiveData()
+
+    val userNameSharedPref = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
+
+    init {
+        userNameSharedPref.registerOnSharedPreferenceChangeListener ({ userNameSharedPref, key ->
+            if (key == PREFERENCE_NAME) {
+                val user  = UserProfile(
+                        userNameSharedPref.getString(KEY_USER_NAME, ""),
+                        userNameSharedPref.getString(KEY_PASSWORD, ""),
+                        userNameSharedPref.getString(KEY_EMAIL, ""),
+                        userNameSharedPref.getString(KEY_PHOTO_URL, "")
+                )
+                userInfo.postValue(user)
+            }
+        })
+        getUserInformation(context)
+    }
+
+    private fun getUserInformation(context: Context) {
+        if (userAuthentication.currentUser?.displayName != null) {
+            userInfo.value = UserProfile(userAuthentication.currentUser?.displayName.toString(),
+                    "",
+                    userAuthentication.currentUser?.email.toString(),
+                    userAuthentication.currentUser?.photoUrl.toString())
+        } else {
+            val acct = GoogleSignIn.getLastSignedInAccount(context)
+            userInfo.value = UserProfile(acct?.givenName.toString(),
+                    "",
+                    acct?.email.toString(),
+                    acct?.photoUrl.toString())
+        }
+    }
+
+    fun changeUserSharedPreferences(userName: String = "", password: String = "", email: String = "", photoURL: String = "") {
+
+    }
 
     fun storeToDatabase(userProfile: UserProfile) {
 
@@ -38,27 +78,10 @@ class UserRepository (context: Context) {
         val user: HashMap<String, Any> = HashMap()
         user.put("userName", userProfile.userName)
         user.put("email", userProfile.email)
-        user.put("pictureURI", userProfile.pictureURI)
+        user.put("pictureURI", userProfile.photoURL)
 
         database.collection("userProfiles").document(userProfile.email)
                 .set(user)
-    }
-
-    fun getUserInformation(context: Context) {
-        if (userAuthentication.currentUser?.displayName != null) {
-            userInfo.value = UserProfile(userAuthentication.currentUser?.displayName.toString(),
-                    "",
-                    userAuthentication.currentUser?.email.toString(),
-                    userAuthentication.currentUser?.photoUrl.toString())
-        } else {
-
-            val acct = GoogleSignIn.getLastSignedInAccount(context)
-
-            userInfo.value = UserProfile(acct?.givenName.toString(),
-                    "",
-                    acct?.email.toString(),
-                    acct?.photoUrl.toString())
-        }
     }
 
     fun createNewUser(userProfile: UserProfile) {
@@ -82,7 +105,7 @@ class UserRepository (context: Context) {
 
         val profileUpdates = UserProfileChangeRequest.Builder()
                 .setDisplayName(userProfile.userName)
-                .setPhotoUri(Uri.parse(userProfile.pictureURI))
+                .setPhotoUri(Uri.parse(userProfile.photoURL))
                 .build()
 
         user?.updateProfile(profileUpdates)

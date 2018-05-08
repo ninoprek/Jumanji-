@@ -83,7 +83,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         mapView.onCreate(savedInstanceState)
 
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-        profileViewModel.getUserProfile(this.context!!)
 
         profileViewModel.userInfo?.observe(this, Observer {
             email = it?.email
