@@ -29,7 +29,7 @@ class PinViewModel (application: Application) : AndroidViewModel(application) {
 
     fun getPinData(user : String) {
 
-        return repository.getUserPins(user)
+        return repository.getUserPinsFromRoom(user)
     }
 
     fun deletePinData(pinId: String) {

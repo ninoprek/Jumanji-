@@ -28,7 +28,7 @@ class PinRepository(application: Application) {
     var userPinData: MutableLiveData<List<PinData>> = MutableLiveData()
     var pinDataAll: MutableLiveData<List<PinData>> = MutableLiveData()
 
-    fun storePinToDatabase(pinData: PinDataInfo, user: String) {
+    fun storePinToFirebase(pinData: PinDataInfo, user: String) {
 
         val pin: HashMap<String, Any> = HashMap()
         pin.put("longitude", pinData.longitude)
@@ -93,7 +93,7 @@ class PinRepository(application: Application) {
                 })
     }
 
-    fun deletePinFromDatabase(pinId: String) {
+    fun deletePinFromFirebase(pinId: String) {
 
         val documentReference = database.collection(FirebaseAuth.getInstance().currentUser?.displayName.toString()).document(pinId)
         if (documentReference.delete().isSuccessful) {
@@ -116,8 +116,8 @@ class PinRepository(application: Application) {
 
         val pin3 = PinDataInfo(61.522433f, 19.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
         val pin4 = PinDataInfo(62.522433f, 20.917423f   , "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
-        storePinToDatabase(pin3, user)
-        storePinToDatabase(pin4, user)
+        storePinToFirebase(pin3, user)
+        storePinToFirebase(pin4, user)
     }
 
     fun getAllPinsFromRoom() {
@@ -131,6 +131,10 @@ class PinRepository(application: Application) {
 
         val returnRoomValue = roomPinDb.userDao().findTaskById(user)
         userPinData.postValue(returnRoomValue)
+    }
+
+    fun deletePinFromRoom(pinData: PinData) {
+        roomPinDb.userDao().deletePinData(pinData)
     }
 }
 
