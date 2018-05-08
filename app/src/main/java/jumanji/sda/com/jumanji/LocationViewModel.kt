@@ -82,9 +82,10 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                if (it!= null) {
+                if (it != null) {
                     val location = LatLng(it.latitude, it.longitude)
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel),
+                            500, null)
                 }
             }
         }

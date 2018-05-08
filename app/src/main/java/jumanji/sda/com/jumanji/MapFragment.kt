@@ -29,7 +29,6 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -46,11 +45,11 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-interface setOnPopUpWindowAdapter {
+interface SetOnPopUpWindowAdapter {
     fun displayPopUpWindow(marker: Marker)
 }
 
-class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWindowAdapter {
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter {
 
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
@@ -71,7 +70,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
     private lateinit var profileViewModel: ProfileViewModel
 
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
-    var userChoosenTask: String = ""
+    private var userChoosenTask: String = ""
 
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
@@ -98,7 +97,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
         mapAdapter = GoogleMapAdapter()
 
         checkUserLocationSetting()
-
 
         locationViewModel.currentLocation.observe(activity!!, Observer {
             if (it != null) {
@@ -134,7 +132,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
             val acct = GoogleSignIn.getLastSignedInAccount(context)
             user = acct?.givenName.toString()
         }
-
 
         profileViewModel.updateUserStatistics(user)
 
@@ -203,7 +200,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
         enableMyLocationLayer()
 
         map.setOnMyLocationButtonClickListener {
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, LocationViewModel.DEFAULT_ZOOM_LEVEL))
+            locationViewModel.moveToLastKnowLocation(map)
             true
         }
 
