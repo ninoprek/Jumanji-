@@ -5,6 +5,7 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
+import android.util.Log
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import io.reactivex.Single
@@ -18,14 +19,19 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
     private val factorToExpandLatLngBoundsForQuery = 0.21
     private var previousCameraZoom = LocationViewModel.DEFAULT_ZOOM_LEVEL
 
-    private val pinDataCache: MutableLiveData<List<PinData>> = repository.pinDataAll
+    var pinDataCache: LiveData<List<PinData>> = repository.loadPinsWithBounds()
 
-    private val locations: MutableLiveData<List<LatLng>> = MutableLiveData() //TODO: receive location data from database
     private val trashFreeLocations: MutableLiveData<List<LatLng>> = MutableLiveData()//TODO: receive location data from database
     val trashMarkers: LiveData<List<Marker>> = Transformations
-            .map(locations) {
-                it.map { map.addMarker(MarkerOptions().position(it).visible(false)) }
+            .map(pinDataCache) {pinDataList ->
+                pinDataList.map {pinData ->
+                    val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
+                    val marker = map.addMarker(MarkerOptions().position(position).visible(false))
+                    marker.tag = pinData.imageURL
+                    return@map marker
+                }
             }
+
     val trashFreeMarkers: LiveData<List<Marker>> = Transformations
             .map(trashFreeLocations) {
                 it.map {
@@ -49,7 +55,7 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 map.clear()
                 previousCameraZoom = map.cameraPosition.zoom
                 previousViewForQuery = latLngBoundsForQuery
-                loadTrashLocations(latLngBoundsForQuery)
+                loadTrashLocations()
                 loadTrashFreeLocations(latLngBoundsForQuery)
             } else {
                 if (!this::previousViewForQuery.isInitialized ||
@@ -59,7 +65,7 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                     map.clear()
                     previousCameraZoom = map.cameraPosition.zoom
                     previousViewForQuery = latLngBoundsForQuery
-                    loadTrashLocations(latLngBoundsForQuery)
+                    loadTrashLocations()
                     loadTrashFreeLocations(latLngBoundsForQuery)
                 }
             }
@@ -75,8 +81,8 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 boundsForQuery.northeast.longitude + factorToExpandLatLngBoundsForQuery))
     }
 
-    private fun loadTrashLocations(latLngBounds: LatLngBounds) {
-
+    private fun loadTrashLocations() : LiveData<List<PinData>> {
+        return repository.loadPinsWithBounds()
     }
 
     private fun loadTrashFreeLocations(latLngBounds: LatLngBounds) {
@@ -99,7 +105,7 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 .subscribe()
     }
 
-    fun getPinData(user : String) {
+    fun getPinData(user: String) {
         return repository.getUserPinsFromRoom(user)
     }
 
