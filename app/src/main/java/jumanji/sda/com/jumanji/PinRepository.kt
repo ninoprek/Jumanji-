@@ -127,7 +127,7 @@ class PinRepository(application: Application) {
 
     }
 
-    fun getUserPins(user: String) {
+    fun getUserPinsFromRoom(user: String) {
 
         val returnRoomValue = roomPinDb.userDao().findTaskById(user)
         userPinData.postValue(returnRoomValue)
