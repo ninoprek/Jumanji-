@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 
 import android.os.Bundle
 import android.os.Environment
@@ -28,7 +29,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
 
     var userChoosenTask: String = ""
 
-    private var uriString = ""
+    private lateinit var uriString: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,12 +51,13 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
                 val userName = userNameField.text.toString()
                 val email = emailField.text.toString()
                 val password = passwordField.text.toString()
+                val photoRepository = PhotoRepository(email)
 
-                val profile = UserProfile(userName, password, email, uriString)
+                val profile = UserProfile(userName, password, email, uriString?.toString())
                 viewModel.saveUserProfile(profile)
-
                 viewModel.initializeUserPinNumber(userName)
 
+                photoRepository.storePhotoToDatabase(uriString, this)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
                 this.finish()
@@ -136,7 +138,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
         if (data != null) {
             try {
                 bm = MediaStore.Images.Media.getBitmap(applicationContext.contentResolver, data.data)
-                uriString = data.dataString
+                uriString = data?.data
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -165,6 +167,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
         }
 
         profilePhoto.setImageBitmap(thumbnail)
+        uriString = Uri.fromFile(destination.absoluteFile)
     }
 
     override fun afterTextChanged(s: Editable?) {
