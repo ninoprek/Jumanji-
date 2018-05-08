@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.PopupWindow
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationCallback
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
 import java.io.IOException
@@ -69,7 +71,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     private var trashLocationViewModel: TrashLocationViewModel? = null
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
-    private lateinit var profileViewModel: ProfileViewModel
     private var email: String? = ""
 
 
