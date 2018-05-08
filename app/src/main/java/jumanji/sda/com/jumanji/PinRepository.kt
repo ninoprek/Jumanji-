@@ -66,7 +66,6 @@ class PinRepository(application: Application) {
 //    }
 
     fun storeAllPinsFromFirebaseToRoom() {
-
         val firebaseDb = FirebaseFirestore.getInstance()
 
         firebaseDb.collection("allPins").get()
@@ -76,7 +75,8 @@ class PinRepository(application: Application) {
 
                         for (document in pins) {
 
-                            val pin = PinData(document.id, document["longitude"].toString().toFloat(),
+                            val pin = PinData(document.id,
+                                    document["longitude"].toString().toFloat(),
                                     document["latitude"].toString().toFloat(),
                                     document["username"].toString(),
                                     document["imageURL"].toString()
