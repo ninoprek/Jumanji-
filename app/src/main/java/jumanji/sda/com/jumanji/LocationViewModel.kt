@@ -29,27 +29,11 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private lateinit var locationCallback: LocationCallback
     var currentLocation: LiveData<LatLng> = MutableLiveData()
 
-    fun moveToDefaultLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                LatLng(LocationViewModel.DEFAULT_LATITUDE,
-                        LocationViewModel.DEFAULT_LONGITUDE), zoomLevel))
-    }
-
-    fun moveToLastKnowLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
-        if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                val location = LatLng(it.latitude, it.longitude)
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
-            }
-        }
-    }
-
     private fun createLocationSettingRequest() {
         locationRequest = LocationRequest().apply {
-            interval = 60000
-            fastestInterval = 10000
-            priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+            interval = 3000
+            fastestInterval = 1000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
 
@@ -69,7 +53,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
                 locationResult?.let { locationResult ->
                     val lastIndex = locationResult.locations.lastIndex
                     val location = locationResult.locations[lastIndex]
-                    Log.d("TAG", "${location.latitude}, ${location.longitude}")
+                    Log.d("TAG", "location from GPS: ${location.latitude}, ${location.longitude}")
                     (currentLocation as MutableLiveData).postValue(
                             LatLng(location.latitude, location.longitude))
                 }
@@ -90,14 +74,21 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-
-    fun stopLocationUpdates(locationCallback: LocationCallback) {
+    fun stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
 
-    fun flushLocations() {
-        fusedLocationProviderClient.flushLocations()
+    fun moveToLastKnowLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
+        if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                if (it != null) {
+                    val location = LatLng(it.latitude, it.longitude)
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel),
+                            500, null)
+                }
+            }
+        }
     }
-
 }
 

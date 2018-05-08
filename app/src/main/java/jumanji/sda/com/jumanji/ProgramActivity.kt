@@ -1,11 +1,13 @@
 package jumanji.sda.com.jumanji
 
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity() {
@@ -18,6 +20,9 @@ class ProgramActivity : AppCompatActivity() {
 
         container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
         tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
+
+        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
+        pinViewModel.testSavePinData()
     }
 
     class PagerAdapter(fragmentManger: FragmentManager) : FragmentPagerAdapter(fragmentManger) {
