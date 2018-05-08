@@ -3,6 +3,7 @@ package jumanji.sda.com.jumanji
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
+import android.content.Context
 import android.util.Log
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -39,6 +40,13 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
 
     fun signOut(){
         Single.fromCallable { repository.userSignOut() }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
+    }
+
+    fun googleSignOut(context: Context){
+        Single.fromCallable { repository.googleSignOut(context)}
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()

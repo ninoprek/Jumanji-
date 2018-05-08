@@ -2,13 +2,20 @@ package jumanji.sda.com.jumanji
 
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.UserProfileChangeRequest
 import java.util.*
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+
+
 
 
 data class UserProfile(
@@ -67,7 +74,7 @@ class UserRepository (context: Context) {
     }
 
     fun changeUserSharedPreferences(userName: String = "", password: String = "", email: String = "", photoURL: String = "") {
-
+        TODO("implement this")
     }
 
     fun storeToDatabase(userProfile: UserProfile) {
@@ -120,6 +127,14 @@ class UserRepository (context: Context) {
 
     fun userSignOut() {
         userAuthentication.signOut()
+    }
+
+    fun googleSignOut(context: Context) {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build()
+        val client = GoogleSignIn.getClient(context, gso)
+        client.signOut()
     }
 
     fun userDelete() : Boolean {

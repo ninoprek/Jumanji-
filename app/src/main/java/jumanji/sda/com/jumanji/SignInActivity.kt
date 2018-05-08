@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -19,7 +20,7 @@ import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
 class SignInActivity : AppCompatActivity(), TextWatcher {
-    //val profileViewModel = ProfileViewModel()
+
     var userName = ""
     var email = ""
     var uriString = ""
@@ -92,10 +93,10 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
             val signedInAccountFromIntent = GoogleSignIn.getSignedInAccountFromIntent(data)
             if (signedInAccountFromIntent.isSuccessful) {
 
+                val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
                 val database  = FirebaseFirestore.getInstance()
-                var  profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
                 val userName = GoogleSignIn.getLastSignedInAccount(this)?.givenName.toString()
-
+                Log.d(javaClass.simpleName + "Google account", "This is the current google account: $database")
 
                 if (database.collection("userStatistics").document(userName) == null) {
                     profileViewModel.initializeUserPinNumber(userName)
@@ -112,14 +113,6 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
     private fun getInfo(info: Task<GoogleSignInAccount>) {
         val result = info.result
         Toast.makeText(this, "Welcome  " + result.displayName, Toast.LENGTH_LONG).show()
-
-        /*userName = result.givenName!!
-        email = result.email!!
-        uriString = result.photoUrl.toString()
-
-
-        val profile = UserProfile(userName, "", email, uriString)
-        profileViewModel.updateUserProfile(profile)*/
     }
 
     override fun afterTextChanged(s: Editable?) {

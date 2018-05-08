@@ -4,21 +4,25 @@ import android.Manifest
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
+import java.lang.Thread.sleep
+import android.content.DialogInterface
+import android.support.v7.app.AlertDialog
 
 
 class ProfileFragment : Fragment(), OnMapReadyCallback {
@@ -50,19 +54,27 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
 
         signOutButton.setOnClickListener {
             val user = FirebaseAuth.getInstance().currentUser
-           // val googleUser = GoogleSignIn.getLastSignedInAccount(context)
-
-            Log.d("USER: ", user.toString())
-            //Log.d("GOOGLE USER: ", googleUser.toString())
-
-            profileViewModel.signOut()
+            val googleUser = GoogleSignIn.getLastSignedInAccount(context)
 
             if (user != null) {
-                Snackbar.make(it, "${username}, you are signed out", Snackbar.LENGTH_SHORT).show()
+               // Snackbar.make(it, "${username}, you are signed out", Snackbar.LENGTH_SHORT).show()
+                profileViewModel.signOut()
+                goToSignIn()
+
+            } else if (googleUser != null) {
+                //Snackbar.make(it, "${username}, you are signed out", Snackbar.LENGTH_SHORT).show()
+                profileViewModel.googleSignOut(this.requireContext())
+                goToSignIn()
             } else {
-                Snackbar.make(it, "No user is currently singed in.", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(it, "No user is currently singed in.", Snackbar.LENGTH_SHORT).show()
             }
+
         }
+    }
+
+    fun goToSignIn() {
+        val intent = Intent(context, SignInActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onStart() {

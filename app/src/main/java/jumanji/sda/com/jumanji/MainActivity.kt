@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -13,13 +14,14 @@ import java.lang.Thread.sleep
 
 class MainActivity : AppCompatActivity() {
 
-    var authenticator = FirebaseAuth.getInstance()
-    var user = authenticator.currentUser
+    private var authenticator = FirebaseAuth.getInstance()
+    private var user = authenticator.currentUser
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val googleUser = GoogleSignIn.getLastSignedInAccount(this)
     //Animation for logo on startup the application.
         logo_Image_View.animate()
                 .translationXBy(-900f)
@@ -37,10 +39,8 @@ class MainActivity : AppCompatActivity() {
                 .rotation(360f)
                 .duration= 2000
 
-
-
         //Check if the user is sign in (go to the map) or he/she should redirected to the sign in activity
-        if (user != null) {
+        if (user != null || googleUser != null) {
             val intent = Intent(this, ProgramActivity::class.java)
             startActivity(intent)
             this.finish()
