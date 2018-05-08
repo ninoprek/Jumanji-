@@ -70,7 +70,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
     private lateinit var pinViewModel: PinViewModel
     private lateinit var profileViewModel: ProfileViewModel
 
-    private lateinit var locationCallback: LocationCallback
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
     var userChoosenTask: String = ""
 
@@ -199,6 +198,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
         map = googleMap
         map.isIndoorEnabled = false
         val cameraState = mapPreference.getCameraState()
+
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
         enableMyLocationLayer()
 
@@ -281,7 +281,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
                 .addOnCompleteListener { task ->
                     try {
                         task.getResult(ApiException::class.java)
-//                        locationViewModel.startLocationUpdates(context) //TODO
                     } catch (e: ApiException) {
                         if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             try {

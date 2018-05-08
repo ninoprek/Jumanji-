@@ -29,16 +29,6 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private lateinit var locationCallback: LocationCallback
     var currentLocation: LiveData<LatLng> = MutableLiveData()
 
-    fun moveToLastKnowLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
-        if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                val location = LatLng(it.latitude, it.longitude)
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
-            }
-        }
-    }
-
     private fun createLocationSettingRequest() {
         locationRequest = LocationRequest().apply {
             interval = 3000
@@ -86,6 +76,18 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
 
     fun stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+    }
+
+    fun moveToLastKnowLocation(map: GoogleMap, zoomLevel: Float = DEFAULT_ZOOM_LEVEL) {
+        if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                if (it!= null) {
+                    val location = LatLng(it.latitude, it.longitude)
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
+                }
+            }
+        }
     }
 }
 
