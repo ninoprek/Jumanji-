@@ -65,7 +65,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
     var userChoosenTask: String = ""
 
-    private var trashLocationViewModel: TrashLocationViewModel? = null
+    private var pinViewModel1: PinViewModel? = null
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
     private lateinit var profileViewModel: ProfileViewModel
@@ -105,7 +105,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         refreshFab.setOnClickListener {
             if (currentView != null && mapAdapter.map != null) {
                 Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
-                trashLocationViewModel?.loadLocations(currentView, true)
+                pinViewModel1?.loadLocations(currentView, true)
                 mapAdapter.bindMarkers()
             }
         }
@@ -191,12 +191,12 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
             true
         }
 
-        trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
-        trashLocationViewModel?.let { trashLocationViewModel ->
-            trashLocationViewModel.map = map
+        pinViewModel1 = ViewModelProviders.of(this)[PinViewModel::class.java]
+        pinViewModel1?.let { pinViewModel1 ->
+            pinViewModel1.map = map
             mapAdapter.map = map
 
-            trashLocationViewModel.trashMarkers.observe(this, Observer {
+            pinViewModel1.trashMarkers.observe(this, Observer {
                 it?.let {
                     mapAdapter.trashLocationMarkers = it
                     mapAdapter.bindMarkers()
@@ -204,7 +204,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 }
             })
 
-            trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
+            pinViewModel1.trashFreeMarkers.observe(this, Observer {
                 it?.let {
                     mapAdapter.trashFreeMarkers = it
                     mapAdapter.bindMarkers()
@@ -214,7 +214,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
             map.setOnCameraIdleListener {
 
                 currentView = map.projection.visibleRegion.latLngBounds
-                trashLocationViewModel.loadLocations(currentView, false)
+                pinViewModel1.loadLocations(currentView, false)
                 mapAdapter.bindMarkers()
             }
         }
@@ -342,10 +342,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                             photoFile)
                     data?.data = photoURI
                     photoRepository.storePhotoToDatabase(photoURI, activity)
-
-                    //TODO for presentation only
-
-
                 }
             }
 

@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
+import com.google.android.gms.maps.model.LatLng
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
