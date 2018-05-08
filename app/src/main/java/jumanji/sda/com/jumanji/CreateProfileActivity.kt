@@ -2,6 +2,7 @@ package jumanji.sda.com.jumanji
 
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
+import android.content.ContentResolver
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -29,7 +30,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
 
     var userChoosenTask: String = ""
 
-    private lateinit var uriString: Uri
+    private var uriString: Uri = Uri.parse("android.resource://jumanji.sda.com.jumanji/" + R.drawable.download)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
