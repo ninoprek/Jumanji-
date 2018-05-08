@@ -170,9 +170,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
     override fun onPause() {
         super.onPause()
         mapView.onPause()
-        if (this::locationCallback.isInitialized) {
-            locationViewModel.stopLocationUpdates(locationCallback)
-        }
     }
 
     override fun onStop() {
@@ -200,7 +197,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-        Log.d("TAG", "map is ready")
         map.isIndoorEnabled = false
         val cameraState = mapPreference.getCameraState()
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
@@ -242,7 +238,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
 
             map.animateCamera(CameraUpdateFactory.scrollBy(xOffset, yOffset),
                     100,
-                    object: GoogleMap.CancelableCallback {
+                    object : GoogleMap.CancelableCallback {
                         override fun onFinish() {
                             displayPopUpWindow(marker)
                         }
@@ -284,8 +280,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
         locationViewModel.initiateUserSettingCheck(context)
                 .addOnCompleteListener { task ->
                     try {
-                        val result = task.getResult(ApiException::class.java)
-                        locationViewModel.startLocationUpdates(context)
+                        task.getResult(ApiException::class.java)
+//                        locationViewModel.startLocationUpdates(context) //TODO
                     } catch (e: ApiException) {
                         if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             try {
@@ -359,6 +355,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
 
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
+                locationViewModel.stopLocationUpdates()
                 if (resultCode == Activity.RESULT_OK) {
                     val photoFile = File(mCurrentPhotoPath)
                     // Continue only if the File was successfully created
@@ -395,7 +392,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
             if (items[item] == "Take Photo") {
                 userChoosenTask = "Take Photo"
                 if (result)
-                    cameraIntent()
+                    locationViewModel.startLocationUpdates(this@MapFragment.context!!)
+                cameraIntent()
             } else if (items[item] == "Choose from Library") {
                 userChoosenTask = "Choose from Library"
                 if (result)
@@ -430,7 +428,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
     }
 
     private fun cameraIntent() {
-        locationViewModel.flushLocations()
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (intent.resolveActivity(context?.packageManager) != null) {
             try {
@@ -525,12 +522,10 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, setOnPopUpWin
         }
 
         fun getCameraState(): CameraPosition {
-            val latitude = mapCameraPreferences.getFloat(
-                    LAST_KNOWN_LATITUDE,
+            val latitude = mapCameraPreferences.getFloat(LAST_KNOWN_LATITUDE,
                     LocationViewModel.DEFAULT_LATITUDE.toFloat())
                     .toDouble()
-            val longitude = mapCameraPreferences.getFloat(
-                    LAST_KNOWN_LONGITUDE,
+            val longitude = mapCameraPreferences.getFloat(LAST_KNOWN_LONGITUDE,
                     LocationViewModel.DEFAULT_LONGITUDE.toFloat())
                     .toDouble()
             val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM,

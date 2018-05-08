@@ -120,7 +120,6 @@ class PinRepository(application: Application) {
     }
 
     fun loadPinsWithBounds(): LiveData<List<PinData>> {
-        Log.d("TAG", "Load pin data from room in repository.")
         return roomPinDb.userDao().loadPinWithBound()
     }
 
