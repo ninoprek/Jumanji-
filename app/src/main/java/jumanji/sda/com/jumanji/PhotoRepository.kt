@@ -17,7 +17,7 @@ import java.io.File
 
 class PhotoRepository (email: String?) {
 
-    val email = email
+    val email = email?.toLowerCase()
 
     fun storePhotoToDatabase(uri: Uri?, activity: FragmentActivity?) {
 
