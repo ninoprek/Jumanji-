@@ -104,7 +104,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         map = googleMap ?: return
         map.isIndoorEnabled = false
         val zoomLevelForProfile = 14.5f
-        val viewModel = ViewModelProviders.of(this@ProfileFragment)[LocationViewModel::class.java]
+        val viewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
         viewModel.moveToLastKnowLocation(map, zoomLevelForProfile)
         val context = this@ProfileFragment.context?: return
         if (ContextCompat.checkSelfPermission(context,
@@ -112,7 +112,6 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
             map.isMyLocationEnabled = true
             map.uiSettings.isMyLocationButtonEnabled = false
             map.uiSettings.isZoomGesturesEnabled = false
-
         } else {
             Toast.makeText(context,
                     "Please enable permission to access your device location.",

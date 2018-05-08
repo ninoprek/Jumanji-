@@ -1,15 +1,14 @@
 package jumanji.sda.com.jumanji
 
 import android.app.Application
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.*
 import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.util.Log
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import android.arch.persistence.room.RoomDatabase
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -69,8 +68,8 @@ class PinRepository(application: Application) {
         val firebaseDb = FirebaseFirestore.getInstance()
 
         firebaseDb.collection("allPins").get()
-                .addOnCompleteListener ({ task ->
-                    if(task.isSuccessful) {
+                .addOnCompleteListener({ task ->
+                    if (task.isSuccessful) {
                         val pins = task.result
 
                         for (document in pins) {
@@ -80,7 +79,7 @@ class PinRepository(application: Application) {
                                     document["latitude"].toString().toFloat(),
                                     document["username"].toString(),
                                     document["imageURL"].toString()
-                                    )
+                            )
                             Single.fromCallable { roomPinDb.userDao().insert(pin) }
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
@@ -115,9 +114,13 @@ class PinRepository(application: Application) {
         val user = "nino"
 
         val pin3 = PinDataInfo(61.522433f, 19.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
-        val pin4 = PinDataInfo(62.522433f, 20.917423f   , "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
+        val pin4 = PinDataInfo(62.522433f, 20.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
         storePinToFirebase(pin3, user)
         storePinToFirebase(pin4, user)
+    }
+
+    fun loadPinsWithBounds(): LiveData<List<PinData>> {
+        return roomPinDb.userDao().loadPinWithBound()
     }
 
     fun getAllPinsFromRoom() {
@@ -151,6 +154,9 @@ interface PinDataDao {
 
     @Query("SELECT * from pinData")
     fun getAll(): List<PinData>
+
+    @Query("SELECT * FROM pinData")
+    fun loadPinWithBound(): LiveData<List<PinData>>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
