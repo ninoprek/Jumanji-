@@ -6,13 +6,8 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.*
 import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.util.Log
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import android.arch.persistence.room.RoomDatabase
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
-import android.content.Context
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -82,7 +77,8 @@ class PinRepository(application: Application) {
                                     document["longitude"].toString().toFloat(),
                                     document["latitude"].toString().toFloat(),
                                     document["username"].toString(),
-                                    document["imageURL"].toString()
+                                    document["imageURL"].toString(),
+                                    document["isTrash"] as Boolean
                             )
                             Single.fromCallable { roomPinDb.userDao().insert(pin) }
                                     .subscribeOn(Schedulers.io())
@@ -123,15 +119,8 @@ class PinRepository(application: Application) {
         storePinToFirebase(pin4, user)
     }
 
-    fun loadPinsWithBounds(): LiveData<List<PinData>> {
-        return roomPinDb.userDao().loadPinWithBound()
-    }
-
-    fun getAllPinsFromRoom() {
-
-        val returnRoomValue = roomPinDb.userDao().getAll()
-        pinDataAll.postValue(returnRoomValue)
-
+    fun loadAllTrashPins(indicator: Boolean): LiveData<List<PinData>> {
+        return roomPinDb.userDao().loadAllPins(indicator)
     }
 
     fun getUserPinsFromRoom(user: String) {
@@ -150,17 +139,14 @@ data class PinData(@PrimaryKey var pinId: String,
                    @ColumnInfo(name = "longitude") var longitude: Float,
                    @ColumnInfo(name = "latitude") var latitude: Float,
                    @ColumnInfo(name = "username") var userName: String,
-                   @ColumnInfo(name = "imageURL") var imageURL: String
+                   @ColumnInfo(name = "imageURL") var imageURL: String,
+                   @ColumnInfo(name = "isTrash") var isTrash: Boolean
 )
 
 @Dao
 interface PinDataDao {
-
-    @Query("SELECT * from pinData")
-    fun getAll(): List<PinData>
-
-    @Query("SELECT * FROM pinData")
-    fun loadPinWithBound(): LiveData<List<PinData>>
+    @Query("SELECT * FROM pinData WHERE isTrash == :indicator")
+    fun loadAllPins(indicator: Boolean): LiveData<List<PinData>>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
@@ -172,7 +158,7 @@ interface PinDataDao {
     fun deletePinData(pinData: PinData)
 }
 
-@Database(entities = [PinData::class], version = 3)
+@Database(entities = [PinData::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): PinDataDao
 }

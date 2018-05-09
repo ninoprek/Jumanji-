@@ -83,7 +83,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         mapView.onCreate(savedInstanceState)
 
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-        locationViewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
+
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
         profileViewModel.getUserProfile()
@@ -94,20 +94,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         mapPreference = CameraStateManager()
         mapAdapter = GoogleMapAdapter()
 
-        checkUserLocationSetting()
-
-        locationViewModel.currentLocation.observe(activity!!, Observer {
-            if (it != null) {
-                currentLocation = it
-            }
-        })
-
         mapView.getMapAsync(this)
 
         refreshFab.setOnClickListener {
             if (currentView != null && mapAdapter.map != null) {
                 Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
-                pinViewModel.loadLocations(currentView, true)
+                map.clear()
+                pinViewModel.loadPinData()
                 mapAdapter.bindMarkers()
             }
         }
@@ -192,10 +185,19 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.isIndoorEnabled = false
-        val cameraState = mapPreference.getCameraState()
-
-        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
         enableMyLocationLayer()
+
+        locationViewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
+        locationViewModel.currentLocation.observe(activity!!, Observer {
+            if (it != null) {
+                currentLocation = it
+            }
+        })
+
+        checkUserLocationSetting()
+
+        val cameraState = mapPreference.getCameraState()
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
 
         map.setOnMyLocationButtonClickListener {
             locationViewModel.moveToLastKnowLocation(map)
@@ -203,6 +205,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         }
 
         pinViewModel.map = map
+        pinViewModel.loadPinData()
+
         mapAdapter.map = map
 
         pinViewModel.trashMarkers.observe(this, Observer {
@@ -244,8 +248,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         }
 
         map.setOnCameraIdleListener {
-            currentView = map.projection.visibleRegion.latLngBounds
-            pinViewModel.loadLocations(currentView, false)
             mapAdapter.bindMarkers()
         }
     }
