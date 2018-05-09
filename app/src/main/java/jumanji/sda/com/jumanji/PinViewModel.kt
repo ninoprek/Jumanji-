@@ -5,35 +5,22 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
-import android.util.Log
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlin.math.abs
 
 class PinViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PinRepository(application)
     lateinit var map: GoogleMap
     private val factorToExpandLatLngBoundsForQuery = 0.21
 
-    lateinit var pinDataCache: LiveData<List<PinData>>
+    private lateinit var trashPinData: LiveData<List<PinData>>
+    private lateinit var trashFreePinData: LiveData<List<PinData>>
 
     lateinit var trashMarkers: LiveData<List<Marker>>
-
     lateinit var trashFreeMarkers: LiveData<List<Marker>>
-//            Transformations
-//            .map(trashFreeLocations) {
-//                it.map {
-//                    map.addMarker(
-//                            MarkerOptions()
-//                                    .position(it)
-//                                    .icon(BitmapDescriptorFactory.defaultMarker(
-//                                            BitmapDescriptorFactory.HUE_GREEN))
-//                                    .visible(false))
-//                }
-//            }
 
     private lateinit var previousViewForQuery: LatLngBounds
     val userPinData: MutableLiveData<List<PinData>> = repository.userPinData
@@ -41,13 +28,27 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadTrashLocations() {
         repository.storeAllPinsFromFirebaseToRoom()
-        pinDataCache = repository.loadAllPins()
+        trashPinData = repository.loadAllTrashPins(true)
+        trashFreePinData = repository.loadAllTrashPins(false)
 
-        trashMarkers = Transformations
-        .map(pinDataCache) {pinDataList ->
-            pinDataList.map {pinData ->
+        trashMarkers = Transformations.map(trashPinData) { pinDataList ->
+            pinDataList.map { pinData ->
                 val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
                 val marker = map.addMarker(MarkerOptions().position(position).visible(false).visible(false))
+                marker.tag = pinData.imageURL
+                return@map marker
+            }
+        }
+
+        trashFreeMarkers = Transformations.map(trashFreePinData) { pinDataList ->
+            pinDataList.map { pinData ->
+                val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
+                val marker = map.addMarker(
+                        MarkerOptions()
+                                .position(position)
+                                .icon(BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_GREEN))
+                                .visible(false))
                 marker.tag = pinData.imageURL
                 return@map marker
             }

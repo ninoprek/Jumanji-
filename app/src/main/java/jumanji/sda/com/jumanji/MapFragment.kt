@@ -217,13 +217,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             }
         })
 
-//        pinViewModel.trashFreeMarkers.observe(this, Observer {
-//            it?.let {
-//                mapAdapter.trashFreeMarkers = it
-//                mapAdapter.bindMarkers()
-//                totalNoOfTrashLocationClearedText.text = it.size.toString()
-//            }
-//        })
+        pinViewModel.trashFreeMarkers.observe(this, Observer {
+            it?.let {
+                mapAdapter.trashFreeMarkers = it
+                mapAdapter.bindMarkers()
+                totalNoOfTrashLocationClearedText.text = it.size.toString()
+            }
+        })
 
         map.setOnMarkerClickListener { marker ->
 
@@ -489,10 +489,10 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             trashLocationMarkers.filterNot { getCurrentView().contains(it.position) }
                     .forEach { it.isVisible = false }
 
-//            trashFreeMarkers.filter { getCurrentView().contains(it.position) }
-//                    .forEach { it.isVisible = true }
-//            trashFreeMarkers.filterNot { getCurrentView().contains(it.position) }
-//                    .forEach { it.isVisible = false }
+            trashFreeMarkers.filter { getCurrentView().contains(it.position) }
+                    .forEach { it.isVisible = true }
+            trashFreeMarkers.filterNot { getCurrentView().contains(it.position) }
+                    .forEach { it.isVisible = false }
         }
 
         private fun getCurrentView(): LatLngBounds {
