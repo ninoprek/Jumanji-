@@ -8,9 +8,6 @@ import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import android.arch.persistence.room.RoomDatabase
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -123,13 +120,7 @@ class PinRepository(application: Application) {
     }
 
     fun loadAllTrashPins(indicator: Boolean): LiveData<List<PinData>> {
-        return roomPinDb.userDao().loadAllTrashPins(indicator)
-    }
-
-    fun getAllPinsFromRoom() {
-        val returnRoomValue = roomPinDb.userDao().getAll()
-        pinDataAll.postValue(returnRoomValue)
-
+        return roomPinDb.userDao().loadAllPins(indicator)
     }
 
     fun getUserPinsFromRoom(user: String) {
@@ -149,17 +140,13 @@ data class PinData(@PrimaryKey var pinId: String,
                    @ColumnInfo(name = "latitude") var latitude: Float,
                    @ColumnInfo(name = "username") var userName: String,
                    @ColumnInfo(name = "imageURL") var imageURL: String,
-                   @ColumnInfo(name="isTrash") var isTrash: Boolean
+                   @ColumnInfo(name = "isTrash") var isTrash: Boolean
 )
 
 @Dao
 interface PinDataDao {
-
-    @Query("SELECT * from pinData")
-    fun getAll(): List<PinData>
-
     @Query("SELECT * FROM pinData WHERE isTrash == :indicator")
-    fun loadAllTrashPins(indicator: Boolean): LiveData<List<PinData>>
+    fun loadAllPins(indicator: Boolean): LiveData<List<PinData>>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>

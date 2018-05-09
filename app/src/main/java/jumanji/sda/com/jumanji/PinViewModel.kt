@@ -14,7 +14,6 @@ import io.reactivex.schedulers.Schedulers
 class PinViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PinRepository(application)
     lateinit var map: GoogleMap
-    private val factorToExpandLatLngBoundsForQuery = 0.21
 
     private lateinit var trashPinData: LiveData<List<PinData>>
     private lateinit var trashFreePinData: LiveData<List<PinData>>
@@ -22,15 +21,17 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var trashMarkers: LiveData<List<Marker>>
     lateinit var trashFreeMarkers: LiveData<List<Marker>>
 
-    private lateinit var previousViewForQuery: LatLngBounds
     val userPinData: MutableLiveData<List<PinData>> = repository.userPinData
     val pinDataAll: MutableLiveData<List<PinData>> = repository.pinDataAll
 
-    fun loadTrashLocations() {
+    fun loadPinData() {
         repository.storeAllPinsFromFirebaseToRoom()
-        trashPinData = repository.loadAllTrashPins(true)
-        trashFreePinData = repository.loadAllTrashPins(false)
+        transformPinDataToTrashMarker()
+        transformPinDataToNonTrashMarker()
+    }
 
+    private fun transformPinDataToTrashMarker() {
+        trashPinData = repository.loadAllTrashPins(true)
         trashMarkers = Transformations.map(trashPinData) { pinDataList ->
             pinDataList.map { pinData ->
                 val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
@@ -39,7 +40,10 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 return@map marker
             }
         }
+    }
 
+    private fun transformPinDataToNonTrashMarker() {
+        trashFreePinData = repository.loadAllTrashPins(false)
         trashFreeMarkers = Transformations.map(trashFreePinData) { pinDataList ->
             pinDataList.map { pinData ->
                 val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
@@ -55,28 +59,11 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun loadTrashFreeLocations(latLngBounds: LatLngBounds) {
-        //TODO: call method in repository to update locations
-        //locations = repository.loadTrashFreeLocations
-    }
-
-    fun testSavePinData() {
-
+    fun queryDataFromFirebaseToRoom() {
         Single.fromCallable { repository.storeAllPinsFromFirebaseToRoom() }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
-    }
-
-    fun testGetPinData() {
-        Single.fromCallable { repository.getAllPinsFromRoom() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe()
-    }
-
-    fun getPinData(user: String) {
-        return repository.getUserPinsFromRoom(user)
     }
 
     fun deletePinData(pinId: String) {
