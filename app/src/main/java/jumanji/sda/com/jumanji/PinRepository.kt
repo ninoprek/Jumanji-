@@ -80,7 +80,8 @@ class PinRepository(application: Application) {
                                     document["longitude"].toString().toFloat(),
                                     document["latitude"].toString().toFloat(),
                                     document["username"].toString(),
-                                    document["imageURL"].toString()
+                                    document["imageURL"].toString(),
+                                    document["isTrash"] as Boolean
                             )
                             Single.fromCallable { roomPinDb.userDao().insert(pin) }
                                     .subscribeOn(Schedulers.io())
@@ -121,8 +122,8 @@ class PinRepository(application: Application) {
         storePinToFirebase(pin4, user)
     }
 
-    fun loadAllPins(): LiveData<List<PinData>> {
-        return roomPinDb.userDao().loadAllPins()
+    fun loadAllTrashPins(indicator: Boolean): LiveData<List<PinData>> {
+        return roomPinDb.userDao().loadAllTrashPins(indicator)
     }
 
     fun getAllPinsFromRoom() {
@@ -147,7 +148,8 @@ data class PinData(@PrimaryKey var pinId: String,
                    @ColumnInfo(name = "longitude") var longitude: Float,
                    @ColumnInfo(name = "latitude") var latitude: Float,
                    @ColumnInfo(name = "username") var userName: String,
-                   @ColumnInfo(name = "imageURL") var imageURL: String
+                   @ColumnInfo(name = "imageURL") var imageURL: String,
+                   @ColumnInfo(name="isTrash") var isTrash: Boolean
 )
 
 @Dao
@@ -156,8 +158,8 @@ interface PinDataDao {
     @Query("SELECT * from pinData")
     fun getAll(): List<PinData>
 
-    @Query("SELECT * FROM pinData")
-    fun loadAllPins(): LiveData<List<PinData>>
+    @Query("SELECT * FROM pinData WHERE isTrash == :indicator")
+    fun loadAllTrashPins(indicator: Boolean): LiveData<List<PinData>>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
@@ -169,7 +171,7 @@ interface PinDataDao {
     fun deletePinData(pinData: PinData)
 }
 
-@Database(entities = [PinData::class], version = 3)
+@Database(entities = [PinData::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): PinDataDao
 }
