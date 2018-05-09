@@ -17,72 +17,41 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = PinRepository(application)
     lateinit var map: GoogleMap
     private val factorToExpandLatLngBoundsForQuery = 0.21
-    private var previousCameraZoom = LocationViewModel.DEFAULT_ZOOM_LEVEL
 
-    var pinDataCache: LiveData<List<PinData>> = repository.loadPinsWithBounds()
+    lateinit var pinDataCache: LiveData<List<PinData>>
 
-    private val trashFreeLocations: MutableLiveData<List<LatLng>> = MutableLiveData()//TODO: receive location data from database
-    val trashMarkers: LiveData<List<Marker>> = Transformations
-            .map(pinDataCache) {pinDataList ->
-                pinDataList.map {pinData ->
-                    val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
-                    val marker = map.addMarker(MarkerOptions().position(position).visible(false))
-                    marker.tag = pinData.imageURL
-                    return@map marker
-                }
-            }
+    lateinit var trashMarkers: LiveData<List<Marker>>
 
-    val trashFreeMarkers: LiveData<List<Marker>> = Transformations
-            .map(trashFreeLocations) {
-                it.map {
-                    map.addMarker(
-                            MarkerOptions()
-                                    .position(it)
-                                    .icon(BitmapDescriptorFactory.defaultMarker(
-                                            BitmapDescriptorFactory.HUE_GREEN))
-                                    .visible(false))
-                }
-            }
+    lateinit var trashFreeMarkers: LiveData<List<Marker>>
+//            Transformations
+//            .map(trashFreeLocations) {
+//                it.map {
+//                    map.addMarker(
+//                            MarkerOptions()
+//                                    .position(it)
+//                                    .icon(BitmapDescriptorFactory.defaultMarker(
+//                                            BitmapDescriptorFactory.HUE_GREEN))
+//                                    .visible(false))
+//                }
+//            }
 
     private lateinit var previousViewForQuery: LatLngBounds
     val userPinData: MutableLiveData<List<PinData>> = repository.userPinData
     val pinDataAll: MutableLiveData<List<PinData>> = repository.pinDataAll
 
-    fun loadLocations(latLngBounds: LatLngBounds?, isRefresh: Boolean) {
-        if (latLngBounds != null) {
-            val latLngBoundsForQuery = getLatLngBoundsForQuery(latLngBounds)
-            if (isRefresh) {
-                map.clear()
-                previousCameraZoom = map.cameraPosition.zoom
-                previousViewForQuery = latLngBoundsForQuery
-                loadTrashLocations()
-                loadTrashFreeLocations(latLngBoundsForQuery)
-            } else {
-                if (!this::previousViewForQuery.isInitialized ||
-                        abs(previousViewForQuery.center.latitude -
-                                latLngBoundsForQuery.center.latitude) > factorToExpandLatLngBoundsForQuery ||
-                        previousCameraZoom > map.cameraPosition.zoom) {
-                    map.clear()
-                    previousCameraZoom = map.cameraPosition.zoom
-                    previousViewForQuery = latLngBoundsForQuery
-                    loadTrashLocations()
-                    loadTrashFreeLocations(latLngBoundsForQuery)
-                }
+    fun loadTrashLocations() {
+        repository.storeAllPinsFromFirebaseToRoom()
+        pinDataCache = repository.loadAllPins()
+
+        trashMarkers = Transformations
+        .map(pinDataCache) {pinDataList ->
+            pinDataList.map {pinData ->
+                val position = LatLng(pinData.latitude.toDouble(), pinData.longitude.toDouble())
+                val marker = map.addMarker(MarkerOptions().position(position).visible(false).visible(false))
+                marker.tag = pinData.imageURL
+                return@map marker
             }
         }
-    }
-
-    private fun getLatLngBoundsForQuery(latLngBounds: LatLngBounds): LatLngBounds {
-        val boundsForQuery = latLngBounds.including(LatLng(
-                latLngBounds.southwest.latitude - factorToExpandLatLngBoundsForQuery,
-                latLngBounds.southwest.longitude - factorToExpandLatLngBoundsForQuery))
-        return boundsForQuery.including(LatLng(
-                boundsForQuery.northeast.latitude + factorToExpandLatLngBoundsForQuery,
-                boundsForQuery.northeast.longitude + factorToExpandLatLngBoundsForQuery))
-    }
-
-    private fun loadTrashLocations() : LiveData<List<PinData>> {
-        return repository.loadPinsWithBounds()
     }
 
     private fun loadTrashFreeLocations(latLngBounds: LatLngBounds) {

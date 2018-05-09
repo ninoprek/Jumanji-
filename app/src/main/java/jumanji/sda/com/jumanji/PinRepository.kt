@@ -6,13 +6,11 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.*
 import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.util.Log
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
-import android.content.Context
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -123,12 +121,11 @@ class PinRepository(application: Application) {
         storePinToFirebase(pin4, user)
     }
 
-    fun loadPinsWithBounds(): LiveData<List<PinData>> {
-        return roomPinDb.userDao().loadPinWithBound()
+    fun loadAllPins(): LiveData<List<PinData>> {
+        return roomPinDb.userDao().loadAllPins()
     }
 
     fun getAllPinsFromRoom() {
-
         val returnRoomValue = roomPinDb.userDao().getAll()
         pinDataAll.postValue(returnRoomValue)
 
@@ -160,7 +157,7 @@ interface PinDataDao {
     fun getAll(): List<PinData>
 
     @Query("SELECT * FROM pinData")
-    fun loadPinWithBound(): LiveData<List<PinData>>
+    fun loadAllPins(): LiveData<List<PinData>>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
