@@ -2,21 +2,14 @@ package jumanji.sda.com.jumanji
 
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.UserProfileChangeRequest
 import java.util.*
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-
-
-
 
 data class UserProfile(
         val userName: String = "",
@@ -227,4 +220,3 @@ class UserRepository (context: Context) {
         })
     }
 }
-
