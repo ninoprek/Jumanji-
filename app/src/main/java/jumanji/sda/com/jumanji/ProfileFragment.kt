@@ -49,26 +49,12 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         profileViewModel.userInfo?.observe(this, Observer {
             username = it?.userName
             usernameText.text = username
-            Picasso.get().load(it?.photoURL).into(profilePhotoView);
+            Picasso.get().load(it?.photoURL).into(profilePhotoView)
         })
 
         signOutButton.setOnClickListener {
-            val user = FirebaseAuth.getInstance().currentUser
-            val googleUser = GoogleSignIn.getLastSignedInAccount(context)
-
-            if (user != null) {
-               // Snackbar.make(it, "${username}, you are signed out", Snackbar.LENGTH_SHORT).show()
-                profileViewModel.signOut()
-                goToSignIn()
-
-            } else if (googleUser != null) {
-                //Snackbar.make(it, "${username}, you are signed out", Snackbar.LENGTH_SHORT).show()
-                profileViewModel.googleSignOut(this.requireContext())
-                goToSignIn()
-            } else {
-            Snackbar.make(it, "No user is currently singed in.", Snackbar.LENGTH_SHORT).show()
-            }
-
+            profileViewModel.checkIfUserSignedIn(this.requireContext())
+            goToSignIn()
         }
     }
 

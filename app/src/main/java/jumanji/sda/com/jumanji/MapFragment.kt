@@ -72,7 +72,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
 
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
-    private var email: String? = ""
+    private var email: String = ""
+    private var username: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -83,12 +84,12 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         mapView.onCreate(savedInstanceState)
 
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
         profileViewModel.getUserProfile()
         profileViewModel.userInfo?.observe(this, Observer {
-            email = it?.email
+            email = it!!.email
+            username = it!!.userName
         })
 
         mapPreference = CameraStateManager()
@@ -123,6 +124,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             val acct = GoogleSignIn.getLastSignedInAccount(context)
             user = acct?.givenName.toString()
         }
+        //Log.d("User Auth", "Manual user detection: $user")
+        //Log.d("User Observed", "Observed user detection: $username")
 
         profileViewModel.updateUserStatistics(user)
 

@@ -11,7 +11,7 @@ import io.reactivex.schedulers.Schedulers
 
 class ProfileViewModel (application: Application) : AndroidViewModel(application) {
 
-    private val repository = UserRepository(application)
+    private val repository = ProfileRepository(application)
     private val profile: UserProfile? = getUserProfile()
 
     val reportedPins: MutableLiveData<String> = repository.reportedPins
@@ -38,15 +38,8 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
         return null //repository.retrieveUserFromDatabase()
     }
 
-    fun signOut(){
-        Single.fromCallable { repository.userSignOut() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe()
-    }
-
-    fun googleSignOut(context: Context){
-        Single.fromCallable { repository.googleSignOut(context)}
+    fun checkIfUserSignedIn(context: Context){
+        Single.fromCallable { repository.signOut(context) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()

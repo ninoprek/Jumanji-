@@ -18,7 +18,7 @@ data class UserProfile(
         val photoURL: String = ""
 )
 
-class UserRepository (context: Context) {
+class ProfileRepository (context: Context) {
     companion object {
         private const val TAG = "write to database"
         const val PREFERENCE_NAME = "user_data"
@@ -116,6 +116,26 @@ class UserRepository (context: Context) {
                         Log.d(javaClass.simpleName, "Problem with updating the profile.")
                     }
                 })
+    }
+
+    fun signOut (context: Context) {
+
+        val user = FirebaseAuth.getInstance().currentUser
+        val googleUser = GoogleSignIn.getLastSignedInAccount(context)
+
+        Log.d(javaClass.simpleName, "Manual user is: $user")
+        Log.d(javaClass.simpleName, "Google user is: $googleUser")
+
+        if (user != null) {
+            userAuthentication.signOut()
+
+        } else if (googleUser != null) {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .build()
+            val client = GoogleSignIn.getClient(context, gso)
+            client.signOut()
+        }
     }
 
     fun userSignOut() {
