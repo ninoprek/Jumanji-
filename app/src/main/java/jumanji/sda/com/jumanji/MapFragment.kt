@@ -86,11 +86,33 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
-        profileViewModel.getUserProfile()
         profileViewModel.userInfo?.observe(this, Observer {
             email = it!!.email
             username = it!!.userName
         })
+
+        addPin.setOnClickListener {
+            profileViewModel.updateUserStatistics(username)
+            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
+        }
+
+        deletePin.setOnClickListener {
+            profileViewModel.updateUserCleanedPinNumber(username)
+            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
+        }
+
+        profileViewModel.reportedPins.observe(this, Observer {
+            totalNoOfTrashLocationText.text = it
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer {
+            totalNoOfTrashLocationClearedText.text = it
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
 
         mapPreference = CameraStateManager()
         mapAdapter = GoogleMapAdapter()
@@ -111,50 +133,11 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        mapView.onStart()
-
-        var user = ""
-        val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
-
-        if (userAuthentication.currentUser?.displayName != null) {
-            user = userAuthentication.currentUser?.displayName.toString()
-        } else {
-            val acct = GoogleSignIn.getLastSignedInAccount(context)
-            user = acct?.givenName.toString()
-        }
-        //Log.d("User Auth", "Manual user detection: $user")
-        //Log.d("User Observed", "Observed user detection: $username")
-
-        profileViewModel.updateUserStatistics(user)
-
-        addPin.setOnClickListener {
-            profileViewModel.updateUserPinNumber(user)
-            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-        }
-
-        deletePin.setOnClickListener {
-            profileViewModel.updateUserCleanedPinNumber(user)
-            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-        }
-
-        profileViewModel.reportedPins.observe(this, Observer { reportedPins ->
-            if (reportedPins != null) {
-                totalNoOfTrashLocationText.text = reportedPins
-            }
-        })
-
-        profileViewModel.cleanedPins.observe(this, Observer { cleanedPins ->
-            if (cleanedPins != null) {
-                totalNoOfTrashLocationClearedText.text = cleanedPins
-            }
-        })
-    }
-
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+
+        profileViewModel.updateUserStatistics(username)
     }
 
     override fun onPause() {
@@ -216,7 +199,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             it?.let {
                 mapAdapter.trashLocationMarkers = it
                 mapAdapter.bindMarkers()
-                totalNoOfTrashLocationText.text = it.size.toString()
+                //totalNoOfTrashLocationText.text = it.size.toString()
             }
         })
 
@@ -224,7 +207,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             it?.let {
                 mapAdapter.trashFreeMarkers = it
                 mapAdapter.bindMarkers()
-                totalNoOfTrashLocationClearedText.text = it.size.toString()
+                //totalNoOfTrashLocationClearedText.text = it.size.toString()
             }
         })
 

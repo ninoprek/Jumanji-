@@ -34,10 +34,10 @@ class ProfileRepository (context: Context) {
     val cleanedPins: MutableLiveData<String> = MutableLiveData()
     val userInfo: MutableLiveData<UserProfile> = MutableLiveData()
 
-    val userNameSharedPref = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
+    val userSharedPref = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
 
     init {
-        userNameSharedPref.registerOnSharedPreferenceChangeListener ({ userNameSharedPref, key ->
+        userSharedPref.registerOnSharedPreferenceChangeListener ({ userNameSharedPref, key ->
             if (key == PREFERENCE_NAME) {
                 val user  = UserProfile(
                         userNameSharedPref.getString(KEY_USER_NAME, ""),
@@ -64,6 +64,10 @@ class ProfileRepository (context: Context) {
                     acct?.email.toString(),
                     acct?.photoUrl.toString())
         }
+    }
+
+    fun getUserName () : String {
+        return userSharedPref.getString(KEY_USER_NAME, "")
     }
 
     fun changeUserSharedPreferences(userName: String = "", password: String = "", email: String = "", photoURL: String = "") {
@@ -123,9 +127,6 @@ class ProfileRepository (context: Context) {
         val user = FirebaseAuth.getInstance().currentUser
         val googleUser = GoogleSignIn.getLastSignedInAccount(context)
 
-        Log.d(javaClass.simpleName, "Manual user is: $user")
-        Log.d(javaClass.simpleName, "Google user is: $googleUser")
-
         if (user != null) {
             userAuthentication.signOut()
 
@@ -136,18 +137,6 @@ class ProfileRepository (context: Context) {
             val client = GoogleSignIn.getClient(context, gso)
             client.signOut()
         }
-    }
-
-    fun userSignOut() {
-        userAuthentication.signOut()
-    }
-
-    fun googleSignOut(context: Context) {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build()
-        val client = GoogleSignIn.getClient(context, gso)
-        client.signOut()
     }
 
     fun userDelete() : Boolean {
@@ -182,12 +171,9 @@ class ProfileRepository (context: Context) {
             if (task.isSuccessful) {
                 val document = task.result
                 if (document.exists()) {
-                    Log.d(javaClass.simpleName, "User statistics data: " + document.data!!)
-
                     val reportedPins = document["reportedPins"].toString().toInt() + 1
                     documentReference.update("reportedPins", reportedPins)
                     updateUserStatistics(user)
-
                 } else {
                     Log.d(javaClass.simpleName, "No such document")
                 }
@@ -205,12 +191,9 @@ class ProfileRepository (context: Context) {
             if (task.isSuccessful) {
                 val document = task.result
                 if (document.exists()) {
-                    Log.d(javaClass.simpleName, "User statistics data: " + document.data!!)
-
-                    val reportedPins = document["cleanedPins"].toString().toInt() + 1
-                    documentReference.update("cleanedPins", reportedPins)
+                    val cleanedPins = document["cleanedPins"].toString().toInt() + 1
+                    documentReference.update("cleanedPins", cleanedPins)
                     updateUserStatistics(user)
-
                 } else {
                     Log.d(javaClass.simpleName, "No such document")
                 }
@@ -227,10 +210,8 @@ class ProfileRepository (context: Context) {
             if (task.isSuccessful) {
                 val document = task.result
                 if (document.exists()) {
-
                     cleanedPins.postValue(document["cleanedPins"].toString())
                     reportedPins.postValue(document["reportedPins"].toString())
-
                 } else {
                     Log.d(javaClass.simpleName, "No such document")
                 }
