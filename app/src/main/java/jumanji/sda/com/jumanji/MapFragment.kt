@@ -18,14 +18,17 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -35,18 +38,19 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
-import jumanji.sda.com.jumanji.R.id.*
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
+interface SetOnPopUpWindowAdapter {
+    fun displayPopUpWindow(marker: Marker)
+}
 
-class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter {
+
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -59,21 +63,16 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     }
 
     private lateinit var mapPreference: CameraStateManager
-
     private lateinit var map: GoogleMap
     private lateinit var locationViewModel: LocationViewModel
-    private lateinit var locationCallback: LocationCallback
     private lateinit var pinViewModel: PinViewModel
+    private lateinit var profileViewModel: ProfileViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
+    private var userChoosenTask: String = ""
 
-    var userChoosenTask: String = ""
-
-    private var trashLocationViewModel: TrashLocationViewModel? = null
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
-    private lateinit var profileViewModel: ProfileViewModel
     private var email: String? = ""
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -84,19 +83,19 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         mapView.onCreate(savedInstanceState)
 
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-        profileViewModel.getUserProfile(this.context!!)
+        locationViewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
+        pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
+        profileViewModel.getUserProfile()
         profileViewModel.userInfo?.observe(this, Observer {
             email = it?.email
         })
 
         mapPreference = CameraStateManager()
-        locationViewModel = ViewModelProviders.of(this)[LocationViewModel::class.java]
-        pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
-
         mapAdapter = GoogleMapAdapter()
 
         checkUserLocationSetting()
+
         locationViewModel.currentLocation.observe(activity!!, Observer {
             if (it != null) {
                 currentLocation = it
@@ -108,7 +107,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         refreshFab.setOnClickListener {
             if (currentView != null && mapAdapter.map != null) {
                 Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
-                trashLocationViewModel?.loadLocations(currentView, true)
+                pinViewModel.loadLocations(currentView, true)
                 mapAdapter.bindMarkers()
             }
         }
@@ -121,26 +120,40 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     override fun onStart() {
         super.onStart()
         mapView.onStart()
-        val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
-        reportFab.setOnClickListener {
-            selectImage()
+
+        var user = ""
+        val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
+
+        if (userAuthentication.currentUser?.displayName != null) {
+            user = userAuthentication.currentUser?.displayName.toString()
+        } else {
+            val acct = GoogleSignIn.getLastSignedInAccount(context)
+            user = acct?.givenName.toString()
         }
 
-        addPin.setOnClickListener {
+        profileViewModel.updateUserStatistics(user)
 
-            pinViewModel.testSavePinData()
-            Snackbar.make(it, "Pin has been added!", Snackbar.LENGTH_SHORT).show()
+        addPin.setOnClickListener {
+            profileViewModel.updateUserPinNumber(user)
+            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
 
         deletePin.setOnClickListener {
-
-            val view = it
-            pinViewModel.testGetPinData()
-
-            pinViewModel.pinDataAll?.observe(this, Observer {
-                Snackbar.make(view, "Here is the pin: $it", Snackbar.LENGTH_SHORT).show()
-            })
+            profileViewModel.updateUserCleanedPinNumber(user)
+            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
         }
+
+        profileViewModel.reportedPins.observe(this, Observer { reportedPins ->
+            if (reportedPins != null) {
+                totalNoOfTrashLocationText.text = reportedPins
+            }
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer { cleanedPins ->
+            if (cleanedPins != null) {
+                totalNoOfTrashLocationClearedText.text = cleanedPins
+            }
+        })
     }
 
     override fun onResume() {
@@ -151,9 +164,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     override fun onPause() {
         super.onPause()
         mapView.onPause()
-        if (this::locationCallback.isInitialized) {
-            locationViewModel.stopLocationUpdates(locationCallback)
-        }
     }
 
     override fun onStop() {
@@ -162,7 +172,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     }
 
     override fun onDestroy() {
-        Log.d("TAG", "On destroy")
         if (this::mapPreference.isInitialized) {
             mapPreference.saveMapCameraState()
         }
@@ -184,43 +193,81 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         map = googleMap
         map.isIndoorEnabled = false
         val cameraState = mapPreference.getCameraState()
+
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
         enableMyLocationLayer()
 
         map.setOnMyLocationButtonClickListener {
-            if (currentLocation != null) {
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, LocationViewModel.DEFAULT_ZOOM_LEVEL))
-            }
+            locationViewModel.moveToLastKnowLocation(map)
             true
         }
 
-        trashLocationViewModel = ViewModelProviders.of(this)[TrashLocationViewModel::class.java]
-        trashLocationViewModel?.let { trashLocationViewModel ->
-            trashLocationViewModel.map = map
-            mapAdapter.map = map
+        pinViewModel.map = map
+        mapAdapter.map = map
 
-            trashLocationViewModel.trashMarkers.observe(this, Observer {
-                it?.let {
-                    mapAdapter.trashLocationMarkers = it
-                    mapAdapter.bindMarkers()
-                    totalNoOfTrashLocationText.text = it.size.toString()
-                }
-            })
-
-            trashLocationViewModel.trashFreeMarkers.observe(this, Observer {
-                it?.let {
-                    mapAdapter.trashFreeMarkers = it
-                    mapAdapter.bindMarkers()
-                    totalNoOfTrashLocationClearedText.text = it.size.toString()
-                }
-            })
-            map.setOnCameraIdleListener {
-
-                currentView = map.projection.visibleRegion.latLngBounds
-                trashLocationViewModel.loadLocations(currentView, false)
+        pinViewModel.trashMarkers.observe(this, Observer {
+            it?.let {
+                mapAdapter.trashLocationMarkers = it
                 mapAdapter.bindMarkers()
+                totalNoOfTrashLocationText.text = it.size.toString()
             }
+        })
+
+        pinViewModel.trashFreeMarkers.observe(this, Observer {
+            it?.let {
+                mapAdapter.trashFreeMarkers = it
+                mapAdapter.bindMarkers()
+                totalNoOfTrashLocationClearedText.text = it.size.toString()
+            }
+        })
+
+        map.setOnMarkerClickListener { marker ->
+
+            val point = map.projection.toScreenLocation(marker.position)
+            val widthPixels = context!!.resources.displayMetrics.widthPixels
+            val heightPixels = context!!.resources.displayMetrics.heightPixels
+            val xTargetPosition = widthPixels / 2
+            val yTargetPosition = (heightPixels / 2) + 300
+            val xOffset = (point.x - xTargetPosition).toFloat()
+            val yOffset = (point.y - yTargetPosition).toFloat()
+
+            map.animateCamera(CameraUpdateFactory.scrollBy(xOffset, yOffset),
+                    100,
+                    object : GoogleMap.CancelableCallback {
+                        override fun onFinish() {
+                            displayPopUpWindow(marker)
+                        }
+
+                        override fun onCancel() {}
+                    })
+            true
         }
+
+        map.setOnCameraIdleListener {
+            currentView = map.projection.visibleRegion.latLngBounds
+            pinViewModel.loadLocations(currentView, false)
+            mapAdapter.bindMarkers()
+        }
+    }
+
+    override fun displayPopUpWindow(marker: Marker) {
+        val popUpWindowView = layoutInflater.inflate(R.layout.fragment_info_window, null)
+        val popupWindow = PopupWindow(popUpWindowView,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true)
+        val imageHolder = popUpWindowView.findViewById<ImageView>(R.id.imageHolder)
+        val url = marker.tag as String
+        Picasso.get()
+                .load(url)
+                .fit()
+                .into(imageHolder)
+        val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
+        clearButton.setOnClickListener {
+            //TODO for reporting location is clear from trash
+            Toast.makeText(context, "this is working", Toast.LENGTH_SHORT).show()
+        }
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
     }
 
     private fun checkUserLocationSetting() {
@@ -228,8 +275,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         locationViewModel.initiateUserSettingCheck(context)
                 .addOnCompleteListener { task ->
                     try {
-                        val result = task.getResult(ApiException::class.java)
-                        locationViewModel.startLocationUpdates(context)
+                        task.getResult(ApiException::class.java)
                     } catch (e: ApiException) {
                         if (e.statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             try {
@@ -303,6 +349,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
         when (requestCode) {
             REQUEST_CAMERA_CODE -> {
+                locationViewModel.stopLocationUpdates()
                 if (resultCode == Activity.RESULT_OK) {
                     val photoFile = File(mCurrentPhotoPath)
                     // Continue only if the File was successfully created
@@ -311,10 +358,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                             photoFile)
                     data?.data = photoURI
                     photoRepository.storePhotoToDatabase(photoURI, activity)
-
-                    //TODO for presentation only
-
-
                 }
             }
 
@@ -322,23 +365,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     photoRepository.storePhotoToDatabase(data.data, activity)
                     val position = getLatLngFromPhoto(data)
-                    if (position.latitude == 0.0 && position.longitude == 0.0) {
+                    if (position?.latitude == 0.0 && position?.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
                                 "No position available from photo",
                                 Toast.LENGTH_SHORT).show()
                     } else {
                         Log.d("TAG", "lat lng of photo : $position")
                     }
-
-
-                    //   val position = getLatLngFromPhoto(data)
-                    //    if (position.latitude == 0.0 && position.longitude == 0.0) {
-                    //        Toast.makeText(this@MapFragment.context,
-                    //               "No position available from photo",
-                    //               Toast.LENGTH_SHORT).show()
-                    //   } else {
-                    //       Log.d("TAG", "lat lng of photo : $position")
-                    //   }
                 }
             }
         }
@@ -353,7 +386,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
             if (items[item] == "Take Photo") {
                 userChoosenTask = "Take Photo"
                 if (result)
-                    cameraIntent()
+                    locationViewModel.startLocationUpdates(this@MapFragment.context!!)
+                cameraIntent()
             } else if (items[item] == "Choose from Library") {
                 userChoosenTask = "Choose from Library"
                 if (result)
@@ -367,17 +401,16 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
 
     private var mCurrentPhotoPath: String = ""
 
-    private fun createImageFile(): File
-    {
+    private fun createImageFile(): File {
         // Create an image file name
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date ());
-        val imageFileName: String = "JPEG_"+timeStamp+"_"
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date());
+        val imageFileName: String = "JPEG_" + timeStamp + "_"
         val storageDir = Environment.getExternalStoragePublicDirectory(Environment.MEDIA_SHARED)
 
         if (!storageDir.isDirectory)
             storageDir.mkdir()
 
-        val imageFile = File.createTempFile (
+        val imageFile = File.createTempFile(
                 imageFileName, /* prefix */
                 ".jpg", /* suffix */
                 storageDir     /* directory */
@@ -389,15 +422,14 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
     }
 
     private fun cameraIntent() {
-        locationViewModel.flushLocations()
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (intent.resolveActivity(context?.packageManager) != null) {
             try {
                 val photoFile: File = createImageFile()
-            // Continue only if the File was successfully created
+                // Continue only if the File was successfully created
                 var photoURI: Uri = FileProvider.getUriForFile(context!!,
-                "com.android.fileprovider",
-                photoFile)
+                        "com.android.fileprovider",
+                        photoFile)
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                 intent.putExtra("return-data", true)
                 startActivityForResult(intent, REQUEST_CAMERA_CODE)
@@ -415,7 +447,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE_CODE)
     }
 
-    private fun getLatLngFromPhoto(data: Intent): LatLng {
+    private fun getLatLngFromPhoto(data: Intent): LatLng? {
         val uri = data.data
         var cursor = this@MapFragment.context!!.contentResolver.query(
                 uri,
@@ -435,8 +467,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
                 selection,
                 null,
                 null)
-        cursor.moveToFirst()
-        return LatLng(cursor.getDouble(0), cursor.getDouble(1))
+        var metaData: LatLng? = null
+        if (cursor.count == 1) {
+            cursor.moveToFirst()
+            metaData = LatLng(cursor.getDouble(0), cursor.getDouble(1))
+        }
+        cursor.close()
+        return metaData
     }
 
     class GoogleMapAdapter {
@@ -479,12 +516,10 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback {
         }
 
         fun getCameraState(): CameraPosition {
-            val latitude = mapCameraPreferences.getFloat(
-                    LAST_KNOWN_LATITUDE,
+            val latitude = mapCameraPreferences.getFloat(LAST_KNOWN_LATITUDE,
                     LocationViewModel.DEFAULT_LATITUDE.toFloat())
                     .toDouble()
-            val longitude = mapCameraPreferences.getFloat(
-                    LAST_KNOWN_LONGITUDE,
+            val longitude = mapCameraPreferences.getFloat(LAST_KNOWN_LONGITUDE,
                     LocationViewModel.DEFAULT_LONGITUDE.toFloat())
                     .toDouble()
             val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM,

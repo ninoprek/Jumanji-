@@ -1,15 +1,18 @@
 package jumanji.sda.com.jumanji
 
 import android.app.Application
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.persistence.room.*
 import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.util.Log
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
+import android.content.Context
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -28,7 +31,7 @@ class PinRepository(application: Application) {
     var userPinData: MutableLiveData<List<PinData>> = MutableLiveData()
     var pinDataAll: MutableLiveData<List<PinData>> = MutableLiveData()
 
-    fun storePinToDatabase(pinData: PinDataInfo, user: String) {
+    fun storePinToFirebase(pinData: PinDataInfo, user: String) {
 
         val pin: HashMap<String, Any> = HashMap()
         pin.put("longitude", pinData.longitude)
@@ -66,21 +69,21 @@ class PinRepository(application: Application) {
 //    }
 
     fun storeAllPinsFromFirebaseToRoom() {
-
         val firebaseDb = FirebaseFirestore.getInstance()
 
         firebaseDb.collection("allPins").get()
-                .addOnCompleteListener ({ task ->
-                    if(task.isSuccessful) {
+                .addOnCompleteListener({ task ->
+                    if (task.isSuccessful) {
                         val pins = task.result
 
                         for (document in pins) {
 
-                            val pin = PinData(document.id, document["longitude"].toString().toFloat(),
+                            val pin = PinData(document.id,
+                                    document["longitude"].toString().toFloat(),
                                     document["latitude"].toString().toFloat(),
                                     document["username"].toString(),
                                     document["imageURL"].toString()
-                                    )
+                            )
                             Single.fromCallable { roomPinDb.userDao().insert(pin) }
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
@@ -93,7 +96,7 @@ class PinRepository(application: Application) {
                 })
     }
 
-    fun deletePinFromDatabase(pinId: String) {
+    fun deletePinFromFirebase(pinId: String) {
 
         val documentReference = database.collection(FirebaseAuth.getInstance().currentUser?.displayName.toString()).document(pinId)
         if (documentReference.delete().isSuccessful) {
@@ -115,21 +118,30 @@ class PinRepository(application: Application) {
         val user = "nino"
 
         val pin3 = PinDataInfo(61.522433f, 19.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
-        val pin4 = PinDataInfo(62.522433f, 20.917423f   , "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
-        storePinToDatabase(pin3, user)
-        storePinToDatabase(pin4, user)
+        val pin4 = PinDataInfo(62.522433f, 20.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
+        storePinToFirebase(pin3, user)
+        storePinToFirebase(pin4, user)
+    }
+
+    fun loadPinsWithBounds(): LiveData<List<PinData>> {
+        return roomPinDb.userDao().loadPinWithBound()
     }
 
     fun getAllPinsFromRoom() {
 
         val returnRoomValue = roomPinDb.userDao().getAll()
         pinDataAll.postValue(returnRoomValue)
+
     }
 
-    fun getUserPins(user: String) {
+    fun getUserPinsFromRoom(user: String) {
 
         val returnRoomValue = roomPinDb.userDao().findTaskById(user)
         userPinData.postValue(returnRoomValue)
+    }
+
+    fun deletePinFromRoom(pinData: PinData) {
+        roomPinDb.userDao().deletePinData(pinData)
     }
 }
 
@@ -146,6 +158,9 @@ interface PinDataDao {
 
     @Query("SELECT * from pinData")
     fun getAll(): List<PinData>
+
+    @Query("SELECT * FROM pinData")
+    fun loadPinWithBound(): LiveData<List<PinData>>
 
     @Query("select * from pinData where username LIKE :userName")
     fun findTaskById(userName: String): List<PinData>
