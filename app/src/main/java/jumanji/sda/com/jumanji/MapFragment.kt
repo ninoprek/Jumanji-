@@ -100,7 +100,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             if (currentView != null && mapAdapter.map != null) {
                 Snackbar.make(it, "loading locations...", Snackbar.LENGTH_SHORT).show()
                 map.clear()
-                pinViewModel.loadTrashLocations()
+                pinViewModel.loadPinData()
                 mapAdapter.bindMarkers()
             }
         }
@@ -205,7 +205,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         }
 
         pinViewModel.map = map
-        pinViewModel.loadTrashLocations()
+        pinViewModel.loadPinData()
 
         mapAdapter.map = map
 
