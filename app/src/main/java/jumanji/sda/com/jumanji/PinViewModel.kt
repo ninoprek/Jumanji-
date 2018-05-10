@@ -66,6 +66,17 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 .subscribe()
     }
 
+    fun reportPointForTrash(pinDataInfo: PinDataInfo) {
+        Single.fromCallable {  repository.storePinToFirebase(pinDataInfo) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
+    }
+
+    fun reportPointAsClean() {
+
+    }
+
     fun deletePinData(pinId: String) {
         Single.fromCallable { repository.deletePinFromFirebase(pinId) }
                 .subscribeOn(Schedulers.io())

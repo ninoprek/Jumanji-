@@ -13,7 +13,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 
-data class PinDataInfo(val longitude: Float = 0.0f, val latitude: Float = 0.0f, val imageURL: String = "", val pinId: String = "")
+data class PinDataInfo(val longitude: Float = 0.0f,
+                       val latitude: Float = 0.0f,
+                       val imageURL: String = "",
+                       val username: String = "",
+                       val isTrash: Boolean = true)
 
 class PinRepository(application: Application) {
 
@@ -26,13 +30,14 @@ class PinRepository(application: Application) {
     var userPinData: MutableLiveData<List<PinData>> = MutableLiveData()
     var pinDataAll: MutableLiveData<List<PinData>> = MutableLiveData()
 
-    fun storePinToFirebase(pinData: PinDataInfo, user: String) {
+    fun storePinToFirebase(pinData: PinDataInfo) {
 
         val pin: HashMap<String, Any> = HashMap()
         pin.put("longitude", pinData.longitude)
         pin.put("latitude", pinData.latitude)
         pin.put("imageURL", pinData.imageURL)
-        pin.put("username", user)
+        pin.put("username", pinData.username)
+        pin["isTrash"] = pinData.isTrash
 
         database.collection("allPins").document().set(pin)
     }
@@ -111,12 +116,12 @@ class PinRepository(application: Application) {
         //roomPinDb.userDao().insert(pin1)
         //roomPinDb.userDao().insert(pin2)
 
-        val user = "nino"
-
-        val pin3 = PinDataInfo(61.522433f, 19.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
-        val pin4 = PinDataInfo(62.522433f, 20.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
-        storePinToFirebase(pin3, user)
-        storePinToFirebase(pin4, user)
+//        val user = "nino"
+//
+//        val pin3 = PinDataInfo(61.522433f, 19.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "3")
+//        val pin4 = PinDataInfo(62.522433f, 20.917423f, "https://www.digiplex.com/resources/locations/DS1-high.jpg-2/basic700", "4")
+//        storePinToFirebase(pin3, user)
+//        storePinToFirebase(pin4, user)
     }
 
     fun loadAllTrashPins(indicator: Boolean): LiveData<List<PinData>> {
