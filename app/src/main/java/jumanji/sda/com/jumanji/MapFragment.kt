@@ -367,7 +367,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                             "com.android.fileprovider",
                             photoFile)
                     data?.data = photoURI
-
                     photoRepository.storePhotoToDatabase(photoURI, activity, this)
                 }
             }
@@ -395,6 +394,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                 uri.toString(),
                 user,
                 true))
+        pinViewModel.loadPinData()
     }
 
 
