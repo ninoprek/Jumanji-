@@ -4,7 +4,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
-class UserRepositoryTest {
+class ProfileRepositoryTest {
 
     @Before
     fun setUp() {
@@ -18,11 +18,11 @@ class UserRepositoryTest {
     @Test
     fun saveToDatabese() {
 
-        val userRepository: UserRepository = UserRepository()
+        val profileRepository: ProfileRepository = ProfileRepository()
 
         val testUserProfile: UserProfile = UserProfile("Aaron", "aaron@gmai.com", "www.picture.com")
 
-        userRepository.storeToDatabase(testUserProfile)
+        profileRepository.storeToDatabase(testUserProfile)
 
     }
 }

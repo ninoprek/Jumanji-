@@ -76,6 +76,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
 
     private var currentView: LatLngBounds? = null
     private lateinit var mapAdapter: GoogleMapAdapter
+    private var email: String = ""
+    private var username: String = ""
     private var email: String? = ""
     var user = ""
 
@@ -88,13 +90,35 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         mapView.onCreate(savedInstanceState)
 
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
-        profileViewModel.getUserProfile()
         profileViewModel.userInfo?.observe(this, Observer {
-            email = it?.email
+            email = it!!.email
+            username = it!!.userName
         })
+
+        addPin.setOnClickListener {
+            profileViewModel.updateUserStatistics(username)
+            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
+        }
+
+        deletePin.setOnClickListener {
+            profileViewModel.updateUserCleanedPinNumber(username)
+            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
+        }
+
+        profileViewModel.reportedPins.observe(this, Observer {
+            totalNoOfTrashLocationText.text = it
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer {
+            totalNoOfTrashLocationClearedText.text = it
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
 
         mapPreference = CameraStateManager()
         mapAdapter = GoogleMapAdapter()
@@ -156,6 +180,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+
+        profileViewModel.updateUserStatistics(username)
     }
 
     override fun onPause() {
@@ -217,7 +243,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             it?.let {
                 mapAdapter.trashLocationMarkers = it
                 mapAdapter.bindMarkers()
-                totalNoOfTrashLocationText.text = it.size.toString()
+                //totalNoOfTrashLocationText.text = it.size.toString()
             }
         })
 
@@ -225,7 +251,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             it?.let {
                 mapAdapter.trashFreeMarkers = it
                 mapAdapter.bindMarkers()
-                totalNoOfTrashLocationClearedText.text = it.size.toString()
+                //totalNoOfTrashLocationClearedText.text = it.size.toString()
             }
         })
 

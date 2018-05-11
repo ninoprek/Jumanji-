@@ -11,16 +11,11 @@ import io.reactivex.schedulers.Schedulers
 
 class ProfileViewModel (application: Application) : AndroidViewModel(application) {
 
-    private val repository = UserRepository(application)
-    private val profile: UserProfile? = getUserProfile()
+    private val repository = ProfileRepository(application)
 
     val reportedPins: MutableLiveData<String> = repository.reportedPins
     val cleanedPins: MutableLiveData<String> = repository.cleanedPins
     val userInfo: MutableLiveData<UserProfile>? = repository.userInfo
-
-    val userName = profile?.userName
-    val email = profile?.email
-    val uri = profile?.photoURL
 
     fun saveUserProfile(profile: UserProfile) {
         Single.fromCallable { repository.createNewUser(profile) }
@@ -34,19 +29,11 @@ class ProfileViewModel (application: Application) : AndroidViewModel(application
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
 
-    fun getUserProfile() : UserProfile? {
-        return null //repository.retrieveUserFromDatabase()
+    fun getUserName() {
     }
 
-    fun signOut(){
-        Single.fromCallable { repository.userSignOut() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe()
-    }
-
-    fun googleSignOut(context: Context){
-        Single.fromCallable { repository.googleSignOut(context)}
+    fun checkIfUserSignedIn(context: Context){
+        Single.fromCallable { repository.signOut(context) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()

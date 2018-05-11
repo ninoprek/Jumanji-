@@ -21,8 +21,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val googleUser = GoogleSignIn.getLastSignedInAccount(this)
-    //Animation for logo on startup the application.
+    val googleUser = GoogleSignIn.getLastSignedInAccount(this)
+
+        //Animation for logo on startup the application.
         logo_Image_View.animate()
                 .translationXBy(-900f)
                 .translationYBy(-1400f)
