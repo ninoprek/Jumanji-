@@ -86,7 +86,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
 
         profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
-
         profileViewModel.userInfo?.observe(this, Observer {
             email = it!!.email
             username = it!!.userName
@@ -486,6 +485,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         var trashFreeMarkers: List<Marker> = listOf()
 
         fun bindMarkers() {
+            Log.d("TAG", "bind markers")
             trashLocationMarkers.filter { getCurrentView().contains(it.position) }
                     .forEach { it.isVisible = true }
             trashLocationMarkers.filterNot { getCurrentView().contains(it.position) }

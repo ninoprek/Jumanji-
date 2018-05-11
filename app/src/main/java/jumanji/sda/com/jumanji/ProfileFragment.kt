@@ -9,12 +9,14 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.MarkerOptions
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
 
@@ -91,8 +93,8 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         map = googleMap ?: return
         map.isIndoorEnabled = false
         val zoomLevelForProfile = 14.5f
-        val viewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
-        viewModel.moveToLastKnowLocation(map, zoomLevelForProfile)
+        val locationViewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
+        locationViewModel.moveToLastKnowLocation(map, zoomLevelForProfile)
         val context = this@ProfileFragment.context ?: return
         if (ContextCompat.checkSelfPermission(context,
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -104,6 +106,24 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
                     "Please enable permission to access your device location.",
                     Toast.LENGTH_LONG)
                     .show()
+        }
+
+        val mapAdapter = MapFragment.GoogleMapAdapter()
+        mapAdapter.map = map
+        val pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
+        pinViewModel.trashMarkers.observe(this, Observer { trashLocationMarkers ->
+            if (trashLocationMarkers != null) {
+                mapAdapter.trashLocationMarkers = trashLocationMarkers.map { marker ->
+                    map.addMarker(MarkerOptions()
+                            .position(marker.position)
+                            .visible(false))
+                }
+            }
+            mapAdapter.bindMarkers()
+        })
+
+        map.setOnCameraIdleListener {
+            mapAdapter.bindMarkers()
         }
     }
 }
