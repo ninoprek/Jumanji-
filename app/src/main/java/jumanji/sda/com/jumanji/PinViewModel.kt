@@ -86,7 +86,7 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                 }, {
                     Log.d("TAG", "something went wrong when updating firebase, ${it.message}")
                 })
-
+        pinData.isTrash = false
         Single.fromCallable { repository.deletePinFromRoom(pinData) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

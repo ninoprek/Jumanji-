@@ -114,7 +114,7 @@ class PinRepository(application: Application) {
     }
 
     fun deletePinFromRoom(pinData: PinData) {
-        roomPinDb.userDao().deletePinData(pinData)
+        roomPinDb.userDao().insert(pinData)
     }
 }
 
