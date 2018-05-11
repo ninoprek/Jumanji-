@@ -59,7 +59,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 viewModel.saveUserProfile(profile)
                 viewModel.initializeUserPinNumber(userName)
 
-                photoRepository.storePhotoToDatabase(uriString, this, this)
+                photoRepository.storePhotoToDatabase(uriString, this, this, false)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
                 this.finish()

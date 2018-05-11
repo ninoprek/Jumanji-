@@ -347,13 +347,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                             "com.android.fileprovider",
                             photoFile)
                     data?.data = photoURI
-                    photoRepository.storePhotoToDatabase(photoURI, activity, this)
+                    photoRepository.storePhotoToDatabase(photoURI, activity, this, true)
                 }
             }
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    photoRepository.storePhotoToDatabase(data.data, activity, this)
+                    photoRepository.storePhotoToDatabase(data.data, activity, this, true)
                     val position = getLatLngFromPhoto(data)
                     if (position?.latitude == 0.0 && position?.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
