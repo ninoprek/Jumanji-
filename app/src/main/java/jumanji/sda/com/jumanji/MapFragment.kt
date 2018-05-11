@@ -17,7 +17,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
-import android.transition.Visibility
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -27,7 +26,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationSettingsStatusCodes
@@ -38,7 +36,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
@@ -78,7 +75,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     private lateinit var mapAdapter: GoogleMapAdapter
     private var email: String = ""
     private var username: String = ""
-    private var email: String? = ""
     var user = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -137,44 +133,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         reportFab.setOnClickListener {
             selectImage()
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        mapView.onStart()
-
-        val userAuthentication: FirebaseAuth = FirebaseAuth.getInstance()
-
-        if (userAuthentication.currentUser?.displayName != null) {
-            user = userAuthentication.currentUser?.displayName.toString()
-        } else {
-            val acct = GoogleSignIn.getLastSignedInAccount(context)
-            user = acct?.givenName.toString()
-        }
-
-        profileViewModel.updateUserStatistics(user)
-
-        addPin.setOnClickListener {
-            profileViewModel.updateUserPinNumber(user)
-            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-        }
-
-        deletePin.setOnClickListener {
-            profileViewModel.updateUserCleanedPinNumber(user)
-            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-        }
-
-        profileViewModel.reportedPins.observe(this, Observer { reportedPins ->
-            if (reportedPins != null) {
-                totalNoOfTrashLocationText.text = reportedPins
-            }
-        })
-
-        profileViewModel.cleanedPins.observe(this, Observer { cleanedPins ->
-            if (cleanedPins != null) {
-                totalNoOfTrashLocationClearedText.text = cleanedPins
-            }
-        })
     }
 
     override fun onResume() {

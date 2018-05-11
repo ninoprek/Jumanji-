@@ -7,22 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
-import java.lang.Thread.sleep
-import android.content.DialogInterface
-import android.support.v7.app.AlertDialog
 
 
 class ProfileFragment : Fragment(), OnMapReadyCallback {
@@ -99,7 +93,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         val zoomLevelForProfile = 14.5f
         val viewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
         viewModel.moveToLastKnowLocation(map, zoomLevelForProfile)
-        val context = this@ProfileFragment.context?: return
+        val context = this@ProfileFragment.context ?: return
         if (ContextCompat.checkSelfPermission(context,
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             map.isMyLocationEnabled = true

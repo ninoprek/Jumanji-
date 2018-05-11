@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-    val googleUser = GoogleSignIn.getLastSignedInAccount(this)
+        val googleUser = GoogleSignIn.getLastSignedInAccount(this)
 
         //Animation for logo on startup the application.
         logo_Image_View.animate()
@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
                 .scaleX(0.000001f)
                 .scaleY(0.000001f)
                 .rotation(-360f)
-                .duration= 2000
+                .duration = 2000
 
         logo_Image_View2.animate()
                 .translationXBy(900f)
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
                 .scaleX(0.000001f)
                 .scaleY(0.000001f)
                 .rotation(360f)
-                .duration= 2000
+                .duration = 2000
 
         //Check if the user is sign in (go to the map) or he/she should redirected to the sign in activity
         if (user != null || googleUser != null) {
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             Single.fromCallable { startSignInActivity() }
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({  }
+                    .subscribe({ }
                             , { error ->
                         Toast.makeText(this,
                                 "something went wrong: $error",
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startSignInActivity() {
-        sleep (1500)
+        sleep(1500)
         val signInIntent = Intent(this, SignInActivity::class.java)
         startActivity(signInIntent)
         this.finish()
