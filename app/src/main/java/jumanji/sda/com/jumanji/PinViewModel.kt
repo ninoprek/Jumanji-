@@ -3,7 +3,6 @@ package jumanji.sda.com.jumanji
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.util.Log
 import com.google.android.gms.maps.GoogleMap
@@ -24,9 +23,6 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var trashMarkers: LiveData<List<Marker>>
     lateinit var trashFreeMarkers: LiveData<List<Marker>>
-
-    val userPinData: MutableLiveData<List<PinData>> = repository.userPinData
-    val pinDataAll: MutableLiveData<List<PinData>> = repository.pinDataAll
 
     fun loadPinData() {
         repository.storeAllPinsFromFirebaseToRoom()
@@ -87,7 +83,7 @@ class PinViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d("TAG", "something went wrong when updating firebase, ${it.message}")
                 })
         pinData.isTrash = false
-        Single.fromCallable { repository.deletePinFromRoom(pinData) }
+        Single.fromCallable { repository.reportPinAsCleanToRoom(pinData) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
