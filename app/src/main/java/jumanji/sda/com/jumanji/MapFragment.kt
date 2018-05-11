@@ -92,16 +92,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             username = it!!.userName
         })
 
-//        addPin.setOnClickListener {
-//            profileViewModel.updateUserStatistics(username)
-//            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-//        }
-//
-//        deletePin.setOnClickListener {
-//            profileViewModel.updateUserCleanedPinNumber(username)
-//            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-//        }
-
         profileViewModel.reportedPins.observe(this, Observer {
             totalNoOfTrashLocationText.text = it
         })
@@ -200,7 +190,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             it?.let {
                 mapAdapter.trashLocationMarkers = it
                 mapAdapter.bindMarkers()
-                //totalNoOfTrashLocationText.text = it.size.toString()
             }
         })
 
@@ -208,7 +197,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             it?.let {
                 mapAdapter.trashFreeMarkers = it
                 mapAdapter.bindMarkers()
-                //totalNoOfTrashLocationClearedText.text = it.size.toString()
             }
         })
 
