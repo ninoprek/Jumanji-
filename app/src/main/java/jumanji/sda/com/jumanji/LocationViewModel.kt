@@ -86,6 +86,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
                     val location = LatLng(it.latitude, it.longitude)
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel),
                             500, null)
+
                 }
             }
         }

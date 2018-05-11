@@ -26,7 +26,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationSettingsStatusCodes
@@ -37,7 +36,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
@@ -49,8 +47,11 @@ interface SetOnPopUpWindowAdapter {
     fun displayPopUpWindow(marker: Marker)
 }
 
-class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter {
+interface OnUrlAvailableCallback {
+    fun storeDataToFirebase(uri: Uri)
+}
 
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter, OnUrlAvailableCallback {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -74,6 +75,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     private lateinit var mapAdapter: GoogleMapAdapter
     private var email: String = ""
     private var username: String = ""
+    var user = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -245,15 +247,22 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 true)
         val imageHolder = popUpWindowView.findViewById<ImageView>(R.id.imageHolder)
-        val url = marker.tag as String
-        Picasso.get()
-                .load(url)
-                .fit()
-                .into(imageHolder)
+        val url = (marker.tag as PinData).imageURL
+        if (url.isNotEmpty()) {
+            Picasso.get()
+                    .load(url)
+                    .fit()
+                    .into(imageHolder)
+        }
         val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
+        if (!(marker.tag as PinData).isTrash) {
+            clearButton.visibility = View.INVISIBLE
+        }
         clearButton.setOnClickListener {
-            //TODO for reporting location is clear from trash
-            Toast.makeText(context, "this is working", Toast.LENGTH_SHORT).show()
+            val pinData = marker.tag as PinData
+            pinViewModel.reportPointAsClean(pinData)
+            pinViewModel.loadPinData()
+            popupWindow.dismiss()
         }
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
     }
@@ -345,13 +354,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                             "com.android.fileprovider",
                             photoFile)
                     data?.data = photoURI
-                    photoRepository.storePhotoToDatabase(photoURI, activity)
+                    photoRepository.storePhotoToDatabase(photoURI, activity, this)
                 }
             }
 
             SELECT_FILE_CODE -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    photoRepository.storePhotoToDatabase(data.data, activity)
+                    photoRepository.storePhotoToDatabase(data.data, activity, this)
                     val position = getLatLngFromPhoto(data)
                     if (position?.latitude == 0.0 && position?.longitude == 0.0) {
                         Toast.makeText(this@MapFragment.context,
@@ -364,6 +373,17 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             }
         }
     }
+
+    override fun storeDataToFirebase(uri: Uri) {
+        pinViewModel.reportPointForTrash(PinDataInfo(
+                currentLocation.longitude.toFloat(),
+                currentLocation.latitude.toFloat(),
+                uri.toString(),
+                user,
+                true))
+        pinViewModel.loadPinData()
+    }
+
 
     override fun selectImage() {
         val items = arrayOf("Take Photo", "Choose from Library", "Cancel")

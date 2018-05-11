@@ -94,7 +94,7 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
             if (signedInAccountFromIntent.isSuccessful) {
 
                 val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-                val database  = FirebaseFirestore.getInstance()
+                val database = FirebaseFirestore.getInstance()
                 val userName = GoogleSignIn.getLastSignedInAccount(this)?.givenName.toString()
                 Log.d(javaClass.simpleName + "Google account", "This is the current google account: $database")
 

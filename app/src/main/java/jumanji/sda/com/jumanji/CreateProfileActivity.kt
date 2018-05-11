@@ -2,7 +2,6 @@ package jumanji.sda.com.jumanji
 
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
-import android.content.ContentResolver
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -21,7 +20,10 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_create_profile.*
 import java.io.*
 
-class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
+class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, OnUrlAvailableCallback {
+    override fun storeDataToFirebase(uri: Uri) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     companion object {
         private const val REQUEST_CAMERA = 100
@@ -58,7 +60,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener {
                 viewModel.saveUserProfile(profile)
                 viewModel.initializeUserPinNumber(userName)
 
-                photoRepository.storePhotoToDatabase(uriString, this)
+                photoRepository.storePhotoToDatabase(uriString, this, this)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
                 this.finish()

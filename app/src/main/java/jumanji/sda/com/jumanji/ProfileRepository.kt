@@ -5,11 +5,11 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.auth.UserProfileChangeRequest
-import java.util.*
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
 
 data class UserProfile(
         val userName: String = "",
@@ -18,7 +18,7 @@ data class UserProfile(
         val photoURL: String = ""
 )
 
-class ProfileRepository (context: Context) {
+class ProfileRepository(context: Context) {
     companion object {
         private const val TAG = "write to database"
         const val PREFERENCE_NAME = "user_data"
@@ -37,9 +37,9 @@ class ProfileRepository (context: Context) {
     val userSharedPref = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
 
     init {
-        userSharedPref.registerOnSharedPreferenceChangeListener ({ userNameSharedPref, key ->
+        userSharedPref.registerOnSharedPreferenceChangeListener({ userNameSharedPref, key ->
             if (key == PREFERENCE_NAME) {
-                val user  = UserProfile(
+                val user = UserProfile(
                         userNameSharedPref.getString(KEY_USER_NAME, ""),
                         userNameSharedPref.getString(KEY_PASSWORD, ""),
                         userNameSharedPref.getString(KEY_EMAIL, ""),
@@ -66,7 +66,7 @@ class ProfileRepository (context: Context) {
         }
     }
 
-    fun getUserName () : String {
+    fun getUserName(): String {
         return userSharedPref.getString(KEY_USER_NAME, "")
     }
 
@@ -89,7 +89,7 @@ class ProfileRepository (context: Context) {
     }
 
     fun createNewUser(userProfile: UserProfile) {
-        userAuthentication.createUserWithEmailAndPassword(userProfile.email,userProfile.password)
+        userAuthentication.createUserWithEmailAndPassword(userProfile.email, userProfile.password)
                 .addOnCompleteListener({ task ->
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
@@ -113,7 +113,7 @@ class ProfileRepository (context: Context) {
                 .build()
 
         user?.updateProfile(profileUpdates)
-                ?.addOnCompleteListener( { task ->
+                ?.addOnCompleteListener({ task ->
                     if (task.isSuccessful) {
                         Log.d(javaClass.simpleName, "User profile is updated.")
                     } else {
@@ -122,7 +122,7 @@ class ProfileRepository (context: Context) {
                 })
     }
 
-    fun signOut (context: Context) {
+    fun signOut(context: Context) {
 
         val user = FirebaseAuth.getInstance().currentUser
         val googleUser = GoogleSignIn.getLastSignedInAccount(context)
@@ -139,7 +139,7 @@ class ProfileRepository (context: Context) {
         }
     }
 
-    fun userDelete() : Boolean {
+    fun userDelete(): Boolean {
 
         val user = userAuthentication.currentUser
         var deleted = false
@@ -150,7 +150,7 @@ class ProfileRepository (context: Context) {
                         deleted = true
                     }
                 }
-        return  deleted
+        return deleted
     }
 
     fun initializeUserPinNumber(user: String) {
@@ -163,7 +163,7 @@ class ProfileRepository (context: Context) {
         updateUserStatistics(user)
     }
 
-    fun updateUserPinNumber (user: String) {
+    fun updateUserPinNumber(user: String) {
 
         val documentReference = database.collection("userStatistics").document(user)
 
@@ -183,7 +183,7 @@ class ProfileRepository (context: Context) {
         })
     }
 
-    fun updateUserCleanedPinNumber (user: String) {
+    fun updateUserCleanedPinNumber(user: String) {
 
         val documentReference = database.collection("userStatistics").document(user)
 
@@ -203,7 +203,7 @@ class ProfileRepository (context: Context) {
         })
     }
 
-    fun updateUserStatistics(user: String){
+    fun updateUserStatistics(user: String) {
         val documentReference = database.collection("userStatistics").document(user)
 
         documentReference.get().addOnCompleteListener({ task ->
