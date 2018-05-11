@@ -13,7 +13,7 @@ class PhotoRepository(email: String?) {
 
     val email = email?.toLowerCase()
 
-    fun storePhotoToDatabase(uri: Uri?, activity: FragmentActivity?, callback: OnUrlAvailableCallback) {
+    fun storePhotoToDatabase(uri: Uri?, activity: FragmentActivity?, callback: OnUrlAvailableCallback, toastFlag: Boolean) {
         //var uri = data?.data
         val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("$email/images")
         val imageRef = mStorageRef.child("$uri")
@@ -29,8 +29,12 @@ class PhotoRepository(email: String?) {
                         // Get a URL to the uploaded content
                         val downloadUrl = taskSnapshot.downloadUrl
                         Log.d("SUCCESS", "Able  to upload")
-                        val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_SHORT)
-                        toast.show()
+                        if (toastFlag == true) {
+                            val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_SHORT)
+                            toast.show()
+                        } else {
+                            //can add toast to say Profile saved.
+                        }
                         if (downloadUrl != null) {
                             callback.storeDataToFirebase(downloadUrl)
                         }
