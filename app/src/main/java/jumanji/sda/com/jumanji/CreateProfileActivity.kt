@@ -22,7 +22,6 @@ import java.io.*
 
 class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, OnUrlAvailableCallback {
     override fun storeDataToFirebase(uri: Uri) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     companion object {

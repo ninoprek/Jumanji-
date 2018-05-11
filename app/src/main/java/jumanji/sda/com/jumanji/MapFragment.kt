@@ -75,7 +75,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     private lateinit var mapAdapter: GoogleMapAdapter
     private var email: String = ""
     private var username: String = ""
-    var user = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
@@ -93,15 +92,15 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             username = it!!.userName
         })
 
-        addPin.setOnClickListener {
-            profileViewModel.updateUserStatistics(username)
-            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-        }
-
-        deletePin.setOnClickListener {
-            profileViewModel.updateUserCleanedPinNumber(username)
-            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
-        }
+//        addPin.setOnClickListener {
+//            profileViewModel.updateUserStatistics(username)
+//            Snackbar.make(it, "Pin number has been updated!", Snackbar.LENGTH_SHORT).show()
+//        }
+//
+//        deletePin.setOnClickListener {
+//            profileViewModel.updateUserCleanedPinNumber(username)
+//            Snackbar.make(it, "Cleaned pin number has been updated!", Snackbar.LENGTH_SHORT).show()
+//        }
 
         profileViewModel.reportedPins.observe(this, Observer {
             totalNoOfTrashLocationText.text = it
@@ -251,17 +250,24 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         if (url.isNotEmpty()) {
             Picasso.get()
                     .load(url)
+                    .placeholder(R.drawable.logo1)
                     .fit()
+                    .rotate(90f)
+                    .centerInside()
                     .into(imageHolder)
         }
         val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
-        if (!(marker.tag as PinData).isTrash) {
+        if ((marker.tag as PinData).isTrash) {
+            clearButton.visibility = View.VISIBLE
+        } else {
             clearButton.visibility = View.INVISIBLE
         }
         clearButton.setOnClickListener {
             val pinData = marker.tag as PinData
             pinViewModel.reportPointAsClean(pinData)
+            profileViewModel.updateUserCleanedPinNumber(username)
             pinViewModel.loadPinData()
+            profileViewModel.updateUserStatistics(username)
             popupWindow.dismiss()
         }
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
@@ -379,9 +385,11 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                 currentLocation.longitude.toFloat(),
                 currentLocation.latitude.toFloat(),
                 uri.toString(),
-                user,
+                username,
                 true))
+        profileViewModel.updateUserPinNumber(username)
         pinViewModel.loadPinData()
+        profileViewModel.updateUserStatistics(username)
     }
 
 
