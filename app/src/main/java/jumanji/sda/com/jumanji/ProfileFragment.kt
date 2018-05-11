@@ -9,7 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.util.Log
+import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,8 +49,17 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         })
 
         signOutButton.setOnClickListener {
-            profileViewModel.checkIfUserSignedIn(this.requireContext())
-            goToSignIn()
+            val builder = AlertDialog.Builder(this.requireContext())
+            builder.setTitle(R.string.app_name)
+            builder.setMessage("Do you want to sign out?")
+            builder.setPositiveButton("Yes") { dialog, id ->
+                dialog.dismiss()
+                profileViewModel.checkIfUserSignedIn(this.requireContext())
+                goToSignIn()
+            }
+            builder.setNegativeButton("No") { dialog, id -> dialog.dismiss() }
+            val alert = builder.create()
+            alert.show()
         }
     }
 
