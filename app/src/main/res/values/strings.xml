@@ -18,4 +18,13 @@
     <string name="trash_location_cleared">number of location cleared</string>
     <string name="reported_photo">reported photo</string>
     <string name="I_had_return_this_place_to_green">I had return this place to green!</string>
+    <string name="user_profile">user_profile</string>
+    <string name="user_badge">user_badge</string>
+    <string name="background_layout">background_layout</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="menu">menu</string>
+    <string name="average">Average</string>
+    <string name="you">You</string>
+    <string name="reported">Reported</string>
+    <string name="cleared">Cleared</string>
 </resources>

@@ -11,10 +11,13 @@
         android:layout_height="148dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
+        android:contentDescription="@string/user_profile"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/usernameText"
         app:srcCompat="@drawable/download" />
 
     <ImageView
@@ -23,87 +26,63 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/profilePhotoView"
         android:layout_alignTop="@+id/profilePhotoView"
-        android:layout_marginStart="88dp"
-        android:layout_marginTop="88dp"
-        app:layout_constraintStart_toStartOf="@+id/profilePhotoView"
-        app:layout_constraintTop_toTopOf="@+id/profilePhotoView"
+        android:contentDescription="@string/user_badge"
+        app:layout_constraintBottom_toBottomOf="@+id/profilePhotoView"
+        app:layout_constraintEnd_toEndOf="@+id/profilePhotoView"
         app:srcCompat="@mipmap/jumanji_launcher" />
 
     <TextView
         android:id="@+id/usernameText"
-        android:layout_width="181dp"
-        android:layout_height="51dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="User Name"
-        android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@+id/profilePhotoView"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="User Name" />
-
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/userActivityMapView"
-        android:layout_width="157dp"
-        android:layout_height="120dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="66dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/userActivityTextView"
-        app:layout_constraintTop_toBottomOf="@+id/yourActivityText" />
-
-    <TextView
-        android:id="@+id/userActivityTextView"
-        android:layout_width="137dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:text="You are in the top 16%"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintEnd_toStartOf="@+id/userActivityMapView"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/yourActivityText"
-        tools:text="top 16%" />
-
-    <TextView
-        android:id="@+id/yourActivityText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="64dp"
-        android:text="Your activity:"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profilePhotoView" />
-
-    <Button
-        android:id="@+id/signOutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-
-        android:layout_marginTop="32dp"
-        android:background="@drawable/style_button"
-
-        android:text="Sign Out"
+        android:layout_marginEnd="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userActivityMapView" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="User Name" />
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintBottom_toBottomOf="@+id/userActivityMapView"
-        app:layout_constraintEnd_toStartOf="@+id/userActivityMapView"
+        android:layout_marginTop="32dp"
+        android:alpha="0.3"
+        android:background="@color/colorPrimary"
+        android:contentDescription="@string/background_layout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userActivityTextView"
-        app:srcCompat="@drawable/graph" />
+        app:layout_constraintTop_toBottomOf="@+id/profilePhotoView"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/userActivityMapView"
+        android:layout_width="0dp"
+        android:layout_height="120dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/signOutButton"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/signOutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+
+        android:layout_marginEnd="32dp"
+
+        android:background="@drawable/style_button"
+        android:text="@string/sign_out"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/menuButton"
@@ -112,8 +91,132 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/style_button"
-        android:text="menu"
+        android:text="@string/menu"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/usernameText" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/averageActivityText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/average"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/yourActivityText"
+        app:layout_constraintTop_toTopOf="@+id/yourActivityText" />
+
+    <TextView
+        android:id="@+id/yourActivityText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/you"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toStartOf="@+id/averageActivityText"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView" />
+
+    <TextView
+        android:id="@+id/userReportedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/yourActivityText"
+        app:layout_constraintStart_toStartOf="@+id/yourActivityText"
+        app:layout_constraintTop_toBottomOf="@+id/yourActivityText"
+        tools:text="100" />
+
+    <TextView
+        android:id="@+id/averageReportedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/averageActivityText"
+        app:layout_constraintStart_toStartOf="@+id/averageActivityText"
+        app:layout_constraintTop_toTopOf="@+id/userReportedText"
+        tools:text="200" />
+
+    <TextView
+        android:id="@+id/reportUserTitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/reported"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        app:layout_constraintEnd_toEndOf="@+id/userReportedText"
+        app:layout_constraintStart_toStartOf="@+id/userReportedText"
+        app:layout_constraintTop_toBottomOf="@+id/userReportedText" />
+
+    <TextView
+        android:id="@+id/reportAverageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/reported"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/averageReportedText"
+        app:layout_constraintStart_toStartOf="@+id/averageReportedText"
+        app:layout_constraintTop_toBottomOf="@+id/averageReportedText" />
+
+    <TextView
+        android:id="@+id/userClearedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/reportUserTitleText"
+        app:layout_constraintStart_toStartOf="@+id/reportUserTitleText"
+        app:layout_constraintTop_toBottomOf="@+id/reportUserTitleText"
+        tools:text="80" />
+
+    <TextView
+        android:id="@+id/averageClearedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/reportAverageTitle"
+        app:layout_constraintStart_toStartOf="@+id/reportAverageTitle"
+        app:layout_constraintTop_toBottomOf="@+id/reportAverageTitle"
+        tools:text="100" />
+
+    <TextView
+        android:id="@+id/clearedUserTitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/cleared"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        app:layout_constraintEnd_toEndOf="@+id/userClearedText"
+        app:layout_constraintStart_toStartOf="@+id/userClearedText"
+        app:layout_constraintTop_toBottomOf="@+id/userClearedText" />
+
+    <TextView
+        android:id="@+id/clearedAverageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/cleared"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/averageClearedText"
+        app:layout_constraintStart_toStartOf="@+id/averageClearedText"
+        app:layout_constraintTop_toBottomOf="@+id/averageClearedText" />
 
 </android.support.constraint.ConstraintLayout>
