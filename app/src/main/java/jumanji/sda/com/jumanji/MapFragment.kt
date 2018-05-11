@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
+import android.transition.Visibility
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -270,10 +271,14 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                     .into(imageHolder)
         }
         val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
+        if (!(marker.tag as PinData).isTrash) {
+            clearButton.visibility = View.INVISIBLE
+        }
         clearButton.setOnClickListener {
             val pinData = marker.tag as PinData
             pinViewModel.reportPointAsClean(pinData)
             pinViewModel.loadPinData()
+            popupWindow.dismiss()
         }
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
     }
