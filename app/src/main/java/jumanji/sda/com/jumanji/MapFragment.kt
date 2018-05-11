@@ -49,11 +49,11 @@ interface SetOnPopUpWindowAdapter {
     fun displayPopUpWindow(marker: Marker)
 }
 
-interface OnUrlAvailableListener {
+interface OnUrlAvailableCallback {
     fun storeDataToFirebase(uri: Uri)
 }
 
-class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter, OnUrlAvailableListener {
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter, OnUrlAvailableCallback {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -262,7 +262,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 true)
         val imageHolder = popUpWindowView.findViewById<ImageView>(R.id.imageHolder)
-        val url = marker.tag as String
+        val url = (marker.tag as PinData).imageURL
         if (url.isNotEmpty()) {
             Picasso.get()
                     .load(url)
@@ -271,11 +271,9 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         }
         val clearButton = popUpWindowView.findViewById<Button>(R.id.clearButton)
         clearButton.setOnClickListener {
-            //TODO for reporting location is clear from trash
-            Toast.makeText(context, "this is working", Toast.LENGTH_SHORT).show()
-            //TODO implementation
-
-
+            val pinData = marker.tag as PinData
+            pinViewModel.reportPointAsClean(pinData)
+            pinViewModel.loadPinData()
         }
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
     }

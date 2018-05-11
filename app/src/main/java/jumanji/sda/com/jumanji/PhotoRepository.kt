@@ -13,7 +13,7 @@ class PhotoRepository(email: String?) {
 
     val email = email?.toLowerCase()
 
-    fun storePhotoToDatabase(uri: Uri?, activity: FragmentActivity?, listener: OnUrlAvailableListener) {
+    fun storePhotoToDatabase(uri: Uri?, activity: FragmentActivity?, callback: OnUrlAvailableCallback) {
         //var uri = data?.data
         val mStorageRef: StorageReference = FirebaseStorage.getInstance().getReference("$email/images")
         val imageRef = mStorageRef.child("$uri")
@@ -32,7 +32,7 @@ class PhotoRepository(email: String?) {
                         val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_SHORT)
                         toast.show()
                         if (downloadUrl != null) {
-                            listener.storeDataToFirebase(downloadUrl)
+                            callback.storeDataToFirebase(downloadUrl)
                         }
                     })
                     .addOnFailureListener { exception ->
