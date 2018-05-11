@@ -88,14 +88,15 @@ class ProfileRepository(context: Context) {
                 .set(user)
     }
 
-    fun createNewUser(userProfile: UserProfile) {
+    fun createNewUser(userProfile: UserProfile, callback: OnNewUserRegisteredCallback) {
+        Thread.sleep(2000)
         userAuthentication.createUserWithEmailAndPassword(userProfile.email, userProfile.password)
                 .addOnCompleteListener({ task ->
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "createUserWithEmail:success")
                         updateUserInformation(userProfile)
-
+                        callback.onProfileSaveToFirebase()
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "createUserWithEmail:failure", task.getException());
