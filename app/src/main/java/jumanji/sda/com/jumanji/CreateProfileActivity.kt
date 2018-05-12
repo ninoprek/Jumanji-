@@ -176,6 +176,9 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     }
 
     override fun onProfileSaveToFirebase() {
+        val viewModel = ViewModelProviders.of(this)[StatisticViewModel::class.java]
+        viewModel.updateCommunityStatistics(StatisticRepository.TOTAL_USERS)
+
         val intent = Intent(this, ProgramActivity::class.java)
         startActivity(intent)
         this.finish()

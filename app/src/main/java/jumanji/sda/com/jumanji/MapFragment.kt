@@ -68,6 +68,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var pinViewModel: PinViewModel
     private lateinit var profileViewModel: ProfileViewModel
+    private lateinit var statisticViewModel: StatisticViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
     private var userChoosenTask: String = ""
 
@@ -99,6 +100,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         profileViewModel.cleanedPins.observe(this, Observer {
             totalNoOfTrashLocationClearedText.text = it
         })
+
+        statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
     }
 
     override fun onStart() {
@@ -257,6 +260,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             pinViewModel.loadPinData()
             profileViewModel.updateUserStatistics(username)
             popupWindow.dismiss()
+            statisticViewModel.updateCommunityStatistics(StatisticRepository.TOTAL_CLEANED_PINS)
         }
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
     }
@@ -378,6 +382,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         profileViewModel.updateUserPinNumber(username)
         pinViewModel.loadPinData()
         profileViewModel.updateUserStatistics(username)
+        statisticViewModel.updateCommunityStatistics(StatisticRepository.TOTAL_REPORTED_PINS)
     }
 
 
