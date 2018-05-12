@@ -85,12 +85,13 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
-        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
         profileViewModel.userInfo?.observe(this, Observer {
             email = it!!.email
             username = it!!.userName
+
         })
 
         profileViewModel.reportedPins.observe(this, Observer {

@@ -38,13 +38,21 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         userActivityMapView.onCreate(savedInstanceState)
         userActivityMapView.getMapAsync(this)
 
-        val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        val profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
             username = it?.userName
             usernameText.text = username
             Picasso.get().load(it?.photoURL).into(profilePhotoView)
+        })
+
+        profileViewModel.reportedPins.observe(this, Observer {
+            userReportedText.text = it
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer {
+            userClearedText.text = it
         })
 
         signOutButton.setOnClickListener {
