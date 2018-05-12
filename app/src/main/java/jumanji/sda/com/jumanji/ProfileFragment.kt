@@ -7,19 +7,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.annotation.LayoutRes
+import android.support.constraint.ConstraintSet
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import android.transition.ChangeBounds
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.MarkerOptions
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
-
 
 class ProfileFragment : Fragment(), OnMapReadyCallback {
     lateinit var map: GoogleMap
@@ -39,13 +43,21 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         userActivityMapView.onCreate(savedInstanceState)
         userActivityMapView.getMapAsync(this)
 
-        val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        val profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
             username = it?.userName
             usernameText.text = username
             Picasso.get().load(it?.photoURL).into(profilePhotoView)
+        })
+
+        profileViewModel.reportedPins.observe(this, Observer {
+            userReportedText.text = it
+        })
+
+        profileViewModel.cleanedPins.observe(this, Observer {
+            userClearedText.text = it
         })
 
         signOutButton.setOnClickListener {
@@ -61,6 +73,34 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
             val alert = builder.create()
             alert.show()
         }
+
+        val statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
+        statisticViewModel.getUpdateFromFirebase()
+        statisticViewModel.averageUserReportedPins.observe(this, Observer {
+            averageReportedText.text = it.toString()
+        })
+
+        statisticViewModel.averageUserCleanedPins.observe(this, Observer {
+            averageClearedText.text = it.toString()
+        })
+
+        badgeView.setOnClickListener {
+            updateConstraints(R.layout.fragment_profile_badge)
+        }
+
+        root.setOnClickListener {
+            updateConstraints(R.layout.fragment_profile)
+        }
+    }
+
+    private fun updateConstraints(@LayoutRes id: Int) {
+        ConstraintSet().run {
+            clone(context, id)
+            applyTo(root)
+        }
+        val transition = ChangeBounds()
+        transition.interpolator = OvershootInterpolator()
+        TransitionManager.beginDelayedTransition(root, transition)
     }
 
     fun goToSignIn() {

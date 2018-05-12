@@ -68,6 +68,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     private lateinit var locationViewModel: LocationViewModel
     private lateinit var pinViewModel: PinViewModel
     private lateinit var profileViewModel: ProfileViewModel
+    private lateinit var statisticViewModel: StatisticViewModel
     private var currentLocation = LatLng(LocationViewModel.DEFAULT_LATITUDE, LocationViewModel.DEFAULT_LONGITUDE)
     private var userChoosenTask: String = ""
 
@@ -84,11 +85,12 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
-        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
         profileViewModel.userInfo?.observe(this, Observer {
             email = it!!.email
             username = it!!.userName
+
         })
 
         profileViewModel.reportedPins.observe(this, Observer {
@@ -98,6 +100,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         profileViewModel.cleanedPins.observe(this, Observer {
             totalNoOfTrashLocationClearedText.text = it
         })
+
+        statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
     }
 
     override fun onStart() {
@@ -256,6 +260,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             pinViewModel.loadPinData()
             profileViewModel.updateUserStatistics(username)
             popupWindow.dismiss()
+            statisticViewModel.updateCommunityStatistics(StatisticRepository.TOTAL_CLEANED_PINS)
         }
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, -100)
     }
@@ -377,6 +382,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         profileViewModel.updateUserPinNumber(username)
         pinViewModel.loadPinData()
         profileViewModel.updateUserStatistics(username)
+        statisticViewModel.updateCommunityStatistics(StatisticRepository.TOTAL_REPORTED_PINS)
     }
 
 
@@ -485,20 +491,25 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         var trashFreeMarkers: List<Marker> = listOf()
 
         fun bindMarkers() {
-            Log.d("TAG", "bind markers")
-            trashLocationMarkers.filter { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = true }
-            trashLocationMarkers.filterNot { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = false }
 
-            trashFreeMarkers.filter { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = true }
-            trashFreeMarkers.filterNot { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = false }
+            getCurrentView()?.let { bounds ->
+                trashLocationMarkers.filter { bounds.contains(it.position) }
+                        .forEach { it.isVisible = true }
+                trashLocationMarkers.filterNot { bounds.contains(it.position) }
+                        .forEach { it.isVisible = false }
+
+                trashFreeMarkers.filter { bounds.contains(it.position) }
+                        .forEach { it.isVisible = true }
+                trashFreeMarkers.filterNot { bounds.contains(it.position) }
+                        .forEach { it.isVisible = false }
+            }
         }
 
-        private fun getCurrentView(): LatLngBounds {
-            return map!!.projection.visibleRegion.latLngBounds
+        private fun getCurrentView(): LatLngBounds? {
+            map?.let { map ->
+                return map.projection.visibleRegion.latLngBounds
+            }
+            return null
         }
     }
 

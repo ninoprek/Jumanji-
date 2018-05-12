@@ -2,7 +2,6 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -23,13 +22,17 @@
 
     <ImageView
         android:id="@+id/badgeView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
         android:layout_alignStart="@+id/profilePhotoView"
         android:layout_alignTop="@+id/profilePhotoView"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:contentDescription="@string/user_badge"
-        app:layout_constraintBottom_toBottomOf="@+id/profilePhotoView"
-        app:layout_constraintEnd_toEndOf="@+id/profilePhotoView"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@mipmap/jumanji_launcher" />
 
     <TextView

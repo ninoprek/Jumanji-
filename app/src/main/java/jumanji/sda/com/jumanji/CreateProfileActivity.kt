@@ -20,7 +20,11 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_create_profile.*
 import java.io.*
 
-class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, OnUrlAvailableCallback {
+interface OnNewUserRegisteredCallback{
+    fun onProfileSaveToFirebase()
+}
+
+class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, OnUrlAvailableCallback, OnNewUserRegisteredCallback {
     override fun storeDataToFirebase(uri: Uri) {
     }
 
@@ -56,13 +60,12 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 val photoRepository = PhotoRepository(email)
 
                 val profile = UserProfile(userName, password, email, uriString?.toString())
-                viewModel.saveUserProfile(profile)
+                viewModel.saveUserProfile(profile, this)
                 viewModel.initializeUserPinNumber(userName)
+                Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
+                photoRepository.storePhotoToDatabase(uriString, this, this)
 
-                photoRepository.storePhotoToDatabase(uriString, this, this, false)
-                val intent = Intent(this, ProgramActivity::class.java)
-                startActivity(intent)
-                this.finish()
+
             } else {
                 Toast.makeText(this@CreateProfileActivity,
                         "Password is too short.",
@@ -170,6 +173,15 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
 
         profilePhoto.setImageBitmap(thumbnail)
         uriString = Uri.fromFile(destination.absoluteFile)
+    }
+
+    override fun onProfileSaveToFirebase() {
+        val viewModel = ViewModelProviders.of(this)[StatisticViewModel::class.java]
+        viewModel.updateCommunityStatistics(StatisticRepository.TOTAL_USERS)
+
+        val intent = Intent(this, ProgramActivity::class.java)
+        startActivity(intent)
+        this.finish()
     }
 
     override fun afterTextChanged(s: Editable?) {
