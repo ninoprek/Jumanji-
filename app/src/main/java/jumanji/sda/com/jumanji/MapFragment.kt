@@ -486,19 +486,25 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         var trashFreeMarkers: List<Marker> = listOf()
 
         fun bindMarkers() {
-            trashLocationMarkers.filter { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = true }
-            trashLocationMarkers.filterNot { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = false }
 
-            trashFreeMarkers.filter { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = true }
-            trashFreeMarkers.filterNot { getCurrentView().contains(it.position) }
-                    .forEach { it.isVisible = false }
+            getCurrentView()?.let { bounds ->
+                trashLocationMarkers.filter { bounds.contains(it.position) }
+                        .forEach { it.isVisible = true }
+                trashLocationMarkers.filterNot { bounds.contains(it.position) }
+                        .forEach { it.isVisible = false }
+
+                trashFreeMarkers.filter { bounds.contains(it.position) }
+                        .forEach { it.isVisible = true }
+                trashFreeMarkers.filterNot { bounds.contains(it.position) }
+                        .forEach { it.isVisible = false }
+            }
         }
 
-        private fun getCurrentView(): LatLngBounds {
-            return map!!.projection.visibleRegion.latLngBounds
+        private fun getCurrentView(): LatLngBounds? {
+            map?.let { map ->
+                return map.projection.visibleRegion.latLngBounds
+            }
+            return null
         }
     }
 

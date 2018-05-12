@@ -60,6 +60,16 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
             val alert = builder.create()
             alert.show()
         }
+
+        val statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
+        statisticViewModel.getUpdateFromFirebase()
+        statisticViewModel.averageUserReportedPins.observe(this, Observer {
+            averageReportedText.text = it.toString()
+        })
+
+        statisticViewModel.averageUserCleanedPins.observe(this, Observer {
+            averageClearedText.text = it.toString()
+        })
     }
 
     fun goToSignIn() {

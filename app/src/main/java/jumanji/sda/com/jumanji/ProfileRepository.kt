@@ -89,7 +89,6 @@ class ProfileRepository(context: Context) {
     }
 
     fun createNewUser(userProfile: UserProfile, callback: OnNewUserRegisteredCallback) {
-        Thread.sleep(2000)
         userAuthentication.createUserWithEmailAndPassword(userProfile.email, userProfile.password)
                 .addOnCompleteListener({ task ->
                     if (task.isSuccessful()) {
