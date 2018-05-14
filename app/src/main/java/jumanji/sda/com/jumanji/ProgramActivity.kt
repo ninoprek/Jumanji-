@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity() {
@@ -32,7 +31,6 @@ class ProgramActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-
                 1 -> Fragment()
                 2 -> ProfileFragment()
                 else -> MapFragment()

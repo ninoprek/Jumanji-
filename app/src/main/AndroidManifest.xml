@@ -35,7 +35,7 @@
         <activity android:name=".SignInActivity"
             android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".CreateProfileActivity"
-            android:windowSoftInputMode="stateHidden"></activity>
+            android:windowSoftInputMode="stateHidden"/>
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.android.fileprovider"
