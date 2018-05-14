@@ -2,6 +2,7 @@ package jumanji.sda.com.jumanji
 
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
