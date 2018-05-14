@@ -440,7 +440,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             try {
                 val photoFile: File = createImageFile()
                 // Continue only if the File was successfully created
-                var photoURI: Uri = FileProvider.getUriForFile(context!!,
+                val photoURI: Uri = FileProvider.getUriForFile(context!!,
                         "com.android.fileprovider",
                         photoFile)
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
@@ -476,7 +476,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     private fun galleryIntent() {
         val intent = Intent()
         intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT//
+        intent.action = Intent.ACTION_GET_CONTENT
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE_CODE)
     }
 

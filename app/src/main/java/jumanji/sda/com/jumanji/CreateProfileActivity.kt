@@ -62,10 +62,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 val profile = UserProfile(userName, password, email, uriString?.toString())
                 viewModel.saveUserProfile(profile, this)
                 viewModel.initializeUserPinNumber(userName)
-                Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
                 photoRepository.storePhotoToDatabase(uriString, this, this, false)
-
-
+                Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this@CreateProfileActivity,
                         "Password is too short.",
@@ -110,24 +108,18 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     private fun galleryIntent() {
         val intent = Intent()
         intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT//
+        intent.action = Intent.ACTION_GET_CONTENT
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE)
     }
 
     override fun actionWithPermission(context: Context) {
         when (userChoosenTask) {
-            "Take Photo" -> {
-                cameraIntent()
-            }
-
-            "Choose from Library" -> {
-                galleryIntent()
-            }
+            "Take Photo" -> cameraIntent()
+            "Choose from Library" -> galleryIntent()
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        Log.d("TAG", "request code $requestCode")
         when (requestCode) {
             Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -141,14 +133,21 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         }
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        Log.d("TAG", "result code, $resultCode")
+        when (requestCode) {
+            SELECT_FILE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    onSelectFromGalleryResult(data)
+                }
+            }
 
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == SELECT_FILE)
-                onSelectFromGalleryResult(data)
-            else if (requestCode == REQUEST_CAMERA)
-                onCaptureImageResult(data)
+            REQUEST_CAMERA -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    onCaptureImageResult(data)
+                }
+            }
         }
     }
 
@@ -158,7 +157,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         if (data != null) {
             try {
                 bm = MediaStore.Images.Media.getBitmap(applicationContext.contentResolver, data.data)
-                uriString = data?.data
+                uriString = data.data
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -168,8 +167,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         Log.d(javaClass.simpleName, "Setting image to profile.")
     }
 
-    private fun onCaptureImageResult(data: Intent) {
-        val thumbnail = data.extras!!.get("data") as Bitmap
+    private fun onCaptureImageResult(data: Intent?) {
+        val thumbnail = data?.extras?.get("data") as Bitmap
         val bytes = ByteArrayOutputStream()
         thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, bytes)
         val destination = File(Environment.getExternalStorageDirectory(),
