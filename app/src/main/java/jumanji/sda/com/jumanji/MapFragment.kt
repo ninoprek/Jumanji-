@@ -61,6 +61,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
         private const val LAST_KNOWN_LATITUDE = "last_known_latitude"
         private const val CAMERA_PREFERENCE = "camera_preference"
+        private const val RESTORE_STATE_FLAG = "restore_state_flag"
         private const val LOCATION_REQUEST_CODE = 300
         private const val REQUEST_CAMERA_CODE = 100
         private const val SELECT_FILE_CODE = 200
@@ -88,13 +89,11 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
-
         profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
         profileViewModel.userInfo?.observe(this, Observer {
             email = it!!.email
             username = it!!.userName
-
         })
 
         profileViewModel.reportedPins.observe(this, Observer {
@@ -116,8 +115,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     override fun onStart() {
         super.onStart()
         mapView.onStart()
-
-
 
         refreshFab.setOnClickListener {
             if (currentView != null && mapAdapter.map != null) {
@@ -143,7 +140,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     override fun onPause() {
         super.onPause()
         if (this::mapPreference.isInitialized) {
-            mapPreference.saveMapCameraState()
+            mapPreference.saveMapCameraState(true)
         }
         mapView.onPause()
     }
@@ -154,6 +151,9 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     }
 
     override fun onDestroy() {
+        if (this::mapPreference.isInitialized) {
+            mapPreference.saveMapCameraState(false)
+        }
         mapView?.onDestroy()
         super.onDestroy()
     }
@@ -181,9 +181,12 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         })
 
         checkUserLocationSetting()
-
-        val cameraState = mapPreference.getCameraState()
-        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
+        if (mapPreference.shouldRestoreState()) {
+            val cameraState = mapPreference.getCameraState()
+            map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraState))
+        } else {
+            locationViewModel.moveToLastKnowLocation(map)
+        }
 
         map.setOnMyLocationButtonClickListener {
             locationViewModel.moveToLastKnowLocation(map)
@@ -544,7 +547,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                 CAMERA_PREFERENCE,
                 Context.MODE_PRIVATE)
 
-        fun saveMapCameraState() {
+        fun saveMapCameraState(restoreFlag: Boolean) {
             val cameraPosition = map.cameraPosition
             val latitude = cameraPosition.target.latitude.toFloat()
             val longitude = cameraPosition.target.longitude.toFloat()
@@ -553,6 +556,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             editor.putFloat(LAST_KNOWN_LATITUDE, latitude)
             editor.putFloat(LAST_KNOWN_LONGITUDE, longitude)
             editor.putFloat(LAST_KNOWN_ZOOM, zoom)
+            editor.putBoolean(RESTORE_STATE_FLAG, restoreFlag)
             editor.apply()
         }
 
@@ -566,6 +570,10 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             val zoom = mapCameraPreferences.getFloat(LAST_KNOWN_ZOOM,
                     LocationViewModel.DEFAULT_ZOOM_LEVEL)
             return CameraPosition(LatLng(latitude, longitude), zoom, 0.0f, 0.0f)
+        }
+
+        fun shouldRestoreState(): Boolean {
+            return mapCameraPreferences.getBoolean(RESTORE_STATE_FLAG, false)
         }
     }
 }
