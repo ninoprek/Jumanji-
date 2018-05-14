@@ -2,12 +2,11 @@ package jumanji.sda.com.jumanji
 
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
-import android.content.DialogInterface
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -20,11 +19,12 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_create_profile.*
 import java.io.*
 
-interface OnNewUserRegisteredCallback{
+interface OnNewUserRegisteredCallback {
     fun onProfileSaveToFirebase()
 }
 
-class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, OnUrlAvailableCallback, OnNewUserRegisteredCallback {
+class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, OnUrlAvailableCallback, OnNewUserRegisteredCallback, OnPermissionGrantedCallback {
+
     override fun storeDataToFirebase(uri: Uri) {
     }
 
@@ -63,7 +63,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 viewModel.saveUserProfile(profile, this)
                 viewModel.initializeUserPinNumber(userName)
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
-                photoRepository.storePhotoToDatabase(uriString, this, this)
+                photoRepository.storePhotoToDatabase(uriString, this, this, false)
 
 
             } else {
@@ -84,18 +84,19 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@CreateProfileActivity)
         builder.setTitle("Add Photo!")
-        builder.setItems(items, DialogInterface.OnClickListener { dialog, item ->
-            val result = Utility.checkPermission(this@CreateProfileActivity)
-            if (items[item] == "Take Photo") {
-                userChoosenTask = "Take Photo"
-                if (result)
-                    cameraIntent()
-            } else if (items[item] == "Choose from Library") {
-                userChoosenTask = "Choose from Library"
-                if (result)
-                    galleryIntent()
-            } else if (items[item] == "Cancel") {
-                dialog.dismiss()
+        builder.setItems(items, { dialog, item ->
+            when (items[item]) {
+                "Take Photo" -> {
+                    userChoosenTask = "Take Photo"
+                    Utility.checkPermission(context = this@CreateProfileActivity, callback = this)
+                }
+
+                "Choose from Library" -> {
+                    userChoosenTask = "Choose from Library"
+                    Utility.checkPermission(context = this@CreateProfileActivity, callback = this)
+                }
+
+                "Cancel" -> dialog.dismiss()
             }
         })
         builder.show()
@@ -113,16 +114,30 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE -> if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (userChoosenTask.equals("Take Photo"))
-                    cameraIntent()
-                else if (userChoosenTask.equals("Choose from Library"))
-                    galleryIntent()
-            } else {
-                //code for deny
+    override fun actionWithPermission(context: Context) {
+        when (userChoosenTask) {
+            "Take Photo" -> {
+                cameraIntent()
             }
+
+            "Choose from Library" -> {
+                galleryIntent()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        Log.d("TAG", "request code $requestCode")
+        when (requestCode) {
+            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    actionWithPermission(this)
+                } else {
+                    Toast.makeText(this,
+                            "I need your permission to show you a nice profile picture",
+                            Toast.LENGTH_LONG)
+                            .show()
+                }
         }
     }
 
