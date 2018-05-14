@@ -23,14 +23,14 @@
 
     <ImageView
         android:id="@+id/badgeView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_alignStart="@+id/profilePhotoView"
         android:layout_alignTop="@+id/profilePhotoView"
         android:contentDescription="@string/user_badge"
         app:layout_constraintBottom_toBottomOf="@+id/profilePhotoView"
         app:layout_constraintEnd_toEndOf="@+id/profilePhotoView"
-        app:srcCompat="@mipmap/jumanji_launcher" />
+        app:srcCompat="@drawable/logo1" />
 
     <TextView
         android:id="@+id/usernameText"

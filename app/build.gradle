@@ -48,8 +48,8 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:15.0.1"
     implementation 'junit:junit:4.12'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'android.arch.persistence.room:runtime:1.0.0'
-    kapt  "android.arch.persistence.room:compiler:1.0.0"
+    implementation 'android.arch.persistence.room:runtime:1.1.0'
+    kapt  "android.arch.persistence.room:compiler:1.1.0"
 }
 
 apply plugin: 'com.google.gms.google-services'

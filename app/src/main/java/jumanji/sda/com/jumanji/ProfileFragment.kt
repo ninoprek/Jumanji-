@@ -51,10 +51,12 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
 
         profileViewModel.reportedPins.observe(this, Observer {
             userReportedText.text = it
+            levelCheck()
         })
 
         profileViewModel.cleanedPins.observe(this, Observer {
             userClearedText.text = it
+            levelCheck()
         })
 
         signOutButton.setOnClickListener {
@@ -66,7 +68,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
                 profileViewModel.checkIfUserSignedIn(this.requireContext())
                 goToSignIn()
             }
-            builder.setNegativeButton("No") { dialog, id -> dialog.dismiss() }
+            builder.setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
             val alert = builder.create()
             alert.show()
         }
@@ -75,10 +77,12 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         statisticViewModel.getUpdateFromFirebase()
         statisticViewModel.averageUserReportedPins.observe(this, Observer {
             averageReportedText.text = it.toString()
+            levelCheck()
         })
 
         statisticViewModel.averageUserCleanedPins.observe(this, Observer {
             averageClearedText.text = it.toString()
+            levelCheck()
         })
 
         badgeView.setOnClickListener {
@@ -87,6 +91,23 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
 
         root.setOnClickListener {
             updateConstraints(R.layout.fragment_profile)
+        }
+    }
+
+    private fun levelCheck() {
+        val userReport = userReportedText.text.toString().toInt()
+        val userClean = userClearedText.text.toString().toInt()
+        val averageReport = averageReportedText.text.toString().toInt()
+        val averageClear = averageClearedText.text.toString().toInt()
+        if (averageReport > 0 && averageClear > 0) {
+            val reportScore = (userReport - averageReport) / averageReport.toFloat() * 100
+            val clearScore = (userClean - averageClear) / averageClear.toFloat() * 100
+            val averageScore = (reportScore + clearScore) / 2
+            when {
+                averageScore >= 30 -> badgeView.setImageResource(R.drawable.tree)
+                averageScore < -30 -> badgeView.setImageResource(R.drawable.logo1)
+                else -> badgeView.setImageResource(R.drawable.branch)
+            }
         }
     }
 
