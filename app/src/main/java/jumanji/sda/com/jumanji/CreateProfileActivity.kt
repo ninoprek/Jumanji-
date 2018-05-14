@@ -135,7 +135,6 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d("TAG", "result code, $resultCode")
         when (requestCode) {
             SELECT_FILE -> {
                 if (resultCode == Activity.RESULT_OK) {

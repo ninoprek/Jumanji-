@@ -3,7 +3,6 @@ package jumanji.sda.com.jumanji
 import android.Manifest
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -28,10 +27,6 @@ import kotlinx.android.synthetic.main.fragment_profile.*
 class ProfileFragment : Fragment(), OnMapReadyCallback {
     lateinit var map: GoogleMap
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_profile, container, false)
     }
@@ -48,7 +43,9 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
 
         profileViewModel.userInfo?.observe(this, Observer {
             username = it?.userName
-            usernameText.text = username
+            if (username != "null") {
+                usernameText.text = username
+            }
             Picasso.get().load(it?.photoURL).into(profilePhotoView)
         })
 
@@ -64,7 +61,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
             val builder = AlertDialog.Builder(this.requireContext())
             builder.setTitle(R.string.app_name)
             builder.setMessage("Do you want to sign out?")
-            builder.setPositiveButton("Yes") { dialog, id ->
+            builder.setPositiveButton("Yes") { dialog, _ ->
                 dialog.dismiss()
                 profileViewModel.checkIfUserSignedIn(this.requireContext())
                 goToSignIn()
