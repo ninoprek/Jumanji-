@@ -106,16 +106,18 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         })
 
         statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
+
+        mapPreference = CameraStateManager()
+        mapAdapter = GoogleMapAdapter()
+
+        mapView.getMapAsync(this)
     }
 
     override fun onStart() {
         super.onStart()
         mapView.onStart()
 
-        mapPreference = CameraStateManager()
-        mapAdapter = GoogleMapAdapter()
 
-        mapView.getMapAsync(this)
 
         refreshFab.setOnClickListener {
             if (currentView != null && mapAdapter.map != null) {
@@ -140,6 +142,9 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
 
     override fun onPause() {
         super.onPause()
+        if (this::mapPreference.isInitialized) {
+            mapPreference.saveMapCameraState()
+        }
         mapView.onPause()
     }
 
@@ -149,9 +154,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     }
 
     override fun onDestroy() {
-        if (this::mapPreference.isInitialized) {
-            mapPreference.saveMapCameraState()
-        }
         mapView?.onDestroy()
         super.onDestroy()
     }
