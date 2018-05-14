@@ -23,12 +23,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
 
-    fun updateUserProfile(profile: UserProfile) {
-        Single.fromCallable { repository.updateUserInformation(profile) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe()
-    }
-
     fun getUserName() {
     }
 
@@ -37,6 +31,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
+    }
+
+    fun signOut(){
+        repository.signOut(getApplication())
     }
 
     fun deleteUserProfile(): Boolean {

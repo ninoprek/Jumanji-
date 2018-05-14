@@ -15,6 +15,9 @@ import android.support.v7.app.AlertDialog
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
@@ -61,17 +64,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         })
 
         signOutButton.setOnClickListener {
-            val builder = AlertDialog.Builder(this.requireContext())
-            builder.setTitle(R.string.app_name)
-            builder.setMessage("Do you want to sign out?")
-            builder.setPositiveButton("Yes") { dialog, id ->
-                dialog.dismiss()
-                profileViewModel.checkIfUserSignedIn(this.requireContext())
-                goToSignIn()
-            }
-            builder.setNegativeButton("No") { dialog, id -> dialog.dismiss() }
-            val alert = builder.create()
-            alert.show()
+
         }
 
         val statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]

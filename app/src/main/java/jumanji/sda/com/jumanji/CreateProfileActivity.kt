@@ -63,7 +63,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 viewModel.saveUserProfile(profile, this)
                 viewModel.initializeUserPinNumber(userName)
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
-                photoRepository.storePhotoToDatabase(uriString, this, this)
+                photoRepository.storePhotoToDatabase(uriString, this, this, false)
 
 
             } else {
