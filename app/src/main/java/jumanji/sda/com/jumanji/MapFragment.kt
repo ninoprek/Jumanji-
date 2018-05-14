@@ -51,7 +51,11 @@ interface OnUrlAvailableCallback {
     fun storeDataToFirebase(uri: Uri)
 }
 
-class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter, OnUrlAvailableCallback {
+interface OnPermissionGrantedCallback {
+    fun actionWithPermission(context: Context)
+}
+
+class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWindowAdapter, OnUrlAvailableCallback, OnPermissionGrantedCallback {
     companion object {
         private const val LAST_KNOWN_ZOOM = "last_known_zoom"
         private const val LAST_KNOWN_LONGITUDE = "last_known_longitude"
@@ -293,7 +297,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity as Activity, permission[1])) {
                 android.app.AlertDialog.Builder(context)
                         .setTitle("Permission Request")
-                        .setMessage("This app required your permission in order to provide location awareness service.")
+                        .setMessage("I need the location service to know where the trash is.")
                         .setCancelable(true)
                         .setNegativeButton("OK", { dialog, _ ->
                             run {
@@ -313,6 +317,44 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         }
     }
 
+    override fun actionWithPermission(context: Context) {
+        when (userChoosenTask) {
+            "Take Photo" -> {
+                locationViewModel.startLocationUpdates(context)
+                cameraIntent()
+            }
+
+            "Choose from Library" -> {
+                galleryIntent()
+            }
+        }
+    }
+
+    override fun selectImage() {
+        val context = this@MapFragment.context
+        if (context != null) {
+            val items = arrayOf("Take Photo", "Choose from Library", "Cancel")
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle("Add Photo!")
+            builder.setItems(items, { dialog, item ->
+                when {
+                    items[item] == "Take Photo" -> {
+                        userChoosenTask = "Take Photo"
+                        Utility.checkPermission(this, context, this)
+                    }
+
+                    items[item] == "Choose from Library" -> {
+                        userChoosenTask = "Choose from Library"
+                        Utility.checkPermission(this, context, this)
+                    }
+
+                    items[item] == "Cancel" -> dialog.dismiss()
+                }
+            })
+            builder.show()
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
@@ -320,21 +362,24 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                     enableMyLocationLayer()
                 } else {
                     Toast.makeText(context,
-                            "Please enable permission to access your device location.",
+                            "Please enable permission to access your device location, so that I know where the trash is at.",
                             Toast.LENGTH_LONG)
                             .show()
                 }
             }
 
-            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE ->
+            Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (userChoosenTask.equals("Take Photo"))
-                        cameraIntent()
-                    else if (userChoosenTask.equals("Choose from Library"))
-                        galleryIntent()
+                    context?.let {
+                        actionWithPermission(it)
+                    }
                 } else {
-                    //code for deny
+                    Toast.makeText(context,
+                            "Please give me the permission to access your storage, so that I can reporting trash.",
+                            Toast.LENGTH_LONG)
+                            .show()
                 }
+            }
         }
     }
 
@@ -386,49 +431,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     }
 
 
-    override fun selectImage() {
-        val items = arrayOf("Take Photo", "Choose from Library", "Cancel")
-        val builder = AlertDialog.Builder(this@MapFragment.context!!)
-        builder.setTitle("Add Photo!")
-        builder.setItems(items, { dialog, item ->
-            val result = Utility.checkPermission(this@MapFragment.context!!)
-            if (items[item] == "Take Photo") {
-                userChoosenTask = "Take Photo"
-                if (result)
-                    locationViewModel.startLocationUpdates(this@MapFragment.context!!)
-                cameraIntent()
-            } else if (items[item] == "Choose from Library") {
-                userChoosenTask = "Choose from Library"
-                if (result)
-                    galleryIntent()
-            } else if (items[item] == "Cancel") {
-                dialog.dismiss()
-            }
-        })
-        builder.show()
-    }
-
     private var mCurrentPhotoPath: String = ""
 
-    private fun createImageFile(): File {
-        // Create an image file name
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date());
-        val imageFileName: String = "JPEG_" + timeStamp + "_"
-        val storageDir = Environment.getExternalStoragePublicDirectory(Environment.MEDIA_SHARED)
-
-        if (!storageDir.isDirectory)
-            storageDir.mkdir()
-
-        val imageFile = File.createTempFile(
-                imageFileName, /* prefix */
-                ".jpg", /* suffix */
-                storageDir     /* directory */
-        )
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = imageFile.absolutePath
-        return imageFile
-    }
 
     private fun cameraIntent() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -447,6 +451,26 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
                 Log.e(ex.message, ex.toString())
             }
         }
+    }
+
+    private fun createImageFile(): File {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageFileName: String = "JPEG_" + timeStamp + "_"
+        val storageDir = Environment.getExternalStoragePublicDirectory(Environment.MEDIA_SHARED)
+
+        if (!storageDir.isDirectory)
+            storageDir.mkdir()
+
+        val imageFile = File.createTempFile(
+                imageFileName, /* prefix */
+                ".jpg", /* suffix */
+                storageDir     /* directory */
+        )
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = imageFile.absolutePath
+        return imageFile
     }
 
     private fun galleryIntent() {
