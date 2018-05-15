@@ -75,8 +75,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         }
 
         cancelButton.setOnClickListener({
-            val intent = Intent(this, ProgramActivity::class.java)
-            startActivity(intent)
+            this.finish()
         })
     }
 
@@ -192,10 +191,10 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     override fun onProfileSaveToFirebase() {
         val viewModel = ViewModelProviders.of(this)[StatisticViewModel::class.java]
         viewModel.updateCommunityStatistics(StatisticRepository.TOTAL_USERS)
-
         val intent = Intent(this, ProgramActivity::class.java)
         startActivity(intent)
         this.finish()
+
     }
 
     override fun afterTextChanged(s: Editable?) {
