@@ -27,4 +27,6 @@
     <string name="you">You</string>
     <string name="reported">Reported</string>
     <string name="cleared">Cleared</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="delete_profile">Delete Profile</string>
 </resources>

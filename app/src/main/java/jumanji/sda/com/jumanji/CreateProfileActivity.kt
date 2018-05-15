@@ -17,6 +17,12 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
+import jumanji.sda.com.jumanji.R.id.confirmPasswordField
+import jumanji.sda.com.jumanji.R.id.emailField
+import jumanji.sda.com.jumanji.R.id.passwordField
+import jumanji.sda.com.jumanji.R.id.profilePhoto
+import jumanji.sda.com.jumanji.R.id.saveButton
+import jumanji.sda.com.jumanji.R.id.userNameField
 import kotlinx.android.synthetic.main.activity_create_profile.*
 import java.io.*
 
@@ -33,6 +39,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         private const val SELECT_FILE = 200
     }
 
+    val profileViewModel by lazy { ViewModelProviders.of(this)[ProfileViewModel::class.java] }
     var userChoosenTask: String = ""
 
     private var uriString: Uri = Uri.parse("android.resource://jumanji.sda.com.jumanji/" + R.drawable.download)

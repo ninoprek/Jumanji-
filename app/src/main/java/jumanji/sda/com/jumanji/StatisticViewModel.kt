@@ -18,26 +18,27 @@ class StatisticViewModel : ViewModel() {
 
     init {
         getUpdateFromFirebase()
+        val value = totalUsers.value
         averageUserReportedPins.addSource(communityTotalReportedPins, { totalReportedPins ->
-            if (totalUsers.value != null && totalReportedPins != null) {
-                averageUserReportedPins.value = totalReportedPins / totalUsers.value!!
+            if (value != null && value > 0 && totalReportedPins != null) {
+                averageUserReportedPins.value = totalReportedPins / value
             }
         })
 
         averageUserReportedPins.addSource(totalUsers, { totalUsers ->
-            if (totalUsers != null) {
+            if (totalUsers != null && totalUsers > 0) {
                 averageUserReportedPins.value = communityTotalReportedPins.value!! / totalUsers
             }
         })
 
         averageUserCleanedPins.addSource(communityTotalCleanedPins, { totalReportedPins ->
-            if (totalUsers.value != null && totalReportedPins != null) {
-                averageUserCleanedPins.value = totalReportedPins / totalUsers.value!!
+            if (value != null && totalReportedPins != null) {
+                averageUserCleanedPins.value = totalReportedPins / value
             }
         })
 
         averageUserCleanedPins.addSource(totalUsers, { totalUsers ->
-            if (totalUsers != null) {
+            if (totalUsers != null && totalUsers > 0) {
                 averageUserCleanedPins.value = communityTotalCleanedPins.value!! / totalUsers
             }
         })

@@ -2,8 +2,8 @@ package jumanji.sda.com.jumanji
 
 import android.Manifest
 import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -11,7 +11,6 @@ import android.support.annotation.LayoutRes
 import android.support.constraint.ConstraintSet
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AlertDialog
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.view.LayoutInflater
@@ -30,9 +29,13 @@ import kotlinx.android.synthetic.main.fragment_profile.*
 
 class ProfileFragment : Fragment(), OnMapReadyCallback {
     lateinit var map: GoogleMap
+    val profileViewModel by lazy {
+        ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
+    }
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -41,12 +44,11 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        userActivityMapView.onCreate(savedInstanceState)
 
+        userActivityMapView.onCreate(savedInstanceState)
         userActivityMapView.onCreate(savedInstanceState)
         userActivityMapView.getMapAsync(this)
 
-        val profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
@@ -62,10 +64,6 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         profileViewModel.cleanedPins.observe(this, Observer {
             userClearedText.text = it
         })
-
-        signOutButton.setOnClickListener {
-
-        }
 
         val statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
         statisticViewModel.getUpdateFromFirebase()
@@ -84,6 +82,30 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         root.setOnClickListener {
             updateConstraints(R.layout.fragment_profile)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        inflater?.inflate(R.menu.options_menu, menu)
+        return super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when(item?.itemId) {
+            R.id.signOutItem -> {
+                profileViewModel.signOut()
+                goToSignIn()
+            }
+            R.id.editProfileItem -> {
+                val intent = Intent(context, CreateProfileActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.deleteProfileItem -> {
+                profileViewModel.deleteUserProfile()
+                goToSignIn()
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun updateConstraints(@LayoutRes id: Int) {
