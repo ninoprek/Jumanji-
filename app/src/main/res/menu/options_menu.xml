@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/editProfileItem"
+        app:showAsAction="never"
+        android:title="@string/edit_profile"/>
+    <item
+        android:id="@+id/signOutItem"
+        app:showAsAction="never"
+        android:title="@string/sign_out"/>
+    <item
+        android:id="@+id/deleteProfileItem"
+        app:showAsAction="never"
+        android:title="@string/delete_profile" />
+
+</menu>

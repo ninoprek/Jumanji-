@@ -33,8 +33,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         private const val SELECT_FILE = 200
     }
 
+    val profileViewModel by lazy { ViewModelProviders.of(this)[ProfileViewModel::class.java] }
     var userChoosenTask: String = ""
-    lateinit var profileViewModel: ProfileViewModel
 
     private var uriString: Uri = Uri.parse("android.resource://jumanji.sda.com.jumanji/" + R.drawable.download)
 
@@ -42,12 +42,16 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_profile)
 
+        userNameField.setText(profileViewModel.userInfo?.value?.userName)
+        passwordField.setText(profileViewModel.userInfo?.value?.password)
+        confirmPasswordField.setText(profileViewModel.userInfo?.value?.password)
+        emailField.setText(profileViewModel.userInfo?.value?.email)
+
         saveButton.isEnabled = false
         userNameField.addTextChangedListener(this)
         passwordField.addTextChangedListener(this)
         confirmPasswordField.addTextChangedListener(this)
         emailField.addTextChangedListener(this)
-        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
             selectImage()
@@ -59,10 +63,13 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 val email = emailField.text.toString()
                 val password = passwordField.text.toString()
                 val photoRepository = PhotoRepository(email)
+
                 val profile = UserProfile(userName, password, email, uriString?.toString())
                 profileViewModel.saveUserProfile(profile, this, this)
-                photoRepository.storePhotoToDatabase(uriString, this, this, false)
+
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
+                photoRepository.storePhotoToDatabase(uriString, this, this, false)
+
                 saveButton.isEnabled = false
             } else {
                 Toast.makeText(this@CreateProfileActivity,
@@ -158,6 +165,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     }
 
     private fun onSelectFromGalleryResult(data: Intent?) {
+
         var bm: Bitmap? = null
         if (data != null) {
             try {
@@ -197,10 +205,10 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     override fun onProfileSaveToFirebase() {
         val viewModel = ViewModelProviders.of(this)[StatisticViewModel::class.java]
         viewModel.updateCommunityStatistics(StatisticRepository.TOTAL_USERS)
+
         val intent = Intent(this, ProgramActivity::class.java)
         startActivity(intent)
         this.finish()
-
     }
 
     override fun afterTextChanged(s: Editable?) {

@@ -20,6 +20,8 @@ class ProgramActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.fragment_home_page)
+        toolbar.title = ""
+        setSupportActionBar(toolbar)
 
         val adapter = PagerAdapter(supportFragmentManager)
         container.adapter = adapter
@@ -29,6 +31,9 @@ class ProgramActivity : AppCompatActivity() {
 
         val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
         pinViewModel.queryDataFromFirebaseToRoom()
+
+        val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+
     }
 
     class PagerAdapter(fragmentManger: FragmentManager) : FragmentPagerAdapter(fragmentManger) {
@@ -38,6 +43,7 @@ class ProgramActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
+
                 1 -> Fragment()
                 2 -> ProfileFragment()
                 else -> MapFragment()
