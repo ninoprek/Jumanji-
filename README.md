@@ -1,6 +1,6 @@
 # TrashureHunt
 
-<img src="https://github.com/ninoprek/Jumanji-/blob/master/app/src/main/Readme_Logo.png" alt="TrashureHunt Logo" width="220" align="right">
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Readme_Logo.png" alt="TrashureHunt Logo" width="220" align="right">
 
 `TrashureHunt` is app that provides a platform that encourages and rewords __*cleaning of the environment*__. It does that by letting users to mark the thrash locations on a map. They can than decide to take __individual action__ or he/she can organise a __community event__ in order to take care of the marked location. 
 
