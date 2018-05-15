@@ -52,11 +52,14 @@ class ProfileRepository(context: Context) {
     }
 
     private fun getUserInformation(context: Context) {
-        if (userAuthentication.currentUser?.displayName != null) {
-            userInfo.value = UserProfile(userAuthentication.currentUser?.displayName.toString(),
+        Log.d("TAG", "get user info")
+        val currentUser = userAuthentication.currentUser
+        if (currentUser != null) {
+            val userProfile = UserProfile(currentUser.displayName.toString(),
                     "",
-                    userAuthentication.currentUser?.email.toString(),
-                    userAuthentication.currentUser?.photoUrl.toString())
+                    currentUser.email.toString(),
+                    currentUser.photoUrl.toString())
+            userInfo.value = userProfile
         } else {
             val acct = GoogleSignIn.getLastSignedInAccount(context)
             userInfo.value = UserProfile(acct?.givenName.toString(),
@@ -71,11 +74,10 @@ class ProfileRepository(context: Context) {
     }
 
     fun changeUserSharedPreferences(userName: String = "", password: String = "", email: String = "", photoURL: String = "") {
-        TODO("implement this")
+        //TODO
     }
 
     fun storeToDatabase(userProfile: UserProfile) {
-
         if (userProfile.email.isEmpty()) return
         //TODO notify user that email is obligatory
 
@@ -91,11 +93,10 @@ class ProfileRepository(context: Context) {
     fun createNewUser(userProfile: UserProfile, callback: OnNewUserRegisteredCallback) {
         userAuthentication.createUserWithEmailAndPassword(userProfile.email, userProfile.password)
                 .addOnCompleteListener({ task ->
-                    if (task.isSuccessful()) {
+                    if (task.isSuccessful) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "createUserWithEmail:success")
-                        updateUserInformation(userProfile)
-                        callback.onProfileSaveToFirebase()
+                        updateUserInformation(userProfile, callback)
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -103,7 +104,7 @@ class ProfileRepository(context: Context) {
                 })
     }
 
-    fun updateUserInformation(userProfile: UserProfile) {
+    fun updateUserInformation(userProfile: UserProfile, callback: OnNewUserRegisteredCallback) {
 
         val user = userAuthentication.currentUser
 
@@ -115,6 +116,7 @@ class ProfileRepository(context: Context) {
         user?.updateProfile(profileUpdates)
                 ?.addOnCompleteListener({ task ->
                     if (task.isSuccessful) {
+                        callback.onProfileSaveToFirebase()
                         Log.d(javaClass.simpleName, "User profile is updated.")
                     } else {
                         Log.d(javaClass.simpleName, "Problem with updating the profile.")

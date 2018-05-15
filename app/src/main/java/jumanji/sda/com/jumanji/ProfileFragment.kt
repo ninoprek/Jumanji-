@@ -42,10 +42,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
-            username = it?.userName
-            if (username != "null") {
-                usernameText.text = username
-            }
+            usernameText.text = it?.userName
             Picasso.get().load(it?.photoURL).into(profilePhotoView)
         })
 
