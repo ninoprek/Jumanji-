@@ -60,12 +60,11 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 val photoRepository = PhotoRepository(email)
 
                 val profile = UserProfile(userName, password, email, uriString?.toString())
-                viewModel.saveUserProfile(profile, this)
+                viewModel.saveUserProfile(profile, this, this)
                 viewModel.initializeUserPinNumber(userName)
                 photoRepository.storePhotoToDatabase(uriString, this, this, false)
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
                 saveButton.isEnabled = false
-                cancelButton.isEnabled = false
             } else {
                 Toast.makeText(this@CreateProfileActivity,
                         "Password is too short.",
@@ -75,8 +74,16 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         }
 
         cancelButton.setOnClickListener({
+            val intent = Intent(this, SignInActivity::class.java)
+            startActivity(intent)
             this.finish()
         })
+    }
+
+    override fun onBackPressed() {
+        val intent = Intent(this, SignInActivity::class.java)
+        startActivity(intent)
+        this.finish()
     }
 
     override fun selectImage() {
