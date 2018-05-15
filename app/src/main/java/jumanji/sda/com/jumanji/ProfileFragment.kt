@@ -118,6 +118,7 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
     }
 
     fun goToSignIn() {
+        activity?.finish()
         val intent = Intent(context, SignInActivity::class.java)
         startActivity(intent)
     }
