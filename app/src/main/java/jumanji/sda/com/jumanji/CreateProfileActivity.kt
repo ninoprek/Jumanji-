@@ -34,6 +34,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     }
 
     var userChoosenTask: String = ""
+    lateinit var profileViewModel: ProfileViewModel
 
     private var uriString: Uri = Uri.parse("android.resource://jumanji.sda.com.jumanji/" + R.drawable.download)
 
@@ -46,7 +47,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         passwordField.addTextChangedListener(this)
         confirmPasswordField.addTextChangedListener(this)
         emailField.addTextChangedListener(this)
-        val viewModel: ProfileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
             selectImage()
@@ -58,14 +59,11 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 val email = emailField.text.toString()
                 val password = passwordField.text.toString()
                 val photoRepository = PhotoRepository(email)
-
                 val profile = UserProfile(userName, password, email, uriString?.toString())
-                viewModel.saveUserProfile(profile, this)
-                viewModel.initializeUserPinNumber(userName)
+                profileViewModel.saveUserProfile(profile, this, this)
                 photoRepository.storePhotoToDatabase(uriString, this, this, false)
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
                 saveButton.isEnabled = false
-                cancelButton.isEnabled = false
             } else {
                 Toast.makeText(this@CreateProfileActivity,
                         "Password is too short.",
@@ -75,9 +73,16 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         }
 
         cancelButton.setOnClickListener({
-            val intent = Intent(this, ProgramActivity::class.java)
+            val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
+            this.finish()
         })
+    }
+
+    override fun onBackPressed() {
+        val intent = Intent(this, SignInActivity::class.java)
+        startActivity(intent)
+        this.finish()
     }
 
     override fun selectImage() {
@@ -153,7 +158,6 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     }
 
     private fun onSelectFromGalleryResult(data: Intent?) {
-
         var bm: Bitmap? = null
         if (data != null) {
             try {
@@ -193,10 +197,10 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     override fun onProfileSaveToFirebase() {
         val viewModel = ViewModelProviders.of(this)[StatisticViewModel::class.java]
         viewModel.updateCommunityStatistics(StatisticRepository.TOTAL_USERS)
-
         val intent = Intent(this, ProgramActivity::class.java)
         startActivity(intent)
         this.finish()
+
     }
 
     override fun afterTextChanged(s: Editable?) {
