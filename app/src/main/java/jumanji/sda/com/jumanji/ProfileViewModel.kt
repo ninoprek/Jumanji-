@@ -4,7 +4,6 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
-import android.util.Log
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -23,29 +22,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
 
-//    fun updateUserProfile(profile: UserProfile) {
-//        Single.fromCallable { repository.updateUserInformation(profile) }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread()).subscribe()
-//    }
-
-    fun getUserName() {
-    }
-
     fun checkIfUserSignedIn(context: Context) {
         Single.fromCallable { repository.signOut(context) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
-    }
-
-    fun deleteUserProfile(): Boolean {
-        val result = Single.fromCallable { repository.userDelete() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe()
-        Log.d(javaClass.simpleName, "DISPOSABLE result: " + result.isDisposed)
-        return result.isDisposed.equals(true)
     }
 
     fun initializeUserPinNumber(user: String) {

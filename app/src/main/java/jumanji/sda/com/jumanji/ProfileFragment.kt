@@ -39,7 +39,6 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         userActivityMapView.getMapAsync(this)
 
         val profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
-        var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
             usernameText.text = it?.userName
