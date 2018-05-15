@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.fragment_home_page.*
 
 class ProgramActivity : AppCompatActivity() {
     private var flagToQuitApp = false
+    private lateinit var quitToast: Toast
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +52,6 @@ class ProgramActivity : AppCompatActivity() {
         flagToQuitApp = false
     }
 
-    lateinit var quitToast: Toast
     override fun onBackPressed() {
         if (flagToQuitApp) {
             quitToast.cancel()
