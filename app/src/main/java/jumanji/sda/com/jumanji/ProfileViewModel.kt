@@ -16,8 +16,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     val cleanedPins: MutableLiveData<String> = repository.cleanedPins
     val userInfo: MutableLiveData<UserProfile>? = repository.userInfo
 
-    fun saveUserProfile(profile: UserProfile, callback: OnNewUserRegisteredCallback) {
-        Single.fromCallable { repository.createNewUser(profile, callback) }
+    fun saveUserProfile(profile: UserProfile, callback: OnNewUserRegisteredCallback, context: Context) {
+        Single.fromCallable { repository.createNewUser(profile, callback, context) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
