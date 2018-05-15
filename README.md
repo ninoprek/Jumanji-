@@ -24,4 +24,11 @@ First, download or clone the __Jumanji-__ `GitHub` repository and install [Andro
 
 <img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_1526387830.png" alt="Create Profile Screen" width="200" align="left">2. When you are located in __Create a Profile__ screen, you have to enter a _username_, _password_ that has to contain more than 6 characters and an valid _email_ address. Also, by pressing on an exsisting _image_, you can custumize your profile photo by taking a picture or choosing an existing one from your local library.
 
+<p align="center">
+  <br><br><br><br><br><br>
+  <br><br><br><br><br><br>
+</p>
+
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_2018-05-15-14-50-09.png" alt="Map Screen" width="200" align="right">3. After you have logged in, a screen with a __map__ containing pins from all users is shown. If the trash locations have a red pin it means that they are only reported and that they need cleaning. If the pin is green, it means that the location has been cleaned. In order to clean the location, first press the red pin and the popup is going to be shown. After that, press the __Clean__ button.   
+
 
