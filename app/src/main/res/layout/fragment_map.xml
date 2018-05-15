@@ -15,6 +15,7 @@
         android:clickable="true"
         android:focusable="true"
         android:scaleType="center"
+        app:backgroundTint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_camera" />
@@ -59,6 +60,9 @@
         android:contentDescription="@string/trash_location_cleared"
         android:text="0"
         android:textAppearance="@style/TextAppearance.Design.Counter"
+        android:textColor="@color/colorSecondaryDark"
+        android:textSize="14sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/addPin"
         app:layout_constraintStart_toEndOf="@+id/addPin"
         app:layout_constraintTop_toTopOf="@+id/addPin"
@@ -71,6 +75,9 @@
         android:layout_marginStart="16dp"
         android:text="0"
         android:textAppearance="@style/TextAppearance.Design.Counter"
+        android:textColor="@color/colorAccent"
+        android:textSize="14sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/deletePin"
         app:layout_constraintTop_toTopOf="@+id/totalNoOfTrashLocationText"
         tools:text="800" />
@@ -93,6 +100,7 @@
         android:clickable="true"
         android:focusable="true"
         android:scaleType="center"
+        app:backgroundTint="@color/colorSecondary"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_refresh" />
