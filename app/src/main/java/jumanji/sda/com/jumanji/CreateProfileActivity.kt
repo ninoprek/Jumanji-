@@ -64,6 +64,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 viewModel.initializeUserPinNumber(userName)
                 photoRepository.storePhotoToDatabase(uriString, this, this, false)
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
+                saveButton.isEnabled = false
+                cancelButton.isEnabled = false
             } else {
                 Toast.makeText(this@CreateProfileActivity,
                         "Password is too short.",

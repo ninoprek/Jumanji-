@@ -91,6 +91,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         mapView.onCreate(savedInstanceState)
         profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
+
         profileViewModel.userInfo?.observe(this, Observer {
             email = it!!.email
             username = it!!.userName
@@ -171,7 +172,6 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.isIndoorEnabled = false
-        enableMyLocationLayer()
 
         locationViewModel = ViewModelProviders.of(activity!!)[LocationViewModel::class.java]
         locationViewModel.currentLocation.observe(activity!!, Observer {
@@ -180,6 +180,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             }
         })
 
+        enableMyLocationLayer()
         checkUserLocationSetting()
         if (mapPreference.shouldRestoreState()) {
             val cameraState = mapPreference.getCameraState()
@@ -319,6 +320,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
             if (this::map.isInitialized) {
                 map.isMyLocationEnabled = true
             }
+            locationViewModel.moveToLastKnowLocation(map)
         }
     }
 
