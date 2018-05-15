@@ -22,6 +22,6 @@ First, download or clone the __Jumanji-__ `GitHub` repository and install [Andro
   <br><br><br><br><br><br>
 </p>
 
-<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_1526387830.png" alt="Create Profile Screen" width="200" align="right">2. When you are located in __Create a Profile__ screen, you have to enter a _username_, _password_ that has to contain more than 6 characters and an valid _email_ address. Also, by pressing on an exsisting _image_, you can custumize your profile photo by taking a picture or choosing an existing one from your local library.
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_1526387830.png" alt="Create Profile Screen" width="200" align="left">2. When you are located in __Create a Profile__ screen, you have to enter a _username_, _password_ that has to contain more than 6 characters and an valid _email_ address. Also, by pressing on an exsisting _image_, you can custumize your profile photo by taking a picture or choosing an existing one from your local library.
 
 
