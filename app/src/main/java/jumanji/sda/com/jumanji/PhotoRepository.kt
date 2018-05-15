@@ -19,17 +19,13 @@ class PhotoRepository(email: String?) {
         val imageRef = mStorageRef.child("$uri")
         Log.e("value", "uri Value: $uri")
 
-        //if (uri == null) {
-        //    uri = data!!.extras[MediaStore.EXTRA_OUTPUT] as Uri
-        //}
-
         if (uri != null) {
             imageRef.putFile(uri)
-                    .addOnSuccessListener(OnSuccessListener<UploadTask.TaskSnapshot> { taskSnapshot ->
+                    .addOnSuccessListener({ taskSnapshot ->
                         // Get a URL to the uploaded content
                         val downloadUrl = taskSnapshot.downloadUrl
                         Log.d("SUCCESS", "Able  to upload")
-                        if (toastFlag == true) {
+                        if (toastFlag) {
                             val toast = Toast.makeText(activity, "File Uploaded ", Toast.LENGTH_SHORT)
                             toast.show()
                         } else {

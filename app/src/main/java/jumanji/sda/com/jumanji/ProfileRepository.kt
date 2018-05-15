@@ -69,14 +69,6 @@ class ProfileRepository(context: Context) {
         }
     }
 
-    fun getUserName(): String {
-        return userSharedPref.getString(KEY_USER_NAME, "")
-    }
-
-    fun changeUserSharedPreferences(userName: String = "", password: String = "", email: String = "", photoURL: String = "") {
-        //TODO
-    }
-
     fun storeToDatabase(userProfile: UserProfile) {
         if (userProfile.email.isEmpty()) return
         //TODO notify user that email is obligatory
