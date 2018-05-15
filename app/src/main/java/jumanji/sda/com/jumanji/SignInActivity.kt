@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -20,14 +19,6 @@ import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
 class SignInActivity : AppCompatActivity(), TextWatcher {
-
-    var userName = ""
-    var email = ""
-    var uriString = ""
-    var password = ""
-
-    var authenticator = FirebaseAuth.getInstance()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
@@ -42,11 +33,10 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
         }
 
         signInButton.setOnClickListener({
-            signIn(it, userNameField.text.toString(), passwordField.text.toString())
+            signIn(userNameField.text.toString(), passwordField.text.toString())
         })
 
         googleSignInButton.setOnClickListener({
-
             //Sign in with google
             // Configure sign-in to request the user's ID, email address, and basic
             // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -56,24 +46,13 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
                     .build()
 
             // Build a GoogleSignInClient with the options specified by options.
-
             val client = GoogleSignIn.getClient(this, options)
-
-            val signIn = client.silentSignIn()
-
-            if (signIn.isSuccessful) {
-                getInfo(signIn)
-                val intent = Intent(this, ProgramActivity::class.java)
-                startActivity(intent)
-                this.finish()
-            } else {
-                startActivityForResult(client.signInIntent, 10)
-            }
+            startActivityForResult(client.signInIntent, 10)
         })
-
     }
 
-    private fun signIn(view: View, email: String, password: String) {
+    private fun signIn(email: String, password: String) {
+        val authenticator = FirebaseAuth.getInstance()
         authenticator.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, { task ->
                     if (task.isSuccessful) {
@@ -92,20 +71,28 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
         if (requestCode == 10 && resultCode == Activity.RESULT_OK) {
             val signedInAccountFromIntent = GoogleSignIn.getSignedInAccountFromIntent(data)
             if (signedInAccountFromIntent.isSuccessful) {
-
                 val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
                 val database = FirebaseFirestore.getInstance()
                 val userName = GoogleSignIn.getLastSignedInAccount(this)?.givenName.toString()
                 Log.d(javaClass.simpleName + "Google account", "This is the current google account: $database")
-
-                if (database.collection("userStatistics").document(userName) == null) {
-                    profileViewModel.initializeUserPinNumber(userName)
-                }
-
+                createNewStatisticIsNotExistsForGoogleAccountUser(database, profileViewModel, userName)
                 getInfo(signedInAccountFromIntent)
                 val intent = Intent(this, ProgramActivity::class.java)
                 startActivity(intent)
                 this.finish()
+            }
+        }
+    }
+
+    private fun createNewStatisticIsNotExistsForGoogleAccountUser(database: FirebaseFirestore,
+                                                                  profileViewModel: ProfileViewModel,
+                                                                  userName: String) {
+        val taskToGetDocument = database.collection("userStatistics")
+                .document(userName)
+                .get()
+        taskToGetDocument.addOnCompleteListener { task ->
+            if (!task.result.exists()) {
+                profileViewModel.initializeUserPinNumber(userName)
             }
         }
     }
