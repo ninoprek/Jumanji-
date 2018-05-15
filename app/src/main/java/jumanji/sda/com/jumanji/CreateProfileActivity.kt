@@ -153,7 +153,6 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     }
 
     private fun onSelectFromGalleryResult(data: Intent?) {
-
         var bm: Bitmap? = null
         if (data != null) {
             try {
