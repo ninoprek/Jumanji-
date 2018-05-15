@@ -15,5 +15,13 @@ After the cleaning is done, all users are reworded with a certain amount of __po
 First, download or clone the __Jumanji-__ `GitHub` repository and install [Android Studio](https://developer.android.com/studio/). Open the project in `Android Studio` and [run](https://developer.android.com/training/basics/firstapp/running-app) it in a simulator or on your __Android__ mobile device. 
 
 ### User guide
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_1526387808.png" alt="Login Screen" width="200" align="right">1. First step when using `TrashureHunt` is to login using your existing account. If you don't have one, you can login using the __Sign In With Google__ option , or create a new account by pressing __Create a Profile__ button and follow instructions from next step.
 
-1.  
+<p align="center">
+  <br><br><br><br><br><br>
+  <br><br><br><br><br><br>
+</p>
+
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_1526387830.png" alt="Create Profile Screen" width="200" align="left">2. When you are located in __Create a Profile__ screen, you have to enter a _username_, _password_ that has to contain more than 6 characters and an valid _email_ address. Also, by pressing on an exsisting _image_, you can custumize your profile photo by taking a picture or choosing an existing one from your local library.
+
+
