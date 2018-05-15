@@ -23,9 +23,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe()
     }
 
-    fun getUserName() {
-    }
-
     fun checkIfUserSignedIn(context: Context) {
         Single.fromCallable { repository.signOut(context) }
                 .subscribeOn(Schedulers.io())

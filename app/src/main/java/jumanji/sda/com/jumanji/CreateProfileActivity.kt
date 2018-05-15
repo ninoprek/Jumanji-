@@ -17,14 +17,12 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
-import jumanji.sda.com.jumanji.R.id.confirmPasswordField
-import jumanji.sda.com.jumanji.R.id.emailField
-import jumanji.sda.com.jumanji.R.id.passwordField
-import jumanji.sda.com.jumanji.R.id.profilePhoto
-import jumanji.sda.com.jumanji.R.id.saveButton
-import jumanji.sda.com.jumanji.R.id.userNameField
 import kotlinx.android.synthetic.main.activity_create_profile.*
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 
 interface OnNewUserRegisteredCallback{
     fun onProfileSaveToFirebase()
@@ -47,6 +45,11 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_profile)
+
+        userNameField.setText(profileViewModel.userInfo?.value?.userName)
+        passwordField.setText(profileViewModel.userInfo?.value?.password)
+        confirmPasswordField.setText(profileViewModel.userInfo?.value?.password)
+        emailField.setText(profileViewModel.userInfo?.value?.email)
 
         saveButton.isEnabled = false
         userNameField.addTextChangedListener(this)
