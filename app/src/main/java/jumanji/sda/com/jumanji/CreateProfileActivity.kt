@@ -34,6 +34,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     }
 
     var userChoosenTask: String = ""
+    lateinit var profileViewModel: ProfileViewModel
 
     private var uriString: Uri = Uri.parse("android.resource://jumanji.sda.com.jumanji/" + R.drawable.download)
 
@@ -46,7 +47,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         passwordField.addTextChangedListener(this)
         confirmPasswordField.addTextChangedListener(this)
         emailField.addTextChangedListener(this)
-        val viewModel: ProfileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
+        profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
 
         profilePhoto.setOnClickListener {
             selectImage()
@@ -58,10 +59,8 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
                 val email = emailField.text.toString()
                 val password = passwordField.text.toString()
                 val photoRepository = PhotoRepository(email)
-
                 val profile = UserProfile(userName, password, email, uriString?.toString())
-                viewModel.saveUserProfile(profile, this, this)
-                viewModel.initializeUserPinNumber(userName)
+                profileViewModel.saveUserProfile(profile, this, this)
                 photoRepository.storePhotoToDatabase(uriString, this, this, false)
                 Toast.makeText(this, "creating your profile now...", Toast.LENGTH_SHORT).show()
                 saveButton.isEnabled = false

@@ -90,6 +90,7 @@ class ProfileRepository(context: Context) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "createUserWithEmail:success")
                         updateUserInformation(userProfile, callback)
+                        initializeUserPinNumber(userProfile.userName)
                     } else {
                         Toast.makeText(context, "${task.exception?.message}", Toast.LENGTH_SHORT)
                                 .show()
@@ -151,11 +152,10 @@ class ProfileRepository(context: Context) {
     }
 
     fun initializeUserPinNumber(user: String) {
-
+        Log.d("TAG", "initialise user data")
         val userPins: HashMap<String, Any> = HashMap()
         userPins.put("reportedPins", 0)
         userPins.put("cleanedPins", 0)
-
         database.collection("userStatistics").document(user).set(userPins)
         updateUserStatistics(user)
     }
