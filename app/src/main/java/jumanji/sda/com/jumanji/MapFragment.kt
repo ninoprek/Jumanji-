@@ -342,7 +342,7 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         if (context != null) {
             val items = arrayOf("Take Photo", "Choose from Library", "Cancel")
             val builder = AlertDialog.Builder(context)
-            builder.setTitle("Add Photo!")
+            builder.setTitle("Report")
             builder.setItems(items, { dialog, item ->
                 when {
                     items[item] == "Take Photo" -> {

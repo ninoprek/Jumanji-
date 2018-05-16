@@ -20,7 +20,6 @@ class ProgramActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.fragment_home_page)
-        toolbar.title = ""
         setSupportActionBar(toolbar)
 
         val adapter = PagerAdapter(supportFragmentManager)
