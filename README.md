@@ -57,13 +57,13 @@ For this app to work properly, user has to give permissions for accesing __inter
 ## Built with
 
 This application has been build for a __Android__ using [Android Studio](https://developer.android.com/studio/), [Kotlin](http://kotlinlang.org/) and [Google Firebase](https://firebase.google.com/). 
-<p align="center">
-  <br>
-</p>
+
 <img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/touchicon-180.png" alt="Google Firebase" width="90" align="right">
 <img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Kotlin-A-New-Programming-Platform-For-Android-Developers.png" alt="Kotlin" width="180" align="right"> 
 <img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Android_Studio_icon.svg.png" alt="Android Studio" width="90" align="right">
-
+<p align="center">
+  <br><br>
+</p>
 ## About 
 
 This application has been created by team _Jumanji_ as part of the [Novare Potential Software Development Academy 3](https://www.novarepotential.com/software-development-academy-eng/) _group work_ module. 
