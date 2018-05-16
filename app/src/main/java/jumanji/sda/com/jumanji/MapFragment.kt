@@ -41,7 +41,7 @@ import kotlinx.android.synthetic.main.fragment_map.*
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 interface SetOnPopUpWindowAdapter {
     fun displayPopUpWindow(marker: Marker)
@@ -93,8 +93,8 @@ class MapFragment : Fragment(), PhotoListener, OnMapReadyCallback, SetOnPopUpWin
         pinViewModel = ViewModelProviders.of(activity!!)[PinViewModel::class.java]
 
         profileViewModel.userInfo?.observe(this, Observer {
-            email = it!!.email
-            username = it!!.userName
+            if (it?.email != null) email = it.email
+            if (it?.userName != null) username = it.userName
         })
 
         profileViewModel.reportedPins.observe(this, Observer {
