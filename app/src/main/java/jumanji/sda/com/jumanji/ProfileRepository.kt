@@ -148,6 +148,9 @@ class ProfileRepository(context: Context) {
                         deleted = true
                     }
                 }
+
+        val document = database.collection("userStatistics").document(user?.displayName!!)
+        document.delete().addOnFailureListener { deleted = false }
         return deleted
     }
 
