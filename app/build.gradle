@@ -3,7 +3,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: "kotlin-kapt"
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 27
@@ -52,3 +51,5 @@ dependencies {
     implementation 'android.arch.persistence.room:runtime:1.1.0'
     kapt  "android.arch.persistence.room:compiler:1.1.0"
 }
+
+apply plugin: 'com.google.gms.google-services'

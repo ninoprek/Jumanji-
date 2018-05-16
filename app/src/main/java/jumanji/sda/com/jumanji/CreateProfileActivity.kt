@@ -49,12 +49,10 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         val username = profileViewModel.userInfo?.value?.userName
         val email = profileViewModel.userInfo?.value?.email
 
-        if (username != null) userNameField.setText(username)
-        else userNameField.setText("Username")
+        if (username != "null") userNameField.setText(username)
         passwordField.setText(profileViewModel.userInfo?.value?.password)
         confirmPasswordField.setText(profileViewModel.userInfo?.value?.password)
-        if (email != null) emailField.setText(email)
-        else emailField.setText("e-mail")
+        if (email != "null") emailField.setText(email)
 
         saveButton.isEnabled = false
         userNameField.addTextChangedListener(this)
@@ -104,7 +102,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     override fun selectImage() {
         val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@CreateProfileActivity)
-        builder.setTitle("Add Photo!")
+        builder.setTitle("Report")
         builder.setItems(items, { dialog, item ->
             when (items[item]) {
                 "Take Photo" -> {

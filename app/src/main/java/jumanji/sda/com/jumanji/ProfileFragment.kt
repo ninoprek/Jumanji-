@@ -126,7 +126,7 @@ class ProfileFragment : Fragment() {
         val averageClear = averageClearedText.text.toString().toInt()
         if (averageReport > 0 && averageClear > 0) {
             val reportScore = (userReport - averageReport) / averageReport.toFloat() * 100
-            val clearScore = (userClean - averageClear) / averageClear.toFloat() * 100
+            val clearScore = (userClean * 2 - averageClear) / averageClear.toFloat() * 100
             val averageScore = (reportScore + clearScore) / 2
             when {
                 averageScore >= 30 -> badgeView.setImageResource(R.drawable.tree)
