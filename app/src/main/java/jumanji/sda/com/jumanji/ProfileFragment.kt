@@ -42,7 +42,7 @@ class ProfileFragment : Fragment() {
 
         profileViewModel.userInfo?.observe(this, Observer {
             username = it?.userName
-            usernameText.text = username
+            if (username != null) usernameText.text = username
             Picasso.get().load(it?.photoURL).into(profilePhotoView)
         })
 
@@ -114,10 +114,8 @@ class ProfileFragment : Fragment() {
                 builder.setNegativeButton("No") { dialog, id -> dialog.dismiss() }
                 val alert = builder.create()
                 alert.show()
-
             }
         }
-
         return super.onOptionsItemSelected(item)
     }
 
