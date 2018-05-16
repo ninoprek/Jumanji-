@@ -10,7 +10,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.*
+import java.util.HashMap
 
 data class UserProfile(
         val userName: String = "",
@@ -139,18 +139,17 @@ class ProfileRepository(context: Context) {
 
     fun userDelete(): Boolean {
 
-        val user = userAuthentication.currentUser
+        val user = userAuthentication.currentUser ?: return false
         var deleted = false
 
-        user?.delete()
-                ?.addOnCompleteListener {
-                    if (it.isSuccessful) {
-                        deleted = true
-                    }
-                }
+        user.displayName?.let {
+            database.collection("userStatistics")
+                    .document(it)
+                    .delete()
+        }
 
-        val document = database.collection("userStatistics").document(user?.displayName!!)
-        document.delete().addOnFailureListener { deleted = false }
+        user.delete().addOnCompleteListener { deleted = it.isSuccessful }
+
         return deleted
     }
 
