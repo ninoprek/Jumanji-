@@ -47,7 +47,7 @@ For this app to work properly, user has to give permissions for accesing __inter
   <br><br><br><br><br><br>
 </p>
 
-<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Screenshot_2018-05-15-14-50-35.png" alt="User Profile" width="200" align="right">5. User can see his/hers profile with some information about their activities. Data that is currently shown there is the number of locations you have reported and clened. Also, an average number of these values among all users is shown. At this screen, user can also access the _menu_ where they can change they profile information. They can also log out from the application. 
+<img src="https://github.com/ninoprek/Jumanji-/blob/master/app/readmeRes/Screenshot_1526473126.png" alt="User Profile" width="200" align="right">5. User can see his/hers profile with some information about their activities. Data that is currently shown there is the number of locations you have reported and clened. Also, an average number of these values among all users is shown. At this screen, user can also access the _menu_ where they can change they profile information. They can also log out from the application. 
 
 <p align="center">
   <br><br><br><br><br><br>
