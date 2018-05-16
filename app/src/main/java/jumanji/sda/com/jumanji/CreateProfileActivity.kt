@@ -102,7 +102,7 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
     override fun selectImage() {
         val items = arrayOf<CharSequence>("Take Photo", "Choose from Library", "Cancel")
         val builder = AlertDialog.Builder(this@CreateProfileActivity)
-        builder.setTitle("Report")
+        builder.setTitle("Take Photo")
         builder.setItems(items, { dialog, item ->
             when (items[item]) {
                 "Take Photo" -> {
