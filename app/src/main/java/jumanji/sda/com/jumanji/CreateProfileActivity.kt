@@ -17,7 +17,11 @@ import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_create_profile.*
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 
 interface OnNewUserRegisteredCallback {
     fun onProfileSaveToFirebase()
@@ -42,10 +46,15 @@ class CreateProfileActivity : AppCompatActivity(), TextWatcher, PhotoListener, O
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_profile)
 
-        userNameField.setText(profileViewModel.userInfo?.value?.userName)
+        val username = profileViewModel.userInfo?.value?.userName
+        val email = profileViewModel.userInfo?.value?.email
+
+        if (username != null) userNameField.setText(username)
+        else userNameField.setText("Username")
         passwordField.setText(profileViewModel.userInfo?.value?.password)
         confirmPasswordField.setText(profileViewModel.userInfo?.value?.password)
-        emailField.setText(profileViewModel.userInfo?.value?.email)
+        if (email != null) emailField.setText(email)
+        else emailField.setText("e-mail")
 
         saveButton.isEnabled = false
         userNameField.addTextChangedListener(this)

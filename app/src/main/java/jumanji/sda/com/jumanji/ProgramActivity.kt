@@ -32,8 +32,6 @@ class ProgramActivity : AppCompatActivity() {
         val pinViewModel = ViewModelProviders.of(this)[PinViewModel::class.java]
         pinViewModel.queryDataFromFirebaseToRoom()
 
-        val profileViewModel = ViewModelProviders.of(this)[ProfileViewModel::class.java]
-
     }
 
     class PagerAdapter(fragmentManger: FragmentManager) : FragmentPagerAdapter(fragmentManger) {
