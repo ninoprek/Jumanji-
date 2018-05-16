@@ -103,8 +103,18 @@ class ProfileFragment : Fragment() {
                 startActivity(intent)
             }
             R.id.deleteProfileItem -> {
-                profileViewModel.deleteUserProfile()
-                goToSignIn()
+                val builder = AlertDialog.Builder(this.requireContext())
+                builder.setTitle(R.string.app_name)
+                builder.setMessage("Are you sure? Deleting your profile will cause loosing all your data!")
+                builder.setPositiveButton("Yes") { dialog, id ->
+                    dialog.dismiss()
+                    profileViewModel.deleteUserProfile()
+                    goToSignIn()
+                }
+                builder.setNegativeButton("No") { dialog, id -> dialog.dismiss() }
+                val alert = builder.create()
+                alert.show()
+
             }
         }
 
