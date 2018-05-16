@@ -73,7 +73,8 @@ class StatisticRepository {
         }
     }
 
-    private fun decreaseNumberByOne(documentReference: DocumentReference, referenceName: String) {
+    fun decreaseNumberByOne(documentReference: DocumentReference = communityStatisticsReference
+                            , referenceName: String) {
         documentReference.get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val document = task.result

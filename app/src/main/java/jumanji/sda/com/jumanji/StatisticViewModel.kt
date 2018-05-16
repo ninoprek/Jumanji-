@@ -54,4 +54,12 @@ class StatisticViewModel : ViewModel() {
     fun updateCommunityStatistics(referenceName: String) {
         repository.updateStatistics(referenceName = referenceName)
     }
+
+    fun updateUsersNumberWhenDeleteProfile(referenceName: String) {
+        Single.fromCallable { repository.decreaseNumberByOne(referenceName = referenceName) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe()
+    }
+
 }

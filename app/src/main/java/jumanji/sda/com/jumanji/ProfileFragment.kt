@@ -83,6 +83,7 @@ class ProfileFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        val statisticViewModel = ViewModelProviders.of(activity!!)[StatisticViewModel::class.java]
         when (item?.itemId) {
             R.id.signOutItem -> {
                 val builder = AlertDialog.Builder(this.requireContext())
@@ -109,6 +110,7 @@ class ProfileFragment : Fragment() {
                 builder.setPositiveButton("Yes") { dialog, id ->
                     dialog.dismiss()
                     profileViewModel.deleteUserProfile()
+                    statisticViewModel.updateUsersNumberWhenDeleteProfile(StatisticRepository.TOTAL_USERS)
                     goToSignIn()
                 }
                 builder.setNegativeButton("No") { dialog, id -> dialog.dismiss() }
