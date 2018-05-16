@@ -34,8 +34,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         repository.signOut(getApplication())
     }
 
-    fun deleteUserProfile(username: String?): Boolean {
-        val result = Single.fromCallable { repository.userDelete(username) }
+    fun deleteUserProfile(username: String?, context: Context?): Boolean {
+        val result = Single.fromCallable { repository.userDelete(username, context) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()

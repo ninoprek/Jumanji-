@@ -105,7 +105,7 @@ class ProfileFragment : Fragment() {
                 builder.setMessage("Are you sure? Deleting your profile will cause loosing all your data!")
                 builder.setPositiveButton("Yes") { dialog, id ->
                     dialog.dismiss()
-                    profileViewModel.deleteUserProfile(username)
+                    profileViewModel.deleteUserProfile(username, context)
                     statisticViewModel.updateUsersNumberWhenDeleteProfile(StatisticRepository.TOTAL_USERS)
                     goToSignIn()
                 }
