@@ -137,19 +137,20 @@ class ProfileRepository(context: Context) {
         }
     }
 
-    fun userDelete(): Boolean {
+    fun userDelete(username:String?): Boolean {
 
-        val user = userAuthentication.currentUser ?: return false
+        val user = userAuthentication.currentUser
         var deleted = false
-
-        user.displayName?.let {
-            database.collection("userStatistics")
-                    .document(it)
-                    .delete()
+        user?.delete()
+                ?.addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        deleted = true
+                    }
+                }
+        if (username != null) {
+            val document = database.collection("userStatistics").document(username)
+            document.delete().addOnFailureListener { deleted = false }
         }
-
-        user.delete().addOnCompleteListener { deleted = it.isSuccessful }
-
         return deleted
     }
 
