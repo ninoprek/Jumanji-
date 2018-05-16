@@ -1,7 +1,6 @@
 package jumanji.sda.com.jumanji
 
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
@@ -9,7 +8,6 @@ import android.support.annotation.LayoutRes
 import android.support.constraint.ConstraintSet
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
-import android.support.v4.content.ContextCompat
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.view.LayoutInflater
@@ -19,14 +17,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
 
-class ProfileFragment : Fragment(), OnMapReadyCallback {
+class ProfileFragment : Fragment() {
 
-    private var map: GoogleMap? = null
     val profileViewModel by lazy {
         ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
     }
@@ -43,15 +38,11 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        userActivityMapView.onCreate(savedInstanceState)
-        userActivityMapView.onCreate(savedInstanceState)
-        userActivityMapView.getMapAsync(this)
-
-        val profileViewModel = ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
         var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
-            usernameText.text = it?.userName
+            username = it?.userName
+            usernameText.text = username
             Picasso.get().load(it?.photoURL).into(profilePhotoView)
         })
 
@@ -86,17 +77,13 @@ class ProfileFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    override fun onMapReady(p0: GoogleMap?) {
-        map = p0
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         inflater?.inflate(R.menu.options_menu, menu)
         return super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when(item?.itemId) {
+        when (item?.itemId) {
             R.id.signOutItem -> {
                 val builder = AlertDialog.Builder(this.requireContext())
                 builder.setTitle(R.string.app_name)
