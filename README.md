@@ -64,6 +64,7 @@ This application has been build for a __Android__ using [Android Studio](https:/
 <p align="center">
   <br><br>
 </p>
+
 ## About 
 
 This application has been created by team _Jumanji_ as part of the [Novare Potential Software Development Academy 3](https://www.novarepotential.com/software-development-academy-eng/) _group work_ module. 
