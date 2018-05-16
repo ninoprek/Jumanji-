@@ -17,7 +17,7 @@
     <string name="trash_location_reported">number of location reported</string>
     <string name="trash_location_cleared">number of location cleared</string>
     <string name="reported_photo">reported photo</string>
-    <string name="This_place_is_now_clean">This place is now clean</string>
+    <string name="This_place_is_now_clean">Clean me</string>
     <string name="user_profile">user_profile</string>
     <string name="user_badge">user_badge</string>
     <string name="background_layout">background_layout</string>
