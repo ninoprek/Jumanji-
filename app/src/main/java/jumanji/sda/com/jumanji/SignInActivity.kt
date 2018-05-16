@@ -94,6 +94,8 @@ class SignInActivity : AppCompatActivity(), TextWatcher {
         taskToGetDocument.addOnCompleteListener { task ->
             if (!task.result.exists()) {
                 profileViewModel.initializeUserPinNumber(userName)
+                val statisticViewModel = ViewModelProviders.of(this)[StatisticViewModel::class.java]
+                statisticViewModel.updateCommunityStatistics(StatisticRepository.TOTAL_USERS)
             }
         }
     }
