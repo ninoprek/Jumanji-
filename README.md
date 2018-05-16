@@ -56,8 +56,9 @@ For this app to work properly, user has to give permissions for accesing __inter
 
 ## Built with
 
-This application has been build for a __Android__ using [Android Studio](https://developer.android.com/studio/) and [Kotlin](http://kotlinlang.org/) <img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Android_Studio_icon.svg.png" alt="Android Studio" width="100" align="right">
-<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Kotlin-A-New-Programming-Platform-For-Android-Developers.png" alt="Kotlin" width="200" align="right">
+This application has been build for a __Android__ using [Android Studio](https://developer.android.com/studio/), [Kotlin](http://kotlinlang.org/) and [Google Firebase](https://firebase.google.com/). <img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/touchicon-180.png" alt="Google Firebase" width="100" align="right">
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Kotlin-A-New-Programming-Platform-For-Android-Developers.png" alt="Kotlin" width="180" align="right"> 
+<img src="https://github.com/ninoprek/Jumanji-/blob/readme/app/readmeRes/Android_Studio_icon.svg.png" alt="Android Studio" width="180" align="right"> 
 
 <p align="center">
   <br><br>
