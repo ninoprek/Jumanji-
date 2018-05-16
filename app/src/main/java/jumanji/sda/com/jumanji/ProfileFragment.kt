@@ -10,12 +10,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.animation.OvershootInterpolator
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_profile.*
@@ -25,6 +20,8 @@ class ProfileFragment : Fragment() {
     val profileViewModel by lazy {
         ViewModelProviders.of(activity!!)[ProfileViewModel::class.java]
     }
+
+    private var username: String? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +35,6 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        var username: String? = ""
 
         profileViewModel.userInfo?.observe(this, Observer {
             username = it?.userName
@@ -109,7 +105,7 @@ class ProfileFragment : Fragment() {
                 builder.setMessage("Are you sure? Deleting your profile will cause loosing all your data!")
                 builder.setPositiveButton("Yes") { dialog, id ->
                     dialog.dismiss()
-                    profileViewModel.deleteUserProfile()
+                    profileViewModel.deleteUserProfile(username)
                     statisticViewModel.updateUsersNumberWhenDeleteProfile(StatisticRepository.TOTAL_USERS)
                     goToSignIn()
                 }
@@ -126,13 +122,13 @@ class ProfileFragment : Fragment() {
         val userClean = userClearedText.text.toString().toInt()
         val averageReport = averageReportedText.text.toString().toInt()
         val averageClear = averageClearedText.text.toString().toInt()
+        val sumOfAverage = averageReport + averageClear
         if (averageReport > 0 && averageClear > 0) {
-            val reportScore = (userReport - averageReport) / averageReport.toFloat() * 100
-            val clearScore = (userClean * 2 - averageClear) / averageClear.toFloat() * 100
-            val averageScore = (reportScore + clearScore) / 2
+            val clearScore = userClean * 1.5
+            val userScore = userReport + clearScore
             when {
-                averageScore >= 30 -> badgeView.setImageResource(R.drawable.tree)
-                averageScore < -30 -> badgeView.setImageResource(R.drawable.logo1)
+                userScore >= (sumOfAverage * 1.3) -> badgeView.setImageResource(R.drawable.tree)
+                userScore < (sumOfAverage * 0.7) -> badgeView.setImageResource(R.drawable.logo1)
                 else -> badgeView.setImageResource(R.drawable.branch)
             }
         }
